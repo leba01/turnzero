@@ -14,25 +14,48 @@ Predicts expert lead-2 + bring-4/back-2 as a joint 90-way action from two Open T
 ## Week 1 Status (DONE)
 
 Pipeline stages 1-7 complete. `dataset_report.json` passes all integrity checks.
-- Regime A: 25,426 train / 3,486 val / 4,147 test
-- Regime B: 31,009 train / 1,261 val / 4,209 test
-- ~85% bring4_observed, ~97.7% OTS completeness, all 90 actions in every split
-- Only ladder data (`regg`) downloaded so far — BO3 files can be added later for quality
-- Baselines deferred to Week 2 (shared eval harness)
 
-## Week 2 Goal
+## Task 0 Status (DONE)
+
+Full dataset downloaded (BO3 2024 + BO3 2025 + Ladder 2024) and pipeline re-run.
+- **Raw data**: 212,783 battles from 3 files (394KB + 1.37GB + 165MB)
+- **Parsed**: 425,566 directed examples → 382,393 after dedup
+- **Clusters**: 116,903 unique teams → 7,826 clusters
+- **Regime A**: 246,762 train / 34,735 val / 40,083 test (321,580 total)
+- **Regime B**: 346,798 train / 5,713 val / 14,708 test (367,219 total)
+- ~80% bring4_observed, ~96.8% OTS completeness, all 90 actions in every split
+- Integrity validation: **PASSED**
+
+## Week 2 Progress
 
 Build end-to-end: Dataset → Baselines → Transformer → Training → Eval → Plots.
 See [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) for the full task breakdown.
+
+- [x] Task 0: Download full dataset + re-run pipeline
+- [ ] Task 1: PyTorch Dataset + DataLoader
+- [ ] Task 2: Baselines (popularity, logistic regression)
+- [ ] Task 3: Eval harness (metrics + plots)
+- [ ] Task 4: Transformer set model
+- [ ] Task 5: Training loop
+- [ ] Task 6: Config system
+- [ ] Task 7: Paper-ready plotting pipeline
 
 ## Repository Info
 
 - **Remote**: https://github.com/leba01/turnzero.git
 - **Branch**: main
+- **Venv**: `.venv/` (Python 3.12, created with `--without-pip` + bootstrapped pip)
 
 ## Tech Stack
 
-Python 3.11 · PyTorch · pandas · click (CLI)
+Python 3.12 · PyTorch 2.10+cu126 · pandas · scikit-learn · matplotlib · click (CLI)
+
+## Hardware
+
+- **CPU**: AMD Ryzen 7 7800X3D
+- **GPU**: NVIDIA RTX 4080 Super (17.2 GB VRAM, BF16 supported)
+- **Platform**: WSL2 on Windows, CUDA 13.0 driver
+- Use `torch.compile()`, mixed precision (BF16), large batch sizes, `pin_memory=True`
 
 ## Canonical Schemas (summary)
 
