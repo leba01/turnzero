@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+*.egg
+.pytest_cache/
+data/raw/
+data/parsed/
+data/canonical/
+data/clusters/
+data/splits/
+data/assembled/
+data/final/
+data/exploration/
+outputs/
