@@ -5,12 +5,14 @@
 CS229 (Stanford ML) final project — a turn-zero OTS coach for Pokémon VGC Gen 9.
 Predicts expert lead-2 + bring-4/back-2 as a joint 90-way action from two Open Team Sheets.
 
-**Current phase**: Week 4 — Explanations + Robustness + Demo Polish + Paper
+**Current phase**: Week 5 — Post-MVP extensions (paper analysis). All MVP criteria satisfied.
 
 **Key references**:
 - [docs/PROJECT_BIBLE.md](docs/PROJECT_BIBLE.md) — full spec (v4), schemas, contracts, acceptance criteria.
-- [docs/WEEK4_PLAN.md](docs/WEEK4_PLAN.md) — detailed Week 4 build plan.
-- [docs/CUR_TASK_SPLIT.md](docs/CUR_TASK_SPLIT.md) — current parallel task breakdown.
+- [docs/PAPER_ANALYSIS.md](docs/PAPER_ANALYSIS.md) — story arc, key findings, numbers reference for paper.
+- [docs/WEEK5_PLAN.md](docs/WEEK5_PLAN.md) — Week 5 extensions plan.
+- [docs/CUR_TASK_SPLIT.md](docs/CUR_TASK_SPLIT.md) — current task breakdown.
+- [docs/WEEK4_PLAN.md](docs/WEEK4_PLAN.md) — Week 4 build plan (completed).
 - [docs/WEEK3_PLAN.md](docs/WEEK3_PLAN.md) — Week 3 build plan (completed).
 - [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) — Week 2 build plan (completed).
 
@@ -40,19 +42,36 @@ Single transformer (d=128, L=4, H=4, 1.16M params) beats both baselines.
 - NLL: 4.105 (vs 4.497 popularity, 4.580 logistic)
 - ECE: 0.016 (well-calibrated for single model)
 
-## Week 3 Progress
+## Week 3 Status (DONE)
 
-UQ stack + calibration + selective prediction. This is what turns "classifier" into
-"calibrated decision system." See [docs/WEEK3_PLAN.md](docs/WEEK3_PLAN.md) and
-[docs/CUR_TASK_SPLIT.md](docs/CUR_TASK_SPLIT.md) for the full task breakdown.
+UQ stack complete: temperature scaling (T=1.158), deep ensembles (5 members),
+risk-coverage curves, cluster-aware bootstrap CIs (B=1000), OOD evaluation (Regime B).
 
-- [ ] Task 0: Temperature scaling (fit T on val, save artifact)
-- [ ] Task 1: Deep ensembles (train 5 members, seeds 42/137/256/512/777)
-- [ ] Task 2: Risk-coverage curves (both risk definitions)
-- [ ] Task 3: Cluster-aware bootstrap CIs (B=1000)
-- [ ] Task 4: Regime B (OOD) evaluation
-- [ ] Task 5: Comprehensive Week 3 plots + tables
-- [ ] Task 6: Demo tool skeleton (stretch)
+**Ensemble numbers (Regime A test, Tier 1):**
+- Action-90 Top-1/3/5: 6.4% / 15.5% / 22.6% (5.8x random)
+- Lead-2 Top-1/3: 19.8% / 43.2%
+- NLL: 4.031, ECE: 0.011 (well-calibrated)
+- AURC: 0.890 (top-1), 0.761 (top-3) — ensemble beats single on selective prediction
+
+## Week 4 Status (DONE)
+
+Explanations + robustness + demo polish. All MVP acceptance criteria satisfied.
+
+- Stress test: 7 masking levels, graceful degradation (moves dominate signal)
+- Retrieval index: 246K train embeddings (128d), brute-force cosine similarity
+- Coach tool: marginals, role lexicon, feature sensitivity, retrieval evidence
+- 7 publication-quality figures (14 files) in `outputs/plots/paper/`
+- 180/180 tests passing
+
+## Week 5 Status (IN PROGRESS)
+
+Post-MVP extensions for paper analysis. See [docs/WEEK5_PLAN.md](docs/WEEK5_PLAN.md).
+
+- [x] Task 0: Per-team analysis — 153 teams (species-6 grouping), entropy-accuracy
+      correlation r = -0.561 (top-3). Commander teams 50% top-1, goodstuffs 0%.
+      Figures: `cluster_entropy_vs_accuracy`, `cluster_entropy_histogram`.
+- [x] Task 1: Update CLAUDE.md with final status
+- [ ] Task 2: Paper draft (Walter)
 
 ## Repository Info
 
@@ -100,11 +119,22 @@ Python 3.12 · PyTorch 2.10+cu126 · pandas · scikit-learn · matplotlib · cli
 - All `match_group_id` rows stay in one split; no `(team_a, team_b, action90)` triples cross splits.
 - Mirror vs non-mirror stratification on all test metrics.
 
-## Module Layout (planned)
+## Module Layout
 
 - `turnzero/data/` — parser (`|showteam|` extraction), canonicalization, schemas, assembly, stats
 - `turnzero/splits/` — clustering (union-find), split generation, validators
 - `turnzero/models/` — baselines (frequency, logistic), Transformer set model, heads
 - `turnzero/uq/` — ensembles, temperature scaling, abstention
 - `turnzero/eval/` — metrics, plots, bootstrap CIs, stratified reporting
-- `turnzero/tool/` — CLI coach demo
+- `turnzero/tool/` — CLI coach demo (marginals, role lexicon, sensitivity, retrieval)
+
+## Key Output Artifacts
+
+- `outputs/ensemble/ensemble_predictions.npz` — 40K test: probs (90), entropy, MI, labels
+- `outputs/eval/stress_test.json` — 7 masking levels with full metrics
+- `outputs/eval/ood_comparison.json` — Regime A vs B
+- `outputs/eval/bootstrap_cis.json` — cluster-aware CIs (B=1000)
+- `outputs/eval/risk_coverage.json` — AURC + operating points
+- `outputs/eval/cluster_analysis.json` — per-team metrics (153 teams)
+- `outputs/retrieval/train_index.{npz,meta.json}` — 246K train embeddings
+- `outputs/plots/paper/` — 9 publication-quality figures (18 files)
