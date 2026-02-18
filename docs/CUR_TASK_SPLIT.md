@@ -31,16 +31,10 @@
     └─────────────┼─────────────┘
                   │
             ┌─────┴─────┐
-            │    3A     │
+            │     3     │
             │ Integrate │
-            │ into Demo │
-            │ + Final   │
-            │ Figures   │
-            └─────┬─────┘
-                  │
-            ┌─────┴─────┐
-            │    3B     │
-            │  Paper    │
+            │ + Figures  │
+            │ + Paper   │
             │  Draft    │
             └───────────┘
 ```
@@ -54,9 +48,8 @@
 - **2A** runs moves-hidden stress test (ensemble × 6 masking levels, ~30 min GPU)
 - **2B** extracts train set embeddings + builds retrieval index (~5 min GPU)
 
-**Wave 3** — integration + paper:
-- **3A** integrates retrieval + explanations into demo tool, generates final paper figures
-- **3B** paper draft / structured report
+**Wave 3** — integration + figures + paper (sequential, single agent):
+- **3** integrates retrieval + explanations into demo tool, generates final paper figures, then writes paper draft
 
 ---
 
@@ -456,18 +449,18 @@ DO NOT modify any source code other than creating the runner script.
 
 ---
 
-## Wave 3 Prompts
+## Wave 3 Prompt
 
-### Terminal 3A: Integration + Final Figures
+### Terminal 3: Integration + Figures + Paper
 
 ```
 You are working on the TurnZero project in /home/walter/CS229/turnzero.
 
 Read CLAUDE.md, docs/WEEK4_PLAN.md, and check all artifacts in outputs/.
 
-YOUR TASK: Integrate explanations into demo + generate final paper figures.
+YOUR TASK: Three sequential steps — do them in order.
 
-Part 1 — Demo Integration:
+Step 1 — Demo Integration:
 - Update turnzero/tool/coach.py to import and use:
   * RetrievalIndex (query + evidence_summary)
   * compute_marginals + format_marginals
@@ -475,32 +468,29 @@ Part 1 — Demo Integration:
   * feature_sensitivity
 - Add --index_path option for pre-built retrieval index
 - Full demo output should match the format in WEEK4_PLAN.md Task 3
+- Smoke-test the updated demo before moving on
 
-Part 2 — Final Figures:
+Step 2 — Final Paper Figures:
 - Create scripts/run_final_figures.py
 - Generate definitive paper figures to outputs/plots/paper/
 - Include stress test plot, clean reliability, model comparison,
   risk-coverage, OOD comparison, uncertainty decomposition
+- Run the script and verify all figures are generated
 
-DO NOT modify any source code other than:
+Step 3 — Paper Draft:
+- Write the CS229 final project report for TurnZero
+- Read all docs/ files and all outputs/ JSON artifacts
+- Follow the outline in WEEK4_PLAN.md Task 5
+- Save to docs/PAPER_DRAFT.md
+- Include all concrete numbers from the evaluation artifacts
+- Reference figures by their output paths
+- Target length: ~6-8 pages (CS229 format)
+
+Files you may create or modify:
 - turnzero/tool/coach.py (update)
+- turnzero/cli.py (update if needed for new demo options)
 - scripts/run_final_figures.py (create)
-```
-
-### Terminal 3B: Paper Draft
-
-```
-This is a writing task, not a coding task.
-
-You are writing the CS229 final project report for TurnZero.
-Read all docs/ files and all outputs/ JSON artifacts.
-
-Write a structured paper draft following the outline in WEEK4_PLAN.md Task 5.
-Save to docs/PAPER_DRAFT.md.
-
-Include all concrete numbers from the evaluation artifacts.
-Reference figures by their output paths.
-Target length: ~6-8 pages (CS229 format).
+- docs/PAPER_DRAFT.md (create)
 ```
 
 ---
