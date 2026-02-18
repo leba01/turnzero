@@ -1,17 +1,24 @@
-"""Minimal demo tool: top-3 action plans with calibrated confidence.
+"""Full demo tool: top-k action plans with explanations and retrieval evidence.
 
-Given two team sheets (species lists), loads the ensemble + temperature
-scaling artifact, runs inference, and outputs the top-3 predicted
-expert plans with calibrated probabilities. If confidence is below
-the abstention threshold, recommends scouting mode.
+Given two team sheets (species lists or full OTS), loads the ensemble +
+temperature scaling artifact, runs inference, and outputs:
+  - Top-k predicted expert plans with calibrated probabilities
+  - Per-mon lead/bring marginals ("Why These Leads")
+  - Opponent role annotations ("Key Opponent Cues")
+  - Feature sensitivity analysis
+  - Retrieval-based evidence from similar training matchups
+
+If confidence is below the abstention threshold, switches to scouting mode
+but still shows retrieval evidence and role annotations.
 
 Reference: docs/PROJECT_BIBLE.md Section 7.2 (demo CLI),
-           docs/WEEK3_PLAN.md Task 6
+           docs/WEEK4_PLAN.md Task 3
 """
 
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +27,9 @@ import torch
 from turnzero.action_space import ACTION_TABLE, action90_to_lead_back
 from turnzero.data.dataset import Vocab, _encode_team
 from turnzero.models.transformer import ModelConfig, OTSTransformer
+from turnzero.tool.explain import compute_marginals, feature_sensitivity, format_marginals
+from turnzero.tool.lexicon import annotate_team
+from turnzero.tool.retrieval import RetrievalIndex
 from turnzero.uq.temperature import TemperatureScaler
 
 _EPS = 1e-12
@@ -115,6 +125,59 @@ def _format_plan(action_id: int, species_a: list[str]) -> str:
     )
 
 
+# ---------------------------------------------------------------------------
+# Query embedding extraction helper
+# ---------------------------------------------------------------------------
+
+
+@torch.no_grad()
+def _extract_query_embedding(
+    model: OTSTransformer,
+    team_a_tensor: torch.Tensor,
+    team_b_tensor: torch.Tensor,
+    device: torch.device,
+) -> np.ndarray:
+    """Extract the pooled (pre-head) embedding for a single query.
+
+    Replicates the model forward logic (embed -> concat -> encoder -> pool)
+    but stops before ``self.head``, mirroring the extract_embeddings logic
+    from retrieval.py for a single (1, 6, 8) input pair.
+
+    Args:
+        model: OTSTransformer, already on device and in eval mode.
+        team_a_tensor: (1, 6, 8) LongTensor on device.
+        team_b_tensor: (1, 6, 8) LongTensor on device.
+        device: torch device.
+
+    Returns:
+        (d_model,) float32 numpy array — the pooled embedding.
+    """
+    amp_ctx = (
+        torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+        if device.type == "cuda"
+        else nullcontext()
+    )
+
+    with amp_ctx:
+        emb_a = model._embed_team(team_a_tensor, side=0)
+        emb_b = model._embed_team(team_b_tensor, side=1)
+        tokens = torch.cat([emb_a, emb_b], dim=1)  # (1, 12, d)
+
+        if model.cfg.pool == "cls":
+            B = tokens.size(0)
+            cls = model.cls_token.expand(B, -1, -1)
+            tokens = torch.cat([cls, tokens], dim=1)
+
+        tokens = model.encoder(tokens)
+
+        if model.cfg.pool == "cls":
+            pooled = tokens[:, 0]
+        else:
+            pooled = tokens.mean(dim=1)  # (1, d_model)
+
+    return pooled.float().cpu().numpy()[0]  # (d_model,)
+
+
 @torch.no_grad()
 def run_demo(
     ensemble_dir: str | Path,
@@ -126,8 +189,10 @@ def run_demo(
     vocab_path: str | Path | None = None,
     tau: float = 0.04,
     top_k: int = 3,
+    index_path: str | Path | None = None,
+    retrieval_k: int = 10,
 ) -> dict:
-    """Run the demo coach tool.
+    """Run the demo coach tool with full explanations and retrieval evidence.
 
     Provide teams either as comma-separated species strings (team_a_str/team_b_str)
     or as OTS JSON files (team_a_ots/team_b_ots).
@@ -142,9 +207,14 @@ def run_demo(
         vocab_path: path to vocab.json (if None, uses ensemble_001/vocab.json)
         tau: abstention threshold for confidence
         top_k: number of top plans to show
+        index_path: path to pre-built RetrievalIndex (optional). If provided,
+            retrieval evidence is shown. The path should be the base path
+            (without .npz/.meta.json extensions).
+        retrieval_k: number of neighbors to retrieve (default 10)
 
     Returns:
-        dict with plans, probabilities, confidence, uncertainty metrics
+        dict with plans, probabilities, confidence, uncertainty metrics,
+        marginals, opponent_cues, sensitivity, and retrieval evidence
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     ensemble_dir = Path(ensemble_dir)
@@ -187,15 +257,32 @@ def run_demo(
     models = _load_ensemble(ensemble_dir, device)
     M = len(models)
 
+    # Extract query embedding from the first ensemble member (before deleting)
+    query_embedding = None
+    if index_path is not None:
+        query_embedding = _extract_query_embedding(
+            models[0], team_a_tensor, team_b_tensor, device
+        )
+
     member_probs = []
     for model in models:
-        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        with torch.autocast(
+            device_type=device.type,
+            dtype=torch.bfloat16,
+            enabled=device.type == "cuda",
+        ):
             logits = model(team_a_tensor, team_b_tensor)
         probs = torch.softmax(logits.float() / T, dim=-1).cpu().numpy()[0]
         member_probs.append(probs)
-        del model  # free VRAM for next member
 
-    # Clear all models from GPU
+    # --- Feature sensitivity (needs models still loaded) ---
+    sensitivity = feature_sensitivity(
+        models, team_a_tensor, team_b_tensor, T, device
+    )
+
+    # Free models from GPU
+    for model in models:
+        del model
     models.clear()
     torch.cuda.empty_cache()
 
@@ -221,6 +308,22 @@ def run_demo(
 
     abstain = confidence < tau
 
+    # --- Marginals ---
+    marginals = compute_marginals(p_bar)
+
+    # --- Opponent role annotations ---
+    opponent_cues = annotate_team(team_b_dict)
+
+    # --- Retrieval evidence ---
+    evidence = None
+    if index_path is not None and query_embedding is not None:
+        index = RetrievalIndex.load(index_path)
+        neighbors = index.query(query_embedding, k=retrieval_k)
+        evidence = index.evidence_summary(neighbors)
+
+    # -----------------------------------------------------------------------
+    # Build result dict
+    # -----------------------------------------------------------------------
     result = {
         "team_a": species_a,
         "team_b": species_b,
@@ -232,11 +335,21 @@ def run_demo(
         "n_ensemble_members": M,
         "abstain": abstain,
         "tau": tau,
+        "marginals": {
+            "lead_probs": marginals["lead_probs"].tolist(),
+            "bring_probs": marginals["bring_probs"].tolist(),
+            "lead_pair_probs": marginals["lead_pair_probs"].tolist(),
+        },
+        "opponent_cues": opponent_cues,
+        "sensitivity": sensitivity,
+        "evidence": evidence,
     }
 
+    # -----------------------------------------------------------------------
     # Pretty print
+    # -----------------------------------------------------------------------
     print("\n" + "=" * 70)
-    print("  TurnZero Coach — Turn-Zero Team Preview Advisor")
+    print("  TurnZero Coach -- Turn-Zero Team Preview Advisor")
     print("=" * 70)
     print(f"\n  Your Team (A):  {', '.join(species_a)}")
     print(f"  Opponent (B):   {', '.join(species_b)}")
@@ -256,6 +369,53 @@ def run_demo(
         for plan in plans:
             pct = plan["probability"] * 100
             print(f"  #{plan['rank']}  ({pct:5.2f}%)  {plan['description']}")
+
+    # --- Why These Leads (marginals) ---
+    print(f"\n  Why These Leads:")
+    print(format_marginals(marginals, species_a))
+
+    # --- Key Opponent Cues ---
+    print(f"\n  Key Opponent Cues:")
+    for ann in opponent_cues:
+        if ann["roles"]:
+            roles_str = ", ".join(ann["roles"])
+            print(f"    {ann['species']}: {roles_str}")
+        else:
+            print(f"    {ann['species']}: (no known role tags)")
+
+    # --- Feature Sensitivity ---
+    print(f"\n  Sensitivity:")
+    # Sort by KL descending, report the most influential
+    sorted_sens = sorted(sensitivity.items(), key=lambda x: x[1], reverse=True)
+    top_field = sorted_sens[0]
+    print(f"    Prediction depends most on opponent {top_field[0]} "
+          f"(+{top_field[1]:.3f} KL)")
+    for field_name, kl_val in sorted_sens[1:]:
+        print(f"    {field_name}: +{kl_val:.3f} KL")
+
+    # --- Retrieval Evidence ---
+    if evidence is not None and evidence.get("n_neighbors", 0) > 0:
+        n = evidence["n_neighbors"]
+        mean_sim = evidence["mean_similarity"]
+        print(f"\n  Similar Matchups (k={n} from training set, "
+              f"mean similarity={mean_sim:.3f}):")
+
+        # Top lead pairs from evidence
+        if evidence.get("lead_pair_freq"):
+            for lp in evidence["lead_pair_freq"][:3]:
+                pct = lp["fraction"] * 100
+                print(f"    Experts led {lp['lead_pair']} in "
+                      f"{pct:.0f}% of similar games")
+
+        # Top brought mons
+        if evidence.get("mon_bring_freq"):
+            top_bring = evidence["mon_bring_freq"][:3]
+            for mb in top_bring:
+                pct = mb["fraction"] * 100
+                print(f"    Experts brought {mb['species']} in "
+                      f"{pct:.0f}% of similar games")
+    elif index_path is not None:
+        print(f"\n  Similar Matchups: no neighbors found")
 
     print()
     return result

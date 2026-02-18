@@ -219,8 +219,12 @@ def calibrate_cmd(model_ckpt: str, val_split: str, out_dir: str) -> None:
               help="Abstention threshold for confidence (default 0.04).")
 @click.option("--top_k", default=3, type=int,
               help="Number of top plans to display (default 3).")
+@click.option("--index_path", default=None, type=click.Path(),
+              help="Path to pre-built RetrievalIndex (base path, no extension).")
+@click.option("--retrieval_k", default=10, type=int,
+              help="Number of retrieval neighbors to query (default 10).")
 def demo_cmd(ensemble_dir, calib, team_a, team_b, team_a_ots, team_b_ots,
-             vocab, tau, top_k):
+             vocab, tau, top_k, index_path, retrieval_k):
     """Run the turn-zero coach demo: predict top plans for a matchup."""
     from turnzero.tool.coach import run_demo
 
@@ -239,6 +243,8 @@ def demo_cmd(ensemble_dir, calib, team_a, team_b, team_a_ots, team_b_ots,
         vocab_path=vocab,
         tau=tau,
         top_k=top_k,
+        index_path=index_path,
+        retrieval_k=retrieval_k,
     )
 
 
