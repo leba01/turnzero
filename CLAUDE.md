@@ -5,11 +5,12 @@
 CS229 (Stanford ML) final project — a turn-zero OTS coach for Pokémon VGC Gen 9.
 Predicts expert lead-2 + bring-4/back-2 as a joint 90-way action from two Open Team Sheets.
 
-**Current phase**: Week 2 — Model + Training Loop + Eval Harness
+**Current phase**: Week 3 — UQ Stack + Calibration + Selective Prediction
 
 **Key references**:
 - [docs/PROJECT_BIBLE.md](docs/PROJECT_BIBLE.md) — full spec (v4), schemas, contracts, acceptance criteria.
-- [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) — detailed Week 2 build plan with setup instructions.
+- [docs/WEEK3_PLAN.md](docs/WEEK3_PLAN.md) — detailed Week 3 build plan.
+- [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) — Week 2 build plan (completed).
 
 ## Week 1 Status (DONE)
 
@@ -26,19 +27,30 @@ Full dataset downloaded (BO3 2024 + BO3 2025 + Ladder 2024) and pipeline re-run.
 - ~80% bring4_observed, ~96.8% OTS completeness, all 90 actions in every split
 - Integrity validation: **PASSED**
 
-## Week 2 Progress
+## Week 2 Status (DONE)
 
-Build end-to-end: Dataset → Baselines → Transformer → Training → Eval → Plots.
-See [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) for the full task breakdown.
+Full train-eval loop: Dataset → Baselines → Transformer → Training → Eval → Plots.
+Single transformer (d=128, L=4, H=4, 1.16M params) beats both baselines.
 
-- [x] Task 0: Download full dataset + re-run pipeline
-- [x] Task 1: PyTorch Dataset + DataLoader
-- [x] Task 2: Baselines (popularity, logistic regression)
-- [x] Task 3: Eval harness (metrics + plots)
-- [x] Task 4: Transformer set model
-- [x] Task 5: Training loop
-- [x] Task 6: Config system
-- [ ] Task 7: Paper-ready plotting pipeline
+**Best numbers (Regime A test, overall):**
+- Action-90 Top-1/3/5: 5.5% / 14.0% / 20.7% (vs 1.3% / 3.9% / 6.3% popularity)
+- Lead-2 Top-1/3: 18.3% / 41.0%
+- NLL: 4.105 (vs 4.497 popularity, 4.580 logistic)
+- ECE: 0.016 (well-calibrated for single model)
+
+## Week 3 Progress
+
+UQ stack + calibration + selective prediction. This is what turns "classifier" into
+"calibrated decision system." See [docs/WEEK3_PLAN.md](docs/WEEK3_PLAN.md) and
+[docs/CUR_TASK_SPLIT.md](docs/CUR_TASK_SPLIT.md) for the full task breakdown.
+
+- [ ] Task 0: Temperature scaling (fit T on val, save artifact)
+- [ ] Task 1: Deep ensembles (train 5 members, seeds 42/137/256/512/777)
+- [ ] Task 2: Risk-coverage curves (both risk definitions)
+- [ ] Task 3: Cluster-aware bootstrap CIs (B=1000)
+- [ ] Task 4: Regime B (OOD) evaluation
+- [ ] Task 5: Comprehensive Week 3 plots + tables
+- [ ] Task 6: Demo tool skeleton (stretch)
 
 ## Repository Info
 
