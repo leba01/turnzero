@@ -1,78 +1,73 @@
-# Week 3 Parallel Task Split
+# Week 4 Parallel Task Split
 
 ## Dependency Graph
 
 ```
           ┌────────────────┐
-          │  Week 2 Done:  │
-          │ best.pt, vocab,│
-          │ eval harness,  │
-          │ regime_a splits│
+          │  Week 3 Done:  │
+          │ ensemble+calib,│
+          │ risk-coverage, │
+          │ bootstrap CIs, │
+          │ demo skeleton  │
           └───────┬────────┘
                   │
     ┌─────────────┼─────────────┐
     ▼             ▼             ▼
 ┌────────┐  ┌──────────┐  ┌──────────┐
 │  1A    │  │   1B     │  │   1C     │
-│  Temp  │  │ Risk-Cov │  │ Ensemble │
-│ Scale  │  │ +Bootstrap│  │  Infra  │
-│ Module │  │ (code)   │  │ +Configs │
+│ Stress │  │ Retrieval│  │ Explain  │
+│  Test  │  │  Index   │  │ Modules  │
+│  Code  │  │  Code    │  │  Code    │
 └───┬────┘  └────┬─────┘  └────┬─────┘
     │             │             │
-    │         (code ready,      │
-    │          needs probs)     │
-    ▼             │             ▼
-┌────────┐        │       ┌──────────┐
-│  2A    │        │       │   2B     │
-│Run Temp│        │       │ Train 5  │
-│ Scale  │        │       │ Members  │
-│(2 min) │        │       │(~50 min) │
-└───┬────┘        │       └────┬─────┘
+    ▼             ▼             │
+┌────────┐  ┌──────────┐       │
+│  2A    │  │   2B     │       │
+│Run Stress│ │Build Index│      │
+│ Test    │  │(embed    │       │
+│(~30min) │  │ train)   │       │
+└───┬────┘  └────┬─────┘       │
     │             │             │
     └─────────────┼─────────────┘
                   │
             ┌─────┴─────┐
             │    3A     │
-            │ Ensemble  │
-            │ Eval +    │
-            │ Risk-Cov +│
-            │ Bootstrap │
-            │ + OOD     │
+            │ Integrate │
+            │ into Demo │
+            │ + Final   │
+            │ Figures   │
             └─────┬─────┘
                   │
             ┌─────┴─────┐
             │    3B     │
-            │  Week 3   │
-            │  Plots +  │
-            │  Demo     │
+            │  Paper    │
+            │  Draft    │
             └───────────┘
 ```
 
 **Wave 1** — three fully independent agents (code only, no GPU):
-- **1A** creates `turnzero/uq/temperature.py` + `turnzero/uq/__init__.py` + CLI `calibrate` command
-- **1B** creates `turnzero/eval/risk_coverage.py` + `turnzero/eval/bootstrap.py`
-- **1C** creates `turnzero/uq/ensemble.py` + `configs/ensemble/member_{001..005}.yaml`
+- **1A** creates `turnzero/eval/robustness.py` + `scripts/run_stress_test.py`
+- **1B** creates `turnzero/tool/retrieval.py` (embedding extraction + index + evidence)
+- **1C** creates `turnzero/tool/explain.py` + `turnzero/tool/lexicon.py` (marginals, role lexicon, feature sensitivity)
 
-**Wave 2** — GPU-bound, can overlap (temp scaling finishes in minutes):
-- **2A** runs temperature scaling on existing best.pt
-- **2B** trains 5 ensemble members (sequential GPU, ~10 min each)
+**Wave 2** — GPU-bound, can overlap:
+- **2A** runs moves-hidden stress test (ensemble × 6 masking levels, ~30 min GPU)
+- **2B** extracts train set embeddings + builds retrieval index (~5 min GPU)
 
-**Wave 3** — evaluation + final outputs:
-- **3A** ensemble eval + risk-coverage + bootstrap CIs + OOD eval
-- **3B** comprehensive plots + demo tool skeleton
+**Wave 3** — integration + paper:
+- **3A** integrates retrieval + explanations into demo tool, generates final paper figures
+- **3B** paper draft / structured report
 
 ---
 
 ## Shared Interfaces (ALL agents must respect these)
 
-### Existing interfaces (from Week 2 — do NOT change)
+### Existing interfaces (from Weeks 2-3 — do NOT change)
 
 ```python
-# Model loading (turnzero/models/train.py)
+# Model loading
 ckpt = torch.load("best.pt", map_location=device, weights_only=False)
-# ckpt keys: model_state_dict, vocab_sizes, model_config, config, epoch, val_nll
-
-model = OTSTransformer(vocab_sizes, ModelConfig(**model_config))
+model = OTSTransformer(ckpt["vocab_sizes"], ModelConfig(**ckpt["model_config"]))
 model.load_state_dict(ckpt["model_state_dict"])
 
 # Forward pass → logits (NOT probs)
@@ -80,46 +75,76 @@ logits = model(team_a, team_b)  # (B, 90) float
 
 # Eval harness
 from turnzero.eval.metrics import compute_metrics
-results = compute_metrics(probs, action90_true, lead2_true, bring4_observed, is_mirror)
+
+# Ensemble prediction
+from turnzero.uq.ensemble import ensemble_predict, load_ensemble_predictions
+
+# Temperature scaling
+from turnzero.uq.temperature import TemperatureScaler
+
+# Dataset: team tensors are (6, 8) LongTensor
+# Fields: [species=0, item=1, ability=2, tera=3, move0=4, move1=5, move2=6, move3=7]
+# UNK = index 0 for all field types
+
+# Demo tool
+from turnzero.tool.coach import run_demo
 ```
 
-### New interfaces for Week 3
+### New interfaces for Week 4
 
-#### Temperature scaling artifact (1A defines, 2A produces, 3A consumes)
+#### Masking contract (1A defines, 2A consumes)
 
+```python
+# turnzero/eval/robustness.py
+
+MASK_CONFIGS = {
+    "none":            [],                    # baseline — no masking
+    "moves_2":         [4, 5],                # hide 2 random moves per mon
+    "moves_4":         [4, 5, 6, 7],          # hide all moves
+    "items":           [1],                    # hide items
+    "tera":            [3],                    # hide tera types
+    "moves_items":     [1, 4, 5, 6, 7],       # hide moves + items
+    "all_but_species": [1, 2, 3, 4, 5, 6, 7], # species only
+}
+
+def mask_batch(
+    batch: dict,
+    mask_config: str,
+    rng: np.random.Generator | None = None,
+) -> dict:
+    """Clone batch and zero out specified field columns in team tensors.
+
+    For 'moves_2', randomly select 2 of 4 move columns per mon using rng.
+    For all others, zero out the specified columns entirely.
+    """
+```
+
+Save as: `outputs/eval/stress_test.json`
 ```json
-// outputs/calibration/run_001/temperature.json
 {
-  "T": 1.87,
-  "method": "lbfgs_nll",
-  "val_nll_before": 4.1096,
-  "val_nll_after": 4.0523,
-  "val_ece_before": 0.0162,
-  "val_ece_after": 0.0041,
-  "model_ckpt": "outputs/runs/run_001/best.pt"
+    "none": {"overall/top1_action90": 0.064, ...},
+    "moves_2": {...},
+    "moves_4": {...},
+    ...
 }
 ```
 
-Usage: `calibrated_probs = softmax(logits / T)`
-
-#### Ensemble prediction contract (1C defines, 2B produces, 3A consumes)
+#### Embedding extraction contract (1B defines, 2B produces)
 
 ```python
-# turnzero/uq/ensemble.py
+# turnzero/tool/retrieval.py
 
-def ensemble_predict(
-    ckpt_paths: list[str],    # 5 checkpoint paths
+def extract_embeddings(
+    model: OTSTransformer,
     loader: DataLoader,
     device: torch.device,
-    temperature: float = 1.0,  # apply after averaging logits
-) -> dict:
-    """
+) -> dict[str, np.ndarray]:
+    """Extract pooled (pre-head) representations.
+
+    Replicates model forward up to mean-pool, skips self.head.
+
     Returns:
-        "probs": (N, 90) float — averaged calibrated probs
-        "member_probs": (M, N, 90) float — individual member probs
-        "entropy": (N,) float — H(p_bar), total uncertainty
-        "mi": (N,) float — mutual information (epistemic)
-        "confidence": (N,) float — max p_bar per example
+        "embeddings": (N, d_model) float32
         "action90_true": (N,) int
         "lead2_true": (N,) int
         "bring4_observed": (N,) bool
@@ -127,477 +152,355 @@ def ensemble_predict(
     """
 ```
 
-Save as: `outputs/ensemble/ensemble_predictions.npz`
+Save as: `outputs/retrieval/train_embeddings.npz`
 
-#### Risk-coverage contract (1B defines, 3A produces)
-
-```python
-# turnzero/eval/risk_coverage.py
-
-def risk_coverage_curve(
-    probs: np.ndarray,       # (N, 90) or (N, 15)
-    labels: np.ndarray,      # (N,) int
-    k: int = 1,              # top-k for risk definition
-    n_thresholds: int = 200,
-) -> dict:
-    """
-    Returns:
-        "coverage": (T,) float — fraction not abstained at each threshold
-        "risk": (T,) float — 1 - topk_acc on non-abstained
-        "thresholds": (T,) float
-        "aurc": float — area under risk-coverage curve
-        "operating_points": {
-            "95": {"threshold": ..., "risk": ..., "coverage": 0.95},
-            "80": {...},
-            "60": {...},
-        }
-    """
-```
-
-#### Bootstrap CI contract (1B defines, 3A produces)
+#### Retrieval index contract (1B defines, 3A consumes)
 
 ```python
-# turnzero/eval/bootstrap.py
+class RetrievalIndex:
+    """Brute-force cosine similarity index over training embeddings."""
 
-def cluster_bootstrap_ci(
-    probs: np.ndarray,
-    action90_true: np.ndarray,
-    lead2_true: np.ndarray,
-    bring4_observed: np.ndarray,
-    is_mirror: np.ndarray,
-    cluster_ids: np.ndarray,   # core_cluster_a per example
-    n_bootstrap: int = 1000,
-    ci_level: float = 0.95,
-    seed: int = 42,
-) -> dict[str, dict[str, float]]:
-    """
-    Returns: {
-        "overall/top1_action90": {"mean": ..., "lo": ..., "hi": ..., "std": ...},
-        "overall/top3_action90": {...},
+    def __init__(self, embeddings: np.ndarray, metadata: list[dict]):
         ...
-    }
+
+    def query(
+        self,
+        query_embedding: np.ndarray,  # (d_model,) single query
+        k: int = 20,
+    ) -> list[dict]:
+        """Return top-k nearest neighbors with similarity scores."""
+
+    def evidence_summary(self, neighbors: list[dict]) -> dict:
+        """Aggregate action frequencies, top lead pairs, top bring mons."""
+
+    def save(self, path: str | Path) -> None: ...
+
+    @classmethod
+    def load(cls, path: str | Path) -> "RetrievalIndex": ...
+```
+
+#### Explanations contract (1C defines, 3A consumes)
+
+```python
+# turnzero/tool/explain.py
+
+def compute_marginals(probs_90: np.ndarray) -> dict:
+    """From (90,) or (N, 90) probs, extract per-mon marginals.
+
+    Returns:
+        "lead_probs": (6,) — P(mon i is in lead pair)
+        "bring_probs": (6,) — P(mon i is in bring-4)
+        "lead_pair_probs": (15,) — P(lead pair j)
+    """
+
+def feature_sensitivity(
+    models: list,
+    team_a: torch.Tensor,     # (1, 6, 8)
+    team_b: torch.Tensor,     # (1, 6, 8)
+    temperature: float,
+    device: torch.device,
+) -> dict[str, float]:
+    """Mask each field type on team_b, measure KL from baseline.
+
+    Returns: {"species": kl, "items": kl, "moves": kl, "ability": kl, "tera": kl}
     """
 ```
 
-Save as: `outputs/eval/bootstrap_cis.json`
+```python
+# turnzero/tool/lexicon.py
+
+ROLE_LEXICON: dict[str, set[str]]  # tag → set of moves/items/abilities
+
+def annotate_team(team_dict: dict) -> list[dict]:
+    """Return per-mon role annotations.
+
+    Returns: [{"species": "Incineroar", "roles": ["fake_out", "intimidate", ...]}, ...]
+    """
+```
 
 ---
 
 ## Wave 1 Prompts
 
-### Terminal 1A: Temperature Scaling Module
+### Terminal 1A: Moves-Hidden Stress Test
 
 ```
-You are working on the TurnZero project (CS229 final project) in /home/walter/CS229/turnzero.
+You are working on the TurnZero project in /home/walter/CS229/turnzero.
 The venv is at .venv/ (Python 3.12, PyTorch 2.10+cu126).
 
 Read these files first:
 - CLAUDE.md
-- docs/WEEK3_PLAN.md (Task 0)
-- docs/PROJECT_BIBLE.md (section 4.2 — calibration spec)
-- turnzero/models/train.py (understand validate() and checkpoint format)
-- turnzero/models/transformer.py (ModelConfig)
-- turnzero/eval/metrics.py (compute_metrics, _ece)
-- turnzero/cli.py (understand click CLI style)
+- docs/WEEK4_PLAN.md (Task 0)
+- docs/PROJECT_BIBLE.md (Section 6.3 — moves-hidden stress test)
+- turnzero/data/dataset.py (understand _encode_team, field layout)
+- turnzero/uq/ensemble.py (ensemble_predict, _collect_probs)
+- turnzero/eval/metrics.py (compute_metrics)
+- turnzero/eval/plots.py (_save_fig, style conventions)
 
-YOUR TASK: Create the temperature scaling module and CLI command.
+YOUR TASK: Create the stress test infrastructure.
 
-1. Create turnzero/uq/__init__.py (empty or re-exports)
+1. Create turnzero/eval/robustness.py:
 
-2. Create turnzero/uq/temperature.py:
+   MASK_CONFIGS dict mapping config names to field column indices.
 
-   class TemperatureScaler:
-       """Post-hoc temperature scaling (Guo et al., 2017).
+   mask_batch(batch, mask_config, rng) → batch with specified fields zeroed out.
+   - Input batch has "team_a" and "team_b" keys, each (B, 6, 8) LongTensor
+   - Clone the tensors before modifying (don't mutate originals)
+   - For "moves_2": randomly pick 2 of columns [4,5,6,7] per mon per example
+   - For all others: zero out all specified columns
+   - Zero = UNK index = 0
 
-       Fits a single scalar T > 0 on validation logits to minimize NLL.
-       At inference: calibrated_probs = softmax(logits / T)
-       """
+   run_stress_test(ckpt_paths, loader, device, temperature, mask_configs)
+     → dict[str, dict] mapping mask config name to compute_metrics result
+   - For each mask config: modify batches before forward pass, collect probs,
+     compute metrics on the modified predictions
+   - This is basically ensemble_predict but with masking injected per batch
 
-       def __init__(self):
-           self.T: float = 1.0
+   plot_stress_test(results, out_dir)
+   - Line plot: x-axis = masking level (ordered by severity),
+     y-axis = top-1, top-3, top-5 accuracy (action90)
+   - Second plot: NLL + mean confidence vs masking level
+   - Use _save_fig pattern from plots.py
 
-       def fit(self, logits: np.ndarray, labels: np.ndarray) -> dict:
-           """Fit T on validation set using scipy.optimize.minimize (L-BFGS-B).
-
-           Args:
-               logits: (N, 90) raw logits from model
-               labels: (N,) ground truth action90 ids
-
-           Returns:
-               dict with T, val_nll_before, val_nll_after, val_ece_before, val_ece_after
-           """
-
-       def calibrate(self, logits: np.ndarray) -> np.ndarray:
-           """Apply temperature scaling: softmax(logits / T).
-
-           Returns: (N, 90) calibrated probabilities.
-           """
-
-       def save(self, path: str) -> None:
-           """Save temperature.json artifact."""
-
-       @classmethod
-       def load(cls, path: str) -> "TemperatureScaler":
-           """Load from temperature.json."""
-
-   Implementation notes:
-   - Optimize T via scipy.optimize.minimize_scalar or L-BFGS-B on a single param
-   - Objective: mean NLL = mean(-log softmax(logits / T)[y_true])
-   - Bounds: T in [0.01, 50.0] (must be positive)
-   - Compute ECE before and after using the _ece helper logic from eval/metrics.py
-   - T typically lands in range [1.0, 3.0] for neural nets
-
-3. Also create a helper function in temperature.py:
-
-   def collect_logits(model, loader, device) -> tuple[np.ndarray, dict]:
-       """Run inference, return raw logits (N, 90) and labels dict.
-
-       Like validate() in train.py but returns logits instead of probs.
-       """
-
-4. Add CLI command to turnzero/cli.py:
-
-   @cli.command("calibrate")
-   @click.option("--model_ckpt", required=True, ...)
-   @click.option("--val_split", required=True, ...)
-   @click.option("--out_dir", required=True, ...)
-   def calibrate_cmd(...):
-       """Fit temperature scaling on validation set."""
+2. Create scripts/run_stress_test.py:
+   - Load ensemble checkpoints + temperature
+   - Build test DataLoader
+   - Run stress test across all masking configs
+   - Save results JSON + plots
+   - Print summary table
 
 DO NOT touch any files other than:
-- turnzero/uq/__init__.py (create)
-- turnzero/uq/temperature.py (create)
-- turnzero/cli.py (add calibrate command only — do not modify existing commands)
+- turnzero/eval/robustness.py (create)
+- scripts/run_stress_test.py (create)
 ```
 
-### Terminal 1B: Risk-Coverage + Bootstrap
+### Terminal 1B: Retrieval Index + Evidence
 
 ```
-You are working on the TurnZero project (CS229 final project) in /home/walter/CS229/turnzero.
+You are working on the TurnZero project in /home/walter/CS229/turnzero.
+The venv is at .venv/ (Python 3.12, PyTorch 2.10+cu126).
+
+Read these files first:
+- CLAUDE.md
+- docs/WEEK4_PLAN.md (Task 1)
+- docs/PROJECT_BIBLE.md (Section 5.1 — retrieval-based evidence)
+- turnzero/models/transformer.py (understand forward pass, mean-pool location)
+- turnzero/uq/ensemble.py (_load_model_from_ckpt, _collect_probs pattern)
+- turnzero/data/dataset.py (VGCDataset, _encode_team)
+- turnzero/data/io_utils.py (read_jsonl)
+- turnzero/action_space.py (ACTION_TABLE, action90_to_lead_back)
+
+YOUR TASK: Create the retrieval index module.
+
+1. Create turnzero/tool/retrieval.py:
+
+   extract_embeddings(model, loader, device) → dict
+   - Run the forward pass but stop after mean-pool, before self.head
+   - Use a forward hook on model.encoder to capture the output, then
+     mean-pool manually. Or replicate the model's forward logic up to pool.
+   - Return: embeddings (N, d_model), plus action90_true, lead2_true, etc.
+
+   class RetrievalIndex:
+     __init__(self, embeddings, metadata)
+     - L2-normalize embeddings for cosine similarity
+     - metadata: list of dicts with action90_id, lead2_idx, species_a, species_b, etc.
+
+     query(self, query_embedding, k=20) → list[dict]
+     - Cosine similarity via matrix multiply (brute force)
+     - Return top-k neighbors with similarity score + metadata
+
+     evidence_summary(self, neighbors) → dict
+     - Count action90 frequencies in neighbors → top actions
+     - Count lead pair frequencies → top lead pairs
+     - Count per-mon bring frequency → which mons appear most
+     - Return structured summary dict
+
+     save(self, path) / load(cls, path) — np.savez / np.load
+
+   Implementation notes:
+   - The model uses mean-pool: pooled = encoder_output.mean(dim=1)
+   - d_model = 128 (from config), so embeddings are 128-dim
+   - Train set is ~246K examples. 246K × 128 × 4 bytes ≈ 126 MB — fits in RAM
+   - Need metadata per example: action90_id, species names (for display)
+   - Load species names from the raw JSONL examples in parallel
+
+DO NOT touch any files other than:
+- turnzero/tool/retrieval.py (create)
+```
+
+### Terminal 1C: Explanation Modules
+
+```
+You are working on the TurnZero project in /home/walter/CS229/turnzero.
 The venv is at .venv/ (Python 3.12).
 
 Read these files first:
 - CLAUDE.md
-- docs/WEEK3_PLAN.md (Tasks 2 + 3)
-- docs/PROJECT_BIBLE.md (sections 4.4 — selective prediction, 6.4 — bootstrap CIs)
-- turnzero/eval/metrics.py (understand compute_metrics, _topk_accuracy, _nll, _ece)
-- turnzero/eval/plots.py (understand _save_fig pattern and style conventions)
+- docs/WEEK4_PLAN.md (Task 2)
+- docs/PROJECT_BIBLE.md (Sections 5.2, 5.4, 5.5)
+- turnzero/action_space.py (ACTION_TABLE — maps action90 to (lead2, back2))
+- turnzero/eval/metrics.py (_marginalize_to_lead2, ACTION90_TO_LEAD2)
+- turnzero/tool/coach.py (understand the demo output format)
 
-YOUR TASK: Create risk-coverage curves and cluster-aware bootstrap CIs.
+YOUR TASK: Create explanation modules.
 
-1. Create turnzero/eval/risk_coverage.py:
+1. Create turnzero/tool/lexicon.py:
 
-   def risk_coverage_curve(
-       probs: np.ndarray,       # (N, C) predicted probabilities
-       labels: np.ndarray,      # (N,) ground truth
-       k: int = 1,              # 1 for top-1 risk, 3 for top-3 risk
-       n_thresholds: int = 200,
-   ) -> dict:
-       """Sweep confidence threshold and compute coverage vs risk.
+   ROLE_LEXICON: dict mapping role tags to sets of moves/items/abilities.
+   Build a comprehensive lexicon for Gen 9 VGC:
 
-       Confidence = max_y p(y|x).
-       Coverage = fraction where confidence >= threshold.
-       Risk = 1 - top_k_accuracy on the non-abstained subset.
+   Roles to cover:
+   - speed_control: Tailwind, Trick Room, Icy Wind, Electroweb, Scary Face, etc.
+   - redirection: Follow Me, Rage Powder
+   - fake_out: Fake Out
+   - priority: Extreme Speed, Sucker Punch, Aqua Jet, Grassy Glide, etc.
+   - spread: Heat Wave, Muddy Water, Rock Slide, Dazzling Gleam, Earthquake, etc.
+   - protect: Protect, Detect, Wide Guard, Quick Guard
+   - disruption: Taunt, Encore, Will-O-Wisp, Thunder Wave, Spore, Sleep Powder, etc.
+   - weather_setter: Rain Dance, Sunny Day, Sandstorm, etc.
+   - terrain_setter: Electric Terrain, Grassy Terrain, Psychic Terrain, Misty Terrain
+   - setup: Swords Dance, Nasty Plot, Calm Mind, Dragon Dance, etc.
+   - recovery: Recover, Roost, Moonlight, Synthesis, etc.
+   - choice_item: Choice Scarf, Choice Band, Choice Specs
+   - sash: Focus Sash
+   - berry: Sitrus Berry, Lum Berry
 
-       Returns dict with:
-           coverage: (T,) array
-           risk: (T,) array
-           thresholds: (T,) array
-           aurc: float (area under risk-coverage curve, trapezoidal)
-           operating_points: dict with keys "95", "80", "60" giving
-               the threshold, risk, and exact coverage at those levels.
-       """
+   Also include ability-based roles:
+   - intimidate: Intimidate
+   - weather_ability: Drizzle, Drought, Sand Stream, Snow Warning
+   - terrain_ability: Electric Surge, Grassy Surge, Psychic Surge, Misty Surge
 
-   def plot_risk_coverage(
-       curves: dict[str, dict],  # {"Model A": rc_dict, "Model B": rc_dict}
-       out_path: str | Path,
-       title: str = "",
-       risk_label: str = "Risk (1 - Top-1 Acc)",
-   ) -> None:
-       """Multi-model risk-coverage plot.
+   REVERSE_LEXICON: dict mapping individual move/item/ability → set of role tags
 
-       One line per model. X-axis = coverage (1.0 to 0.0, reversed).
-       Y-axis = risk. Include AURC in legend labels.
-       Save PNG + PDF at 300 DPI (use _save_fig pattern from plots.py).
-       """
+   annotate_team(team_dict) → list of per-mon annotation dicts
+   - For each mon, collect all role tags from its moves, item, and ability
+   - Return: [{"species": ..., "roles": [sorted list of tags]}, ...]
 
-2. Create turnzero/eval/bootstrap.py:
+2. Create turnzero/tool/explain.py:
 
-   def cluster_bootstrap_ci(
-       probs: np.ndarray,          # (N, 90)
-       action90_true: np.ndarray,  # (N,)
-       lead2_true: np.ndarray,     # (N,)
-       bring4_observed: np.ndarray,# (N,) bool
-       is_mirror: np.ndarray,      # (N,) bool
-       cluster_ids: np.ndarray,    # (N,) str or int — core_cluster_a per example
-       n_bootstrap: int = 1000,
-       ci_level: float = 0.95,
-       seed: int = 42,
-   ) -> dict[str, dict[str, float]]:
-       """Cluster-aware bootstrap CIs for all metrics.
+   compute_marginals(probs_90) → dict
+   - Input: (90,) single example or (N, 90) batch
+   - Build a (90, 6) binary matrix: LEAD_MASK[a, i] = 1 if mon i is in leads of action a
+   - Build a (90, 6) binary matrix: BRING_MASK[a, i] = 1 if mon i is in bring-4 of action a
+   - lead_probs = probs @ LEAD_MASK → (6,) or (N, 6)
+   - bring_probs = probs @ BRING_MASK → (6,) or (N, 6)
+   - Also return the 15-way lead pair probs (reuse _marginalize_to_lead2 logic)
 
-       Resampling strategy:
-       - Get unique cluster IDs
-       - For each bootstrap iteration:
-         * Sample cluster IDs with replacement
-         * Gather all examples belonging to sampled clusters
-         * Compute all metrics via compute_metrics()
-       - Report percentile CIs
+   format_marginals(marginals, species_names) → str
+   - Pretty-print: "P(Incineroar leads) = 62%, P(Rillaboom leads) = 48%, ..."
+   - Sort by probability descending
 
-       Returns: {
-           "overall/top1_action90": {"mean": ..., "lo": ..., "hi": ..., "std": ...},
-           ...
-       }
-       """
-
-   Notes:
-   - Import compute_metrics from turnzero.eval.metrics
-   - B=1000 iterations, percentile method (alpha/2 and 1-alpha/2)
-   - This will be ~10 min compute for 1000 iterations — print progress every 100
-   - Use numpy random Generator with seed for reproducibility
+   feature_sensitivity(models, team_a_tensor, team_b_tensor, temperature, device) → dict
+   - Baseline: run ensemble forward → p_base (90,)
+   - For each field group (species=[0], items=[1], ability=[2], tera=[3], moves=[4,5,6,7]):
+     * Clone team_b, zero out those columns
+     * Run ensemble forward → p_masked (90,)
+     * Compute KL(p_base || p_masked) = sum(p_base * log(p_base / p_masked))
+   - Return: {"species": kl, "items": kl, "ability": kl, "tera": kl, "moves": kl}
+   - Higher KL = prediction depends more on that field type
 
 DO NOT touch any files other than:
-- turnzero/eval/risk_coverage.py (create)
-- turnzero/eval/bootstrap.py (create)
-```
-
-### Terminal 1C: Ensemble Infrastructure + Configs
-
-```
-You are working on the TurnZero project (CS229 final project) in /home/walter/CS229/turnzero.
-The venv is at .venv/ (Python 3.12, PyTorch 2.10+cu126, RTX 4080 Super).
-
-Read these files first:
-- CLAUDE.md
-- docs/WEEK3_PLAN.md (Task 1)
-- docs/PROJECT_BIBLE.md (section 4.1 — deep ensembles)
-- turnzero/models/train.py (understand train(), validate(), checkpoint format)
-- turnzero/models/transformer.py (OTSTransformer, ModelConfig)
-- turnzero/data/dataset.py (build_dataloaders, Vocab)
-- configs/transformer_base.yaml
-
-YOUR TASK: Create ensemble training infrastructure and prediction code.
-
-1. Create configs/ensemble/ directory with 5 YAML configs:
-   - member_001.yaml through member_005.yaml
-   - Identical to transformer_base.yaml EXCEPT training.seed:
-     001→42, 002→137, 003→256, 004→512, 005→777
-   - All other hyperparameters identical
-
-2. Create turnzero/uq/ensemble.py:
-
-   def ensemble_predict(
-       ckpt_paths: list[str | Path],
-       loader: DataLoader,
-       device: torch.device,
-       temperature: float = 1.0,
-   ) -> dict[str, np.ndarray]:
-       """Load M checkpoints, run inference, return averaged predictions.
-
-       For each checkpoint:
-       - Load model from ckpt
-       - Run forward pass on all batches
-       - Collect logits
-
-       Then:
-       - Average softmax(logits_m / T) across M members
-       - Compute uncertainty decomposition
-
-       Returns dict with keys:
-           "probs": (N, 90) — averaged calibrated probs p_bar
-           "member_probs": (M, N, 90) — per-member probs
-           "entropy": (N,) — H(p_bar), predictive entropy
-           "member_entropy": (N,) — mean H(p_m), aleatoric proxy
-           "mi": (N,) — H(p_bar) - mean H(p_m), epistemic (mutual info)
-           "confidence": (N,) — max p_bar per example
-           "action90_true": (N,) int
-           "lead2_true": (N,) int
-           "bring4_observed": (N,) bool
-           "is_mirror": (N,) bool
-       """
-
-   def save_ensemble_predictions(preds: dict, out_path: str | Path):
-       """Save to .npz for later analysis."""
-       np.savez(out_path, **preds)
-
-   def load_ensemble_predictions(path: str | Path) -> dict:
-       """Load from .npz."""
-
-   Implementation notes:
-   - Load each checkpoint exactly like evaluate_checkpoint does in train.py
-   - Use @torch.no_grad() and model.eval()
-   - Process one model at a time to avoid OOM (don't load all 5 simultaneously)
-   - Entropy: H(p) = -sum(p * log(p + eps))
-   - Print progress: "Ensemble member 1/5 ..."
-
-3. Create a helper script scripts/train_ensemble.sh:
-   ```bash
-   #!/bin/bash
-   # Train all 5 ensemble members sequentially
-   set -e
-   for i in 001 002 003 004 005; do
-     echo "=== Training ensemble member $i ==="
-     turnzero train \
-       --config configs/ensemble/member_${i}.yaml \
-       --out_dir outputs/runs/ensemble_${i}
-   done
-   echo "=== All 5 members trained ==="
-   ```
-
-DO NOT touch any files other than:
-- configs/ensemble/member_001.yaml through member_005.yaml (create)
-- turnzero/uq/ensemble.py (create)
-- scripts/train_ensemble.sh (create)
-
-Do NOT modify turnzero/uq/__init__.py (another agent creates it).
-Do NOT modify turnzero/models/train.py.
+- turnzero/tool/lexicon.py (create)
+- turnzero/tool/explain.py (create)
 ```
 
 ---
 
 ## Wave 2 Prompts
 
-### Terminal 2A: Run Temperature Scaling
+### Terminal 2A: Run Stress Test
 
 ```
-You are working on the TurnZero project (CS229 final project) in /home/walter/CS229/turnzero.
+You are working on the TurnZero project in /home/walter/CS229/turnzero.
 
-Read CLAUDE.md and docs/WEEK3_PLAN.md first.
+Read CLAUDE.md and docs/WEEK4_PLAN.md first.
 
-YOUR TASK: Run temperature scaling on the existing single model.
+YOUR TASK: Run the moves-hidden stress test.
 
-1. Run the calibrate CLI command:
-   turnzero calibrate \
-     --model_ckpt outputs/runs/run_001/best.pt \
-     --val_split data/assembled/regime_a/val.jsonl \
-     --out_dir outputs/calibration/run_001
+1. Run: .venv/bin/python scripts/run_stress_test.py
 
-2. Verify the output:
-   - Check outputs/calibration/run_001/temperature.json exists
-   - Print the fitted T value and before/after NLL + ECE
-   - Sanity check: T should be > 1.0 (neural nets are typically overconfident)
+2. Verify outputs:
+   - outputs/eval/stress_test.json exists with metrics for all masking levels
+   - outputs/plots/week4/stress_test_degradation.{png,pdf}
+   - outputs/plots/week4/stress_test_confidence.{png,pdf}
 
-3. Generate a before/after reliability diagram:
-   - Run inference on test set with and without temperature scaling
-   - Plot both side by side or overlay
-   - Save to outputs/plots/week3/reliability_temp_comparison.{png,pdf}
+3. Print the summary table and verify:
+   - Graceful degradation (not cliff) as more fields are hidden
+   - Species-only should still beat random (1.1% top-1)
+   - NLL should increase monotonically with masking severity
 
 DO NOT modify any source code. This is a run + analysis task.
 ```
 
-### Terminal 2B: Train Ensemble Members
+### Terminal 2B: Build Retrieval Index
 
 ```
-You are working on the TurnZero project (CS229 final project) in /home/walter/CS229/turnzero.
+You are working on the TurnZero project in /home/walter/CS229/turnzero.
 
-Read CLAUDE.md and docs/WEEK3_PLAN.md first.
+Read CLAUDE.md and docs/WEEK4_PLAN.md first.
 
-YOUR TASK: Train all 5 ensemble members.
+YOUR TASK: Extract training embeddings and build retrieval index.
 
-1. Run the ensemble training script:
-   bash scripts/train_ensemble.sh
+1. Write a small runner script (scripts/build_retrieval_index.py) that:
+   - Loads ensemble member 1 (or the single model)
+   - Extracts pooled embeddings for all training examples
+   - Also loads species names from train.jsonl for metadata
+   - Builds a RetrievalIndex and saves it
 
-   This trains 5 identical-architecture transformers with different seeds.
-   Each member takes ~10 min on the RTX 4080S. Total ~50 min.
+2. Quick sanity: query a few test examples and verify:
+   - Nearest neighbors have high species overlap
+   - Evidence summary shows non-trivial action concentration
 
-2. After all 5 are trained, verify:
-   - All 5 checkpoints exist in outputs/runs/ensemble_{001..005}/best.pt
-   - Print each member's best_val_nll from run_metadata.json
-   - Confirm they have similar but not identical val NLL (diversity check)
-
-3. Quick sanity: run ensemble_predict on a small batch to verify averaging works.
-
-DO NOT modify any source code. This is a compute task.
+DO NOT modify any source code other than creating the runner script.
 ```
 
 ---
 
 ## Wave 3 Prompts
 
-### Terminal 3A: Ensemble Eval + Risk-Coverage + Bootstrap + OOD
+### Terminal 3A: Integration + Final Figures
 
 ```
-You are working on the TurnZero project (CS229 final project) in /home/walter/CS229/turnzero.
+You are working on the TurnZero project in /home/walter/CS229/turnzero.
 
-Read CLAUDE.md, docs/WEEK3_PLAN.md, and check all artifacts in outputs/.
+Read CLAUDE.md, docs/WEEK4_PLAN.md, and check all artifacts in outputs/.
 
-YOUR TASK: Run all Week 3 evaluations.
+YOUR TASK: Integrate explanations into demo + generate final paper figures.
 
-1. Ensemble evaluation on Regime A test:
-   - Load 5 checkpoints + temperature from outputs/calibration/
-   - Run ensemble_predict on test set
-   - Compute metrics via compute_metrics
-   - Save to outputs/ensemble/test_metrics.json
-   - Save predictions to outputs/ensemble/ensemble_predictions.npz
+Part 1 — Demo Integration:
+- Update turnzero/tool/coach.py to import and use:
+  * RetrievalIndex (query + evidence_summary)
+  * compute_marginals + format_marginals
+  * annotate_team (role lexicon)
+  * feature_sensitivity
+- Add --index_path option for pre-built retrieval index
+- Full demo output should match the format in WEEK4_PLAN.md Task 3
 
-2. Risk-coverage curves (both risk definitions):
-   - Risk 1: 1 - top1_accuracy (action90, Tier 1)
-   - Risk 2: P(expert not in top-3) (action90, Tier 1)
-   - Compute for: popularity, logistic, single transformer, ensemble
-   - Save curves + operating points to outputs/eval/risk_coverage.json
-   - Plot to outputs/plots/week3/risk_coverage_top1.{png,pdf}
-   - Plot to outputs/plots/week3/risk_coverage_top3.{png,pdf}
+Part 2 — Final Figures:
+- Create scripts/run_final_figures.py
+- Generate definitive paper figures to outputs/plots/paper/
+- Include stress test plot, clean reliability, model comparison,
+  risk-coverage, OOD comparison, uncertainty decomposition
 
-3. Bootstrap CIs:
-   - Run cluster_bootstrap_ci on ensemble predictions
-   - B=1000, seed=42
-   - Save to outputs/eval/bootstrap_cis.json
-
-4. Regime B OOD evaluation:
-   - Run ensemble on regime_b/test.jsonl
-   - Compare: entropy, MI, abstention rate vs Regime A
-   - Save comparison to outputs/eval/ood_comparison.json
-
-5. Print comprehensive summary to stdout.
-
-DO NOT modify any source code. This is a run + analysis task.
+DO NOT modify any source code other than:
+- turnzero/tool/coach.py (update)
+- scripts/run_final_figures.py (create)
 ```
 
-### Terminal 3B: Week 3 Plots + Demo Skeleton
+### Terminal 3B: Paper Draft
 
 ```
-You are working on the TurnZero project (CS229 final project) in /home/walter/CS229/turnzero.
+This is a writing task, not a coding task.
 
-Read CLAUDE.md, docs/WEEK3_PLAN.md, and check all artifacts in outputs/.
+You are writing the CS229 final project report for TurnZero.
+Read all docs/ files and all outputs/ JSON artifacts.
 
-YOUR TASK: Generate all paper-ready Week 3 figures and build the demo skeleton.
+Write a structured paper draft following the outline in WEEK4_PLAN.md Task 5.
+Save to docs/PAPER_DRAFT.md.
 
-Part 1 — Plots (save all to outputs/plots/week3/):
-
-1. Reliability diagrams:
-   - Single model vs ensemble (side by side or overlay)
-   - Pre vs post temperature scaling
-   - Both action-90 and lead-2
-
-2. Risk-coverage curves (from saved data in outputs/eval/):
-   - Top-1 risk: all models on one plot
-   - Top-3 risk: all models on one plot
-
-3. Updated comparison table:
-   - All models: popularity, logistic, single transformer, ensemble
-   - With bootstrap CIs: "18.3% [17.8, 18.9]" format
-   - JSON + LaTeX
-
-4. Uncertainty histograms:
-   - Confidence distribution (ensemble)
-   - Predictive entropy distribution
-   - MI distribution (epistemic)
-   - Mirror vs non-mirror overlay
-
-5. Within-core vs OOD comparison:
-   - Side-by-side bar chart or table
-
-Part 2 — Demo Tool (stretch):
-
-Create turnzero/tool/__init__.py and turnzero/tool/coach.py:
-- Accept two team sheets as CLI input (species list or paste format)
-- Load ensemble + temperature
-- Output top-3 plans with calibrated probabilities
-- If max_confidence < tau: print abstention message
-
-Add CLI command: turnzero demo --ensemble_dir ... --calib ... --team_a ... --team_b ...
-
-DO NOT modify any existing source code. Only create new files.
+Include all concrete numbers from the evaluation artifacts.
+Reference figures by their output paths.
+Target length: ~6-8 pages (CS229 format).
 ```
 
 ---
@@ -606,38 +509,39 @@ DO NOT modify any existing source code. Only create new files.
 
 After each wave, before starting the next:
 
-1. `git status` — confirm no conflicts (agents touch disjoint files)
+1. `git status` — confirm no conflicts
 2. Quick smoke tests:
    ```bash
    # After Wave 1:
-   python -c "from turnzero.uq.temperature import TemperatureScaler"
-   python -c "from turnzero.uq.ensemble import ensemble_predict"
-   python -c "from turnzero.eval.risk_coverage import risk_coverage_curve"
-   python -c "from turnzero.eval.bootstrap import cluster_bootstrap_ci"
+   python -c "from turnzero.eval.robustness import mask_batch, MASK_CONFIGS"
+   python -c "from turnzero.tool.retrieval import RetrievalIndex, extract_embeddings"
+   python -c "from turnzero.tool.explain import compute_marginals, feature_sensitivity"
+   python -c "from turnzero.tool.lexicon import ROLE_LEXICON, annotate_team"
 
    # After Wave 2:
-   ls outputs/calibration/run_001/temperature.json
-   ls outputs/runs/ensemble_{001..005}/best.pt
+   ls outputs/eval/stress_test.json
+   ls outputs/retrieval/train_embeddings.npz
+   ls outputs/plots/week4/*.png
 
    # After Wave 3:
-   ls outputs/ensemble/ensemble_predictions.npz
-   ls outputs/eval/bootstrap_cis.json
-   ls outputs/plots/week3/*.png
+   turnzero demo --ensemble_dir outputs/runs \
+     --calib outputs/calibration/run_001/temperature.json \
+     --team_a "Incineroar,Rillaboom,Flutter Mane,Urshifu,Tornadus,Landorus" \
+     --team_b "Calyrex,Amoonguss,Rillaboom,Incineroar,Entei,Iron Hands"
+   ls outputs/plots/paper/*.png
    ```
 3. Run existing tests: `pytest tests/`
-4. Commit the wave: `git add -A && git commit -m "week3 wave N: ..."`
+4. Commit the wave
 
 ## Compute Budget
 
 | Task | GPU Time | Notes |
 |------|----------|-------|
-| Temp scaling | ~2 min | L-BFGS on val logits |
-| 5 ensemble members | ~50 min | Sequential, ~10 min each |
-| Ensemble inference | ~5 min | 5x forward passes on test |
-| Bootstrap (B=1000) | ~15 min | CPU-bound, parallelizable |
-| OOD eval | ~2 min | Single forward pass |
-| Plots | ~1 min | matplotlib only |
-| **Total GPU** | **~1.5 hours** | |
+| Stress test (6 configs × 5 members) | ~30 min | Ensemble inference × 6 |
+| Embedding extraction (train set) | ~5 min | Single model, 246K examples |
+| Feature sensitivity (per demo query) | ~10 sec | 5 field groups × 5 members |
+| Final figures | ~1 min | Matplotlib only |
+| **Total GPU** | **~40 min** | |
 
-The RTX 4080S handles this easily. **Bottleneck is ensemble training (Wave 2B).**
-Start 2A (temp scaling) immediately while 2B trains — it finishes in minutes.
+All fits easily on the RTX 4080S. **Bottleneck is the stress test (Wave 2A).**
+Start 2B (embeddings) immediately while 2A runs.
