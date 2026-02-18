@@ -5,11 +5,13 @@
 CS229 (Stanford ML) final project — a turn-zero OTS coach for Pokémon VGC Gen 9.
 Predicts expert lead-2 + bring-4/back-2 as a joint 90-way action from two Open Team Sheets.
 
-**Current phase**: Week 3 — UQ Stack + Calibration + Selective Prediction
+**Current phase**: Week 4 — Explanations + Robustness + Demo Polish + Paper
 
 **Key references**:
 - [docs/PROJECT_BIBLE.md](docs/PROJECT_BIBLE.md) — full spec (v4), schemas, contracts, acceptance criteria.
-- [docs/WEEK3_PLAN.md](docs/WEEK3_PLAN.md) — detailed Week 3 build plan.
+- [docs/WEEK4_PLAN.md](docs/WEEK4_PLAN.md) — detailed Week 4 build plan.
+- [docs/CUR_TASK_SPLIT.md](docs/CUR_TASK_SPLIT.md) — current parallel task breakdown.
+- [docs/WEEK3_PLAN.md](docs/WEEK3_PLAN.md) — Week 3 build plan (completed).
 - [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) — Week 2 build plan (completed).
 
 ## Week 1 Status (DONE)
