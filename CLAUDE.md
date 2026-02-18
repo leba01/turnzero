@@ -33,7 +33,7 @@ See [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) for the full task breakdown.
 
 - [x] Task 0: Download full dataset + re-run pipeline
 - [x] Task 1: PyTorch Dataset + DataLoader
-- [ ] Task 2: Baselines (popularity, logistic regression)
+- [x] Task 2: Baselines (popularity, logistic regression)
 - [x] Task 3: Eval harness (metrics + plots)
 - [x] Task 4: Transformer set model
 - [x] Task 5: Training loop
