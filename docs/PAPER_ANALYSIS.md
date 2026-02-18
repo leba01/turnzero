@@ -163,11 +163,30 @@ with uncertainty quantification.** This is the contribution.
 
 **Action-90 top-1 accuracy: 6.4% (ensemble) vs 1.1% random.**
 
-That looks terrible in isolation, but it's 5.8x random and nearly 5x the popularity baseline (1.3%). The key reframe: this is a 90-class problem where *experts disagree with each other*. If you asked two top players to independently pick a team selection for the same matchup, they'd frequently disagree. Top-1 accuracy has a hard ceiling well below 100%.
+That looks terrible in isolation. The better framing: **the top-k coverage
+curve shows you need k=17 predictions to reach 50% coverage** (vs k=45 for
+random). The model concentrates probability mass on the right neighborhood of
+the action space. At k=10, coverage is already 36.2%.
 
-**Lead-2 is where the signal really shows:** 19.8% top-1, 43.2% top-3. Nearly half the time, the expert's lead pair is in our top-3. That's actionable.
+**The marginal decomposition tells the richer story:**
 
-**Paper angle:** Frame accuracy in terms of the marginalized lead-2 distribution, not raw action-90. The 15-way lead problem (C(6,2)=15) is more interpretable and our numbers are strong there.
+| Sub-decision | Classes | Top-1 | Top-3 |
+|-------------|---------|-------|-------|
+| Action-90 (joint) | 90 | 6.4% | 15.5% |
+| Bring-4 (which 4 to bring) | 15 | 17.8% | 43.7% |
+| Lead-2 (which 2 to lead) | 15 | 18.7% | 41.8% |
+| Lead arrangement given correct bring-4 | 6 | 32.1% | — |
+
+Bring-4 and lead-2 marginals are nearly identical (~18% top-1, ~43% top-3).
+The harder part is the conditional: even when the model correctly identifies
+which 4 to bring, it only picks the right lead pair 32.1% of the time (2x
+the 16.7% random baseline for a 6-way choice). **Teams agree on what to bring
+but disagree about who goes in front.**
+
+**Paper angle:** Lead the results with the top-k curve and the decomposition
+table, not raw top-1. The k=17 for 50% coverage quantifies multi-modality
+directly, and the decomposition shows exactly where the model succeeds
+(identifying the bring-4) vs. struggles (lead arrangement).
 
 ### 2. Calibration is excellent — the probabilities mean what they say
 
@@ -278,6 +297,28 @@ Grouping by species-6 composition and computing mean ensemble entropy per team r
 
 **Paper angle:** This is the centerpiece Week 5 extension. The aggregate 6.4% top-1 is a misleading average over a bimodal distribution — some teams are 50% predictable, others are 0%. The entropy-accuracy scatter is a publication-quality figure that tells the whole story.
 
+### S8. Speed control does NOT explain team linearity (negative result)
+
+We hypothesized that speed control mode (Trick Room vs Tailwind) would be the
+main driver of team linearity — Trick Room teams must lead the setter, so their
+leads should be more constrained. **The data says otherwise.**
+
+- Trick Room teams (66/153): mean entropy 4.025 ± 0.209
+- Non-Trick Room teams (87/153): mean entropy 4.041 ± 0.214
+- **Delta: 0.016 nats — effectively zero.**
+
+The real linearity driver is **mechanical constraints**, not speed control. The
+most linear teams are Dondozo commander archetypes (H=3.10), where the
+Commander ability requires Dondozo + Tatsugiri/Maushold to lead together —
+it's a hardcoded game mechanic, not a strategic choice. Trick Room teams
+actually have substantial lead flexibility because many mons on the team can
+function in or out of Trick Room.
+
+**Paper angle:** Worth a sentence in the discussion. "While speed control mode
+intuitively constrains lead selection, we find no significant entropy
+difference (Δ = 0.016 nats). Team linearity is instead driven by mechanical
+constraints like the Commander ability."
+
 ---
 
 ## Numbers for the Paper — Quick Reference
@@ -311,6 +352,24 @@ Grouping by species-6 composition and computing mean ensemble entropy per team r
 - OOD entropy shift: +0.168 nats
 - OOD abstention: 20% → 46%
 
+### Top-k Coverage Milestones
+- 50% coverage at k = 17 (vs k = 45 for random)
+- 75% coverage at k = 36
+- 90% coverage at k = 54
+
+### Decomposition (all Tier 1, for apples-to-apples comparison)
+- Bring-4 (15-way): 17.8% top-1, 43.7% top-3
+- Lead-2 (15-way): 18.7% top-1, 41.8% top-3
+- Lead arrangement | correct bring-4 (6-way): 32.1% (2x random)
+- Note: previously reported lead-2 as 19.8%/43.2% — that was on all 40K
+  examples (lead-2 is always observable). The 18.7% is Tier 1 only.
+
+### Per-Team Linearity
+- 153 teams with n ≥ 20 Tier 1 examples (33% coverage)
+- Entropy range: [3.099, 4.406], mean 4.034 ± 0.212
+- r = -0.353 (entropy vs top-1), r = -0.561 (entropy vs top-3)
+- Speed control (TR vs non-TR) entropy delta: 0.016 nats (not significant)
+
 ---
 
 ## Suggested Paper Structure
@@ -335,20 +394,23 @@ Grouping by species-6 composition and computing mean ensemble entropy per team r
    prediction → entropy-based team linearity.
 
 5. **Results**:
-   - Table 1: Main comparison (4 models × 7 metrics)
-   - Figure 1: Reliability diagram (the calibration story — money figure #1)
-   - Figure 2: Risk-coverage curves (selective prediction — money figure #2)
-   - Figure 3: Per-team entropy vs accuracy scatter (heterogeneity — money figure #3)
+   - Table 1: Main comparison (4 models × 7 metrics + bring-4/lead-2 decomposition)
+   - Figure 1: Top-k coverage curve (the multi-modality story — k=17 for 50%)
+   - Figure 2: Reliability diagram (the calibration story — money figure #1)
+   - Figure 3: Risk-coverage curves (selective prediction — money figure #2)
+   - Figure 4: Per-team entropy vs accuracy scatter (heterogeneity — money figure #3)
    - Table 2: Stress test (feature importance — moves dominate)
-   - Figure 4: Stress test degradation plot
+   - Figure 5: Stress test degradation plot
    - Table 3: OOD comparison (Regime A vs B — abstention doubles)
-   - Figure 5: Team entropy histogram (annotated with linear vs flexible extremes)
+   - Figure 6: Team entropy histogram (annotated with linear vs flexible extremes)
 
 6. **Discussion** — Per-team heterogeneity (6.4% aggregate masks bimodal
-   distribution), mirror/non-mirror gap (model learns convention not strategy),
-   wide CIs (honest about variance), multi-modality ceiling, position
-   invariance vs EliteFurretAI's leakage. Future work: conformal prediction
-   sets, cluster-specific models, attention attribution.
+   distribution), bring-4 vs lead-2 (teams agree on what to bring, disagree on
+   who leads), mirror/non-mirror gap (model learns convention not strategy),
+   speed control negative result (Commander mechanics, not TR, drive linearity),
+   wide CIs (honest about variance), position invariance vs EliteFurretAI's
+   leakage. Future work: conformal prediction sets, opponent-conditional
+   analysis (does team_b matter for linear teams?), cluster-specific models.
 
 ---
 
@@ -392,3 +454,11 @@ Extract attention weights from the transformer encoder and visualize which oppon
 
 ### Stretch 3: Per-Cluster Performance Dashboard — DONE (Week 5)
 Implemented as per-team analysis using species-6 composition grouping (not core_cluster_a, which produces a mega-cluster — see S6). 153 teams with ≥20 Tier 1 examples analyzed. Entropy-accuracy correlation r = -0.561 (top-3). Commander teams hit 50% top-1; goodstuffs teams hit 0%. See `scripts/run_cluster_analysis.py`, `outputs/eval/cluster_analysis.json`, and `outputs/plots/paper/cluster_*.{png,pdf}`.
+
+### Stretch 4: Opponent Dependence Analysis (future work)
+For linear teams (low entropy), does the opponent's OTS even matter? Mask
+team_b entirely and compare accuracy — if it doesn't drop, linear teams are
+opponent-invariant (they always execute the same game plan regardless of
+matchup). This would confirm the "creature of convention" interpretation and
+quantify when opponent modeling adds value. Not implemented — noted as future
+work in the paper.
