@@ -89,5 +89,29 @@ def stats(data_dir: str, validate: bool) -> None:
     run_stats(data_dir, validate=validate)
 
 
+@cli.command()
+@click.option("--config", required=True, type=click.Path(exists=True),
+              help="Path to YAML config file.")
+@click.option("--out_dir", required=True, type=click.Path(),
+              help="Output directory for checkpoints, curves, and metadata.")
+def train(config: str, out_dir: str) -> None:
+    """Train OTSTransformer model."""
+    from turnzero.models.train import run_train
+    run_train(config, out_dir)
+
+
+@cli.command("eval")
+@click.option("--model_ckpt", required=True, type=click.Path(exists=True),
+              help="Path to model checkpoint (best.pt).")
+@click.option("--test_split", required=True, type=click.Path(exists=True),
+              help="Path to test.jsonl.")
+@click.option("--out_dir", required=True, type=click.Path(),
+              help="Output directory for metrics and plots.")
+def eval_cmd(model_ckpt: str, test_split: str, out_dir: str) -> None:
+    """Evaluate a trained model on a test split."""
+    from turnzero.models.train import run_eval
+    run_eval(model_ckpt, test_split, out_dir)
+
+
 if __name__ == "__main__":
     cli()

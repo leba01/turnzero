@@ -32,12 +32,12 @@ Build end-to-end: Dataset → Baselines → Transformer → Training → Eval �
 See [docs/WEEK2_PLAN.md](docs/WEEK2_PLAN.md) for the full task breakdown.
 
 - [x] Task 0: Download full dataset + re-run pipeline
-- [ ] Task 1: PyTorch Dataset + DataLoader
+- [x] Task 1: PyTorch Dataset + DataLoader
 - [ ] Task 2: Baselines (popularity, logistic regression)
-- [ ] Task 3: Eval harness (metrics + plots)
-- [ ] Task 4: Transformer set model
-- [ ] Task 5: Training loop
-- [ ] Task 6: Config system
+- [x] Task 3: Eval harness (metrics + plots)
+- [x] Task 4: Transformer set model
+- [x] Task 5: Training loop
+- [x] Task 6: Config system
 - [ ] Task 7: Paper-ready plotting pipeline
 
 ## Repository Info
