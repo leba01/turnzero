@@ -266,21 +266,14 @@ def fig3_risk_coverage() -> None:
 
     # Single transformer
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    from turnzero.models.transformer import ModelConfig, OTSTransformer
-    from turnzero.uq.temperature import TemperatureScaler, collect_logits
+    from turnzero.models.transformer import OTSTransformer
+    from turnzero.uq.temperature import collect_logits
 
     CKPT_SINGLE = ROOT / "outputs" / "runs" / "run_001" / "best.pt"
     VOCAB_SINGLE = ROOT / "outputs" / "runs" / "run_001" / "vocab.json"
-    TEMP_JSON = ROOT / "outputs" / "calibration" / "run_001" / "temperature.json"
 
-    scaler = TemperatureScaler.load(TEMP_JSON)
-    ckpt = torch.load(CKPT_SINGLE, map_location=DEVICE, weights_only=False)
-    model_cfg = ModelConfig(**ckpt["model_config"])
+    model = OTSTransformer.load_from_checkpoint(CKPT_SINGLE, DEVICE)
     vocab = Vocab.load(VOCAB_SINGLE)
-    model = OTSTransformer(ckpt["vocab_sizes"], model_cfg)
-    model.load_state_dict(ckpt["model_state_dict"])
-    model = model.to(DEVICE)
-    model.eval()
 
     test_ds = VGCDataset(DATA_A / "test.jsonl", vocab)
     test_loader = torch.utils.data.DataLoader(
@@ -289,8 +282,8 @@ def fig3_risk_coverage() -> None:
     )
 
     logits, _ = collect_logits(model, test_loader, DEVICE)
-    single_probs_cal = scaler.calibrate(logits)
-    single_probs_t1 = single_probs_cal[tier1]
+    from turnzero.uq.temperature import _softmax
+    single_probs_t1 = _softmax(logits.astype(np.float64))[tier1]
 
     del model, logits
     torch.cuda.empty_cache()
@@ -317,7 +310,10 @@ def fig3_risk_coverage() -> None:
             color = _COLORS[i % len(_COLORS)]
 
             valid = ~np.isnan(risk)
-            label = f"{name} (AURC={aurc:.3f})"
+            if aurc == 0.0 or np.isnan(aurc):
+                label = name  # degenerate curve (e.g. constant confidence)
+            else:
+                label = f"{name} (AURC={aurc:.3f})"
             ax.plot(cov[valid], risk[valid], color=color, lw=1.8, label=label)
 
         ax.set_xlabel("Coverage", fontsize=11)

@@ -203,8 +203,8 @@ def calibrate_cmd(model_ckpt: str, val_split: str, out_dir: str) -> None:
 @cli.command("demo")
 @click.option("--ensemble_dir", required=True, type=click.Path(exists=True),
               help="Path to directory containing ensemble_001..005/ subdirs.")
-@click.option("--calib", required=True, type=click.Path(exists=True),
-              help="Path to temperature.json calibration artifact.")
+@click.option("--calib", default=None, type=click.Path(exists=True),
+              help="Path to temperature.json (optional; T=1.0 if omitted).")
 @click.option("--team_a", default=None, type=str,
               help="Comma-separated species list for Team A (your team).")
 @click.option("--team_b", default=None, type=str,

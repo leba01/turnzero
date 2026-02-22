@@ -73,6 +73,22 @@ Post-MVP extensions for paper analysis. See [docs/WEEK5_PLAN.md](docs/WEEK5_PLAN
 - [x] Task 1: Update CLAUDE.md with final status
 - [ ] Task 2: Paper draft (Walter)
 
+### Multi-task loss ablation (code complete, training pending)
+
+- **Problem**: ~20% of training examples (Tier 2, `bring4_observed=False`) have fabricated
+  action-90 labels (back-2 filled with deterministic lowest-index heuristic). Model trains
+  on these as ground truth.
+- **Solution**: Multi-task loss — Tier 1: action-90 CE; Tier 2: lead-2 CE via marginalization
+  `softmax(logits) @ margin_matrix` (90→15 probs, NOT in logit space).
+- **Three loss modes** in `train.py`: `action90_all` (baseline), `multitask`, `tier1_only`.
+- **Temperature scaling dropped** from final pipeline (T≈1.0, ensemble already calibrated).
+- **Dead code cleaned up**: consolidated `_ece`, `_save_fig`, `_MARGIN_MATRIX`,
+  `load_from_checkpoint` to single sources; removed unused imports.
+- **15 ablation configs** ready: `configs/ablation_{a,b,c}/member_{001..005}.yaml`
+- **Training**: `bash scripts/train_ablations.sh` (15 runs, ~2-3h on RTX 4080 Super)
+- **Evaluation**: `python scripts/eval_ablations.py [--bootstrap]`
+- **179/179 tests passing** after all changes.
+
 ## Repository Info
 
 - **Remote**: https://github.com/leba01/turnzero.git

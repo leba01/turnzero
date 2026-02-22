@@ -163,29 +163,18 @@ def step1_reliability_diagrams():
     action90_true_t1 = ens["action90_true"][tier1]
 
     # Load single model predictions — recompute from checkpoint
-    # We have saved metrics but need probs for reliability diagram
-    # Use ensemble member 1's probs as single model proxy? No, use run_001.
-    # Actually we need the actual probabilities. Let's load from checkpoint.
     import torch
     from turnzero.data.dataset import VGCDataset, Vocab
-    from turnzero.models.transformer import ModelConfig, OTSTransformer
-    from turnzero.uq.temperature import TemperatureScaler, collect_logits
+    from turnzero.models.transformer import OTSTransformer
+    from turnzero.uq.temperature import collect_logits
 
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     CKPT_SINGLE = ROOT / "outputs" / "runs" / "run_001" / "best.pt"
     VOCAB_SINGLE = ROOT / "outputs" / "runs" / "run_001" / "vocab.json"
-    TEMP_JSON = ROOT / "outputs" / "calibration" / "run_001" / "temperature.json"
     DATA_A = ROOT / "data" / "assembled" / "regime_a"
 
-    scaler = TemperatureScaler.load(TEMP_JSON)
-
-    ckpt = torch.load(CKPT_SINGLE, map_location=DEVICE, weights_only=False)
-    model_cfg = ModelConfig(**ckpt["model_config"])
+    model = OTSTransformer.load_from_checkpoint(CKPT_SINGLE, DEVICE)
     vocab = Vocab.load(VOCAB_SINGLE)
-    model = OTSTransformer(ckpt["vocab_sizes"], model_cfg)
-    model.load_state_dict(ckpt["model_state_dict"])
-    model = model.to(DEVICE)
-    model.eval()
 
     test_ds = VGCDataset(DATA_A / "test.jsonl", vocab)
     test_loader = torch.utils.data.DataLoader(
@@ -195,37 +184,21 @@ def step1_reliability_diagrams():
 
     logits, _ = collect_logits(model, test_loader, DEVICE)
 
-    # Pre-temp and post-temp probs
     from turnzero.uq.temperature import _softmax
-    probs_pre_temp = _softmax(logits)
-    probs_post_temp = scaler.calibrate(logits)
-
-    probs_pre_t1 = probs_pre_temp[tier1]
-    probs_post_t1 = probs_post_temp[tier1]
+    single_probs_t1 = _softmax(logits)[tier1]
 
     del model, logits
     torch.cuda.empty_cache()
 
-    # Plot 1: Single model vs Ensemble (both post-temp)
+    # Plot: Single model vs Ensemble
     print("  Plotting: single model vs ensemble reliability...")
     plot_reliability_comparison(
         {
-            "Single Transformer": (probs_post_t1, action90_true_t1),
+            "Single Transformer": (single_probs_t1, action90_true_t1),
             "Ensemble (5-member)": (ens_probs_t1, action90_true_t1),
         },
         OUT_PLOTS / "reliability_single_vs_ensemble",
         title="Reliability: Single Model vs Ensemble (Action-90, Tier 1)",
-    )
-
-    # Plot 2: Pre vs post temperature scaling (single model)
-    print("  Plotting: pre vs post temp scaling reliability...")
-    plot_reliability_comparison(
-        {
-            f"Before (T=1.0)": (probs_pre_t1, action90_true_t1),
-            f"After (T={scaler.T:.2f})": (probs_post_t1, action90_true_t1),
-        },
-        OUT_PLOTS / "reliability_temp_scaling",
-        title="Reliability: Temperature Scaling Effect (Action-90, Tier 1)",
     )
 
     return ens, tier1

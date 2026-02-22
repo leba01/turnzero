@@ -16,30 +16,11 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from turnzero.models.transformer import ModelConfig, OTSTransformer
+from turnzero.models.transformer import OTSTransformer
 
 _EPS = 1e-12
-
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-
-def _load_model_from_ckpt(
-    ckpt_path: str | Path,
-    device: torch.device,
-) -> nn.Module:
-    """Load an OTSTransformer from a checkpoint (same pattern as evaluate_checkpoint)."""
-    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
-    model_cfg = ModelConfig(**ckpt["model_config"])
-    model = OTSTransformer(ckpt["vocab_sizes"], model_cfg)
-    model.load_state_dict(ckpt["model_state_dict"])
-    model = model.to(device)
-    model.eval()
-    return model
 
 
 def _entropy(probs: np.ndarray) -> np.ndarray:
@@ -49,12 +30,11 @@ def _entropy(probs: np.ndarray) -> np.ndarray:
 
 @torch.no_grad()
 def _collect_probs(
-    model: nn.Module,
+    model: torch.nn.Module,
     loader: DataLoader,
     device: torch.device,
-    temperature: float,
 ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
-    """Run inference with one model, return calibrated probs and labels.
+    """Run inference with one model, return softmax probs and labels.
 
     Returns
     -------
@@ -74,9 +54,8 @@ def _collect_probs(
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             logits = model(team_a, team_b)
 
-        # Apply temperature and softmax in FP32
-        scaled = logits.float() / temperature
-        probs = torch.softmax(scaled, dim=-1).cpu().numpy()
+        # Softmax in FP32
+        probs = torch.softmax(logits.float(), dim=-1).cpu().numpy()
 
         all_probs.append(probs)
         all_action90.append(batch["action90_label"].numpy())
@@ -102,17 +81,17 @@ def ensemble_predict(
     ckpt_paths: list[str | Path],
     loader: DataLoader,
     device: torch.device,
-    temperature: float = 1.0,
 ) -> dict[str, np.ndarray]:
     """Load M checkpoints, run inference, return averaged predictions.
 
     For each checkpoint:
     - Load model from ckpt
     - Run forward pass on all batches
-    - Collect softmax(logits / T)
+    - Collect softmax(logits) (no temperature scaling — the ensemble is
+      already well-calibrated, T~1.0)
 
     Then:
-    - Average probs across M members → p_bar
+    - Average probs across M members -> p_bar
     - Compute uncertainty decomposition
 
     Models are loaded and discarded one at a time to avoid OOM.
@@ -125,18 +104,16 @@ def ensemble_predict(
         Test/val DataLoader (shuffle=False, drop_last=False).
     device : torch.device
         GPU or CPU device.
-    temperature : float
-        Temperature for softmax calibration (default 1.0).
 
     Returns
     -------
     dict with keys:
-        "probs": (N, 90) — averaged calibrated probs p_bar
-        "member_probs": (M, N, 90) — per-member probs
-        "entropy": (N,) — H(p_bar), predictive entropy
-        "member_entropy": (N,) — mean H(p_m), aleatoric proxy
-        "mi": (N,) — H(p_bar) - mean H(p_m), epistemic (mutual info)
-        "confidence": (N,) — max p_bar per example
+        "probs": (N, 90) -- averaged probs p_bar
+        "member_probs": (M, N, 90) -- per-member probs
+        "entropy": (N,) -- H(p_bar), predictive entropy
+        "member_entropy": (N,) -- mean H(p_m), aleatoric proxy
+        "mi": (N,) -- H(p_bar) - mean H(p_m), epistemic (mutual info)
+        "confidence": (N,) -- max p_bar per example
         "action90_true": (N,) int
         "lead2_true": (N,) int
         "bring4_observed": (N,) bool
@@ -149,8 +126,8 @@ def ensemble_predict(
     for i, ckpt_path in enumerate(ckpt_paths):
         print(f"Ensemble member {i + 1}/{M}: {Path(ckpt_path).parent.name}")
 
-        model = _load_model_from_ckpt(ckpt_path, device)
-        probs_m, ld = _collect_probs(model, loader, device, temperature)
+        model = OTSTransformer.load_from_checkpoint(ckpt_path, device)
+        probs_m, ld = _collect_probs(model, loader, device)
         member_probs_list.append(probs_m)
 
         # Labels are identical across members; keep from first
@@ -172,11 +149,11 @@ def ensemble_predict(
     # Predictive entropy: H(p_bar)
     entropy = _entropy(p_bar)  # (N,)
 
-    # Mean member entropy: (1/M) * sum_m H(p_m) — aleatoric proxy
+    # Mean member entropy: (1/M) * sum_m H(p_m) -- aleatoric proxy
     member_entropies = np.array([_entropy(member_probs[m]) for m in range(M)])
     member_entropy = member_entropies.mean(axis=0)  # (N,)
 
-    # Mutual information: H(p_bar) - mean H(p_m) — epistemic proxy
+    # Mutual information: H(p_bar) - mean H(p_m) -- epistemic proxy
     mi = entropy - member_entropy  # (N,)
 
     # Confidence: max p_bar per example

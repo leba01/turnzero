@@ -1,0 +1,22 @@
+model:
+  d_model: 128
+  n_layers: 4
+  n_heads: 4
+  d_ff: 512
+  dropout: 0.1
+  pool: mean
+
+training:
+  batch_size: 512
+  lr: 3.0e-4
+  weight_decay: 0.01
+  label_smoothing: 0.03
+  max_epochs: 100
+  patience: 15
+  seed: 777
+  num_workers: 4
+  loss_mode: tier1_only
+
+data:
+  regime: a
+  split_dir: data/assembled/regime_a

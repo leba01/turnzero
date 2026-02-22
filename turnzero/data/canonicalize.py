@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import logging
 import re
 import time
 from pathlib import Path
@@ -26,7 +25,6 @@ from turnzero.schemas import (
     TeamSheet,
 )
 
-log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Name normalization
@@ -52,9 +50,6 @@ _NAME_EXCEPTIONS: dict[str, str] = {
     "behemothblade": "Behemoth Blade",
     "behemothbash": "Behemoth Bash",
 }
-
-# Reverse lookup for potential future use.
-_DISPLAY_TO_CAMEL: dict[str, str] = {v: k for k, v in _NAME_EXCEPTIONS.items()}
 
 # Insert space before uppercase letter that follows a lowercase letter.
 _CAMEL_SPLIT_RE = re.compile(r"(?<=[a-z])(?=[A-Z])")

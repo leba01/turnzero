@@ -15,6 +15,8 @@ import numpy as np
 import torch
 
 from turnzero.action_space import ACTION_TABLE
+from turnzero.eval.metrics import LEAD_PAIRS as _LEAD_PAIRS
+from turnzero.eval.metrics import _MARGIN_MATRIX as _LEAD_MARGIN_MATRIX
 
 # ---------------------------------------------------------------------------
 # Pre-computed masks: (90, 6) binary matrices
@@ -31,17 +33,6 @@ for _a, (_lead, _back) in enumerate(ACTION_TABLE):
         BRING_MASK[_a, _i] = 1.0
     for _i in _back:
         BRING_MASK[_a, _i] = 1.0
-
-# 15-way lead-pair marginalization (reuse logic from metrics.py)
-from itertools import combinations
-
-_LEAD_PAIRS: list[tuple[int, int]] = list(combinations(range(6), 2))
-_LEAD_PAIR_TO_IDX: dict[tuple[int, int], int] = {
-    pair: idx for idx, pair in enumerate(_LEAD_PAIRS)
-}
-_LEAD_MARGIN_MATRIX: np.ndarray = np.zeros((90, 15), dtype=np.float64)
-for _a, (_lead, _back) in enumerate(ACTION_TABLE):
-    _LEAD_MARGIN_MATRIX[_a, _LEAD_PAIR_TO_IDX[_lead]] = 1.0
 
 _EPS = 1e-12
 

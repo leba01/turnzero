@@ -17,7 +17,6 @@ Reference: docs/WEEK2_PLAN.md Task 5-6, docs/PROJECT_BIBLE.md Section 3
 from __future__ import annotations
 
 import json
-import os
 import random
 import subprocess
 import time
@@ -33,7 +32,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 
 from turnzero.data.dataset import Vocab, build_dataloaders
-from turnzero.eval.metrics import compute_metrics
+from turnzero.eval.metrics import _MARGIN_MATRIX, compute_metrics
 from turnzero.models.transformer import ModelConfig, OTSTransformer
 
 
@@ -91,8 +90,20 @@ def train_one_epoch(
     criterion: nn.Module,
     scaler: torch.amp.GradScaler,
     device: torch.device,
+    loss_mode: str = "action90_all",
+    margin_matrix: torch.Tensor | None = None,
 ) -> float:
-    """Train for one epoch. Returns average loss."""
+    """Train for one epoch. Returns average loss.
+
+    Parameters
+    ----------
+    loss_mode : str
+        ``"action90_all"`` — CE on action90 for all examples (default).
+        ``"tier1_only"`` — CE on action90 (dataset already filtered).
+        ``"multitask"`` — Tier 1: action90 CE, Tier 2: lead-2 CE via marginalization.
+    margin_matrix : (90, 15) Tensor or None
+        Required when loss_mode="multitask". Maps action-90 probs → lead-2 probs.
+    """
     model.train()
     total_loss = 0.0
     n_batches = 0
@@ -100,13 +111,34 @@ def train_one_epoch(
     for batch in loader:
         team_a = batch["team_a"].to(device, non_blocking=True)
         team_b = batch["team_b"].to(device, non_blocking=True)
-        labels = batch["action90_label"].to(device, non_blocking=True)
+        action90_labels = batch["action90_label"].to(device, non_blocking=True)
 
         optimizer.zero_grad(set_to_none=True)
 
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             logits = model(team_a, team_b)
-            loss = criterion(logits, labels)
+
+            if loss_mode in ("action90_all", "tier1_only"):
+                loss = criterion(logits, action90_labels)
+            else:
+                # multitask: split Tier 1 and Tier 2
+                bring4 = batch["bring4_observed"].to(device).bool()
+                lead2_labels = batch["lead2_label"].to(device, non_blocking=True)
+                n = logits.size(0)
+                loss = torch.tensor(0.0, device=device)
+
+                if bring4.any():
+                    loss_t1 = criterion(logits[bring4], action90_labels[bring4])
+                    loss = loss + loss_t1 * (bring4.sum() / n)
+
+                tier2 = ~bring4
+                if tier2.any():
+                    # Marginalize in probability space (FP32 for numerical stability)
+                    probs_90 = torch.softmax(logits[tier2].float(), dim=-1)
+                    lead2_probs = probs_90 @ margin_matrix  # (n_t2, 15)
+                    log_lead2 = torch.log(lead2_probs.clamp(min=1e-12))
+                    loss_t2 = nn.functional.nll_loss(log_lead2, lead2_labels[tier2])
+                    loss = loss + loss_t2 * (tier2.sum() / n)
 
         scaler.scale(loss).backward()
         scaler.step(optimizer)
@@ -124,13 +156,19 @@ def validate(
     loader: DataLoader,
     criterion: nn.Module,
     device: torch.device,
+    loss_mode: str = "action90_all",
+    margin_matrix: torch.Tensor | None = None,
 ) -> tuple[float, np.ndarray, dict[str, np.ndarray]]:
     """Validate on a split.
+
+    Parameters
+    ----------
+    loss_mode, margin_matrix : same semantics as train_one_epoch.
 
     Returns
     -------
     avg_loss : float
-        Mean cross-entropy loss.
+        Mean loss (matching training loss computation for consistent early stopping).
     probs : (N, 90) ndarray
         Softmax probabilities.
     labels_dict : dict
@@ -149,11 +187,31 @@ def validate(
     for batch in loader:
         team_a = batch["team_a"].to(device, non_blocking=True)
         team_b = batch["team_b"].to(device, non_blocking=True)
-        labels = batch["action90_label"].to(device, non_blocking=True)
+        action90_labels = batch["action90_label"].to(device, non_blocking=True)
 
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             logits = model(team_a, team_b)
-            loss = criterion(logits, labels)
+
+            if loss_mode in ("action90_all", "tier1_only"):
+                loss = criterion(logits, action90_labels)
+            else:
+                # multitask: mirror training loss for consistent early stopping
+                bring4 = batch["bring4_observed"].to(device).bool()
+                lead2_labels = batch["lead2_label"].to(device, non_blocking=True)
+                n = logits.size(0)
+                loss = torch.tensor(0.0, device=device)
+
+                if bring4.any():
+                    loss_t1 = criterion(logits[bring4], action90_labels[bring4])
+                    loss = loss + loss_t1 * (bring4.sum() / n)
+
+                tier2 = ~bring4
+                if tier2.any():
+                    probs_90 = torch.softmax(logits[tier2].float(), dim=-1)
+                    lead2_probs = probs_90 @ margin_matrix
+                    log_lead2 = torch.log(lead2_probs.clamp(min=1e-12))
+                    loss_t2 = nn.functional.nll_loss(log_lead2, lead2_labels[tier2])
+                    loss = loss + loss_t2 * (tier2.sum() / n)
 
         total_loss += loss.item()
         n_batches += 1
@@ -202,11 +260,17 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
     cfg_train = config["training"]
     cfg_data = config["data"]
 
+    loss_mode = cfg_train.get("loss_mode", "action90_all")
+    assert loss_mode in ("action90_all", "multitask", "tier1_only"), (
+        f"Unknown loss_mode: {loss_mode}"
+    )
+
     seed = cfg_train["seed"]
     seed_everything(seed)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
+    print(f"Loss mode: {loss_mode}")
 
     # --- Data ---
     split_dir = cfg_data["split_dir"]
@@ -215,6 +279,7 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
         split_dir=split_dir,
         batch_size=cfg_train["batch_size"],
         num_workers=cfg_train["num_workers"],
+        tier1_only=(loss_mode == "tier1_only"),
     )
     print(f"Vocab: {vocab}")
     print(f"Train: {len(train_loader.dataset):,} examples, {len(train_loader)} batches")
@@ -270,6 +335,11 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
     # --- Mixed precision ---
     scaler = torch.amp.GradScaler("cuda")
 
+    # --- Margin matrix for multitask loss ---
+    margin_matrix = None
+    if loss_mode == "multitask":
+        margin_matrix = torch.from_numpy(_MARGIN_MATRIX).float().to(device)
+
     # --- Training loop ---
     max_epochs = cfg_train["max_epochs"]
     patience = cfg_train["patience"]
@@ -294,10 +364,14 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
         # Train
         train_loss = train_one_epoch(
             compiled_model, train_loader, optimizer, criterion, scaler, device,
+            loss_mode=loss_mode, margin_matrix=margin_matrix,
         )
 
         # Validate
-        val_nll, _, _ = validate(compiled_model, val_loader, criterion, device)
+        val_nll, _, _ = validate(
+            compiled_model, val_loader, criterion, device,
+            loss_mode=loss_mode, margin_matrix=margin_matrix,
+        )
 
         # LR step
         current_lr = optimizer.param_groups[0]["lr"]
@@ -329,6 +403,7 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
                         "pool": model_cfg.pool,
                     },
                     "config": config,
+                    "loss_mode": loss_mode,
                     "epoch": epoch,
                     "val_nll": val_nll,
                 },
@@ -358,6 +433,7 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
     # --- Save run metadata ---
     metadata = {
         "config": config,
+        "loss_mode": loss_mode,
         "seed": seed,
         "git_hash": _git_hash(),
         "timestamp": datetime.now(timezone.utc).isoformat(),

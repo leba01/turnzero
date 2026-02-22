@@ -11,13 +11,13 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-import re
+
 import time
 from pathlib import Path
 from typing import Any
 
 from turnzero.action_space import lead_back_to_action90
-from turnzero.data.io_utils import write_jsonl, write_manifest
+from turnzero.data.io_utils import write_manifest
 from turnzero.schemas import (
     Label,
     LabelQuality,
