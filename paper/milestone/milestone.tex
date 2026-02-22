@@ -1,0 +1,194 @@
+% Adapted from CS229 Project Milestone template
+\documentclass{article}
+
+\usepackage[preprint]{cs229}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+
+% Setup header
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{CS229 Project Milestone}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Custom title format
+\renewcommand{\maketitle}{
+  \begin{center}
+    {\bf \large Project Title: TurnZero: Uncertainty-Aware Team Preview Prediction for Competitive Pok\'emon VGC}\\
+    \vspace{0.1cm}
+    {\bf Team Members:} Lucas Erlebach-Astorga\\
+    \vspace{0.1cm}
+    {\bf Emails:} leba@stanford.edu\\
+    \vspace{0.2cm}
+  \end{center}
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Motivation}
+
+Pok\'emon Video Game Championships (VGC) is the official doubles format for competitive Pok\'emon.
+Under the Open Team Sheet (OTS) rule, both players see each other's full roster of 6 Pok\'emon---including moves, items, and abilities---before the battle starts.
+Each player then privately selects which 4 to bring and which 2 to lead, choosing from $\binom{6}{4}\times\binom{4}{2}=90$ valid actions.
+This ``team preview'' is the first strategic decision in a match.
+
+What makes this interesting as a machine learning problem is its \emph{multi-modality}: top players facing the same matchup regularly make different selections, and a reasonable argument exists for each.
+The action space is large enough that any single prediction will usually be wrong, but small enough that a calibrated distribution over actions is useful to a human player.
+This makes uncertainty quantification (UQ) the central challenge, not classification accuracy.
+
+The intended application is a coaching tool: before a tournament match, a player inputs the two Open Team Sheets and receives a ranked distribution over lead-and-bring selections with calibrated confidence scores.
+Because the player ultimately makes the decision, honest probabilities are more valuable than a single ``best guess''---a model that says ``actions 12 and 47 each have 8\% probability'' is more useful than one that confidently recommends action 12 at 40\% when the true distribution is diffuse.
+
+I propose TurnZero, a calibrated decision support system that treats team preview as 90-way classification with a full UQ stack.
+Prior work either treats team preview as an incidental sub-action within full-game RL pipelines~\cite{vgcbench,elitefurretai} or uses species-only features on small datasets without formal evaluation~\cite{carli2025}.
+No prior work isolates team preview as a supervised learning task with full OTS features and uncertainty quantification.
+
+\section{Methods}
+
+\subsection{Data and Problem Setup}
+
+I extract 382K directed examples (two per game, one from each player's perspective) from 212K Regulation~G battles on Pok\'emon Showdown~\cite{vgcbench}.
+Each example consists of two full Open Team Sheets---species, item, ability, tera type, and all four moves for each of 12 Pok\'emon---and a ground-truth action label encoded as $a \in \{0,\ldots,89\}$.
+Names are normalized, moves are sorted within each Pok\'emon, and Pok\'emon are sorted within each team by a canonical key.
+The resulting vocabulary spans hundreds of unique species, moves, items, and abilities, plus 19 tera types (18 types + one unknown token), yielding 8 categorical embedding fields per Pok\'emon and $8 \times 12 = 96$ input tokens per example.
+
+Leads are always visible in the log, but the full bring-4 is only observable when all four Pok\'emon appear during the game.
+Roughly 80\% of examples have fully observed bring-4 (Tier~1); the remaining 20\% (Tier~2) have reliable lead labels but uncertain back-2 assignments.
+All metrics are computed on Tier~1 data only.
+
+To prevent data leakage, I cluster teams by species composition: teams sharing $\geq$4 of 6 species are connected via union-find, yielding 7,826 clusters from 116,903 unique teams.
+I construct two evaluation regimes: \emph{Regime A} (in-distribution) holds out Team~A variants within each cluster; \emph{Regime B} (out-of-distribution) holds out entire clusters.
+Regime~A yields 247K train / 35K val / 40K test examples, with all 90 actions in every split.
+Exact \texttt{(team\_a, team\_b, action)} triples are deduplicated across splits, while the same matchup with different expert actions is preserved (multi-modality, not leakage).
+
+\subsection{Baselines}
+
+\textbf{Popularity baseline} (0 parameters).
+For each test example, predict the global action frequency distribution from the training set.
+
+\textbf{Multinomial logistic regression} (${\sim}$4K parameters).
+Bag-of-embeddings over the 12 Pok\'emon's discrete features (species, item, ability, tera type, 4 moves), passed through a single linear layer to 90-way softmax.
+
+\subsection{Transformer Architecture}
+
+Each of the 12 Pok\'emon is represented as a token---the sum of 8 learned embeddings (species, item, ability, tera type, 4 moves)---and processed by a 4-layer transformer encoder ($d{=}128$, $H{=}4$, $d_\text{ff}{=}512$, dropout 0.1), totaling 1.16M parameters.
+The architecture is permutation-invariant by design: no positional encoding is used, and the 12-token sequence is aggregated via mean pooling before a linear classification head.
+This avoids the positional leakage risk documented in EliteFurretAI~\cite{elitefurretai}, where Showdown's fixed Pok\'emon ordering inflated accuracy.
+Training uses cross-entropy loss, AdamW ($\text{lr}{=}3{\times}10^{-4}$), cosine annealing, and mixed-precision (BF16) on a single RTX 4080 Super.
+The architecture draws on Deep Sets~\cite{deepsets} and Set Transformer~\cite{settransformer}.
+
+\subsection{Planned: Deep Ensemble and UQ}
+
+I plan to train 5 independent transformer members with different random seeds~\cite{deepensembles}.
+The ensemble prediction averages member softmax outputs: $\bar{p}(a \mid x) = \frac{1}{M}\sum_{m=1}^{M} p_m(a \mid x)$.
+Predictive uncertainty will decompose into total uncertainty (entropy $\mathcal{H}[\bar{p}]$) and epistemic uncertainty (mutual information), enabling the model to distinguish inherently ambiguous matchups from knowledge gaps.
+Post-hoc temperature scaling~\cite{calibration} will be applied if the ensemble's predicted probabilities are not well-calibrated out of the box.
+For selective prediction, a confidence threshold $\tau$ will allow the model to abstain on low-confidence inputs, trading coverage for accuracy~\cite{selectivepred}; this is evaluated via risk-coverage curves and AURC.
+Regime~B (held-out clusters) will serve as an out-of-distribution test: if the ensemble's epistemic uncertainty increases on unseen team archetypes, it indicates the model can reliably flag when it lacks relevant training data.
+
+\section{Preliminary Experiments and Results}
+
+\begin{table}[t]
+\centering
+\caption{Baseline performance on the Regime A test set (Tier 1, $n{=}$32,328). Top-1/3 accuracy (\%, $\uparrow$), NLL ($\downarrow$), ECE ($\downarrow$).}
+\label{tab:baselines}
+\small
+\begin{tabular}{@{}lrccc@{}}
+\toprule
+\textbf{Model} & \textbf{Params} & \textbf{Top-1} & \textbf{Top-3} & \textbf{NLL} \\
+\midrule
+Random & --- & 1.1 & 3.3 & 4.500 \\
+Popularity & 0 & 1.3 & 3.9 & 4.497 \\
+Logistic & $\sim$4K & 4.0 & 10.1 & 4.580 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:baselines} reports baseline results.
+The popularity baseline barely exceeds random, confirming that team preview decisions are matchup-dependent rather than driven by global metagame frequencies.
+Multinomial logistic regression achieves higher top-$k$ accuracy (4.0\% top-1 vs.\ 1.3\%), showing that even a linear model can learn some matchup-specific signal from the full OTS feature set.
+
+However, a critical observation is that the logistic baseline achieves \emph{worse} NLL than the zero-parameter popularity baseline (4.580 vs.\ 4.497).
+This occurs because the logistic model makes overconfident wrong predictions: when it assigns high probability to an incorrect action, the log-loss penalty is severe.
+This finding validates the need for both a more flexible model (to capture nonlinear matchup interactions) and proper calibration (to ensure predicted probabilities are honest).
+For a decision support tool where a player acts on the model's confidence scores, well-calibrated probabilities matter more than marginal accuracy gains.
+
+More broadly, the 90-way action distribution in the training set is highly non-uniform: a small number of actions (e.g., bringing all six viable Pok\'emon in a standard configuration) are far more common than niche selections, creating a long-tail distribution.
+This explains why the popularity baseline barely outperforms random despite memorizing the global action frequencies---the most popular action still accounts for only a few percent of examples.
+A matchup-aware model must learn to shift probability mass toward context-dependent actions that rarely dominate globally.
+
+\section{Next Steps}
+
+\begin{enumerate}
+    \item \textbf{Transformer training.} Complete training of the permutation-invariant transformer and compare against baselines on top-$k$ accuracy, NLL, and ECE.
+    \item \textbf{Deep ensemble.} Train 5 ensemble members with different seeds and evaluate whether ensembling improves calibration and selective prediction quality.
+    \item \textbf{Calibration analysis.} Compute reliability diagrams and apply temperature scaling. Evaluate whether post-hoc calibration is necessary given ensemble averaging.
+    \item \textbf{Risk-coverage analysis.} Plot risk-coverage curves and compute AURC to quantify the model's ability to ``know what it doesn't know.''
+    \item \textbf{Feature ablation.} Systematically mask input features (moves, items, abilities, tera type) to identify which OTS components drive predictions.
+    \item \textbf{OOD evaluation.} Compare Regime~A (in-distribution) vs.\ Regime~B (held-out clusters) to test whether the ensemble automatically becomes more cautious on unseen team archetypes.
+    \item \textbf{Per-team analysis.} Investigate whether certain team archetypes are systematically more predictable than others.
+\end{enumerate}
+
+\section{Team Contributions}
+
+\begin{itemize}
+    \item \textbf{Lucas Erlebach-Astorga}: Solo project. Designed and implemented the full data pipeline (parsing, canonicalization, clustering, split generation), baseline models, transformer architecture, and evaluation framework.
+\end{itemize}
+
+\bibliographystyle{plainnat}
+\begin{thebibliography}{10}
+
+\bibitem[Angliss et~al.(2026)]{vgcbench}
+Cameron Angliss, Giovanni Sutanto, and others.
+\newblock VGC-Bench: Benchmarking AI agents in Pok\'emon VGC.
+\newblock In \emph{Proceedings of AAMAS}, 2026.
+
+\bibitem[Simpson(2024)]{elitefurretai}
+Cameron Simpson.
+\newblock EliteFurretAI: A competitive Pok\'emon battle agent.
+\newblock GitHub repository, 2024.
+
+\bibitem[Carli(2025)]{carli2025}
+Joseph~A. Carli.
+\newblock Predicting competitive Pok\'emon VGC leads using latent semantic analysis.
+\newblock \emph{Journal of Geek Studies}, 2025.
+
+\bibitem[Zaheer et~al.(2017)]{deepsets}
+Manzil Zaheer, Saswat Kottur, Siamak Ravanbakhsh, Barnab{\'a}s P{\'o}czos, Russ Salakhutdinov, and Alexander Smola.
+\newblock Deep Sets.
+\newblock In \emph{NeurIPS}, 2017.
+
+\bibitem[Lee et~al.(2019)]{settransformer}
+Juho Lee, Yoonho Lee, Jungtaek Kim, Adam~R. Kosiorek, Seungjin Choi, and Yee~Whye Teh.
+\newblock Set Transformer: A framework for attention-based permutation-invariant input.
+\newblock In \emph{ICML}, 2019.
+
+\bibitem[Lakshminarayanan et~al.(2017)]{deepensembles}
+Balaji Lakshminarayanan, Alexander Pritzel, and Charles Blundell.
+\newblock Simple and scalable predictive uncertainty estimation using deep ensembles.
+\newblock In \emph{NeurIPS}, 2017.
+
+\bibitem[Guo et~al.(2017)]{calibration}
+Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian~Q. Weinberger.
+\newblock On calibration of modern neural networks.
+\newblock In \emph{ICML}, 2017.
+
+\bibitem[Geifman and El-Yaniv(2017)]{selectivepred}
+Yonatan Geifman and Ran El-Yaniv.
+\newblock Selective classification for deep neural networks.
+\newblock In \emph{NeurIPS}, 2017.
+
+\end{thebibliography}
+
+\end{document}
