@@ -17,18 +17,23 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-matplotlib.rcParams.update(
-    {
-        "font.size": 11,
-        "axes.grid": False,
-        "figure.dpi": 150,
-        "savefig.dpi": 300,
-        "savefig.bbox": "tight",
-        "font.family": "serif",
-    }
-)
-
 _DPI = 300
+
+_RC_PARAMS = {
+    "font.size": 11,
+    "axes.grid": False,
+    "figure.dpi": 150,
+    "savefig.dpi": 300,
+    "savefig.bbox": "tight",
+    "font.family": "serif",
+}
+
+matplotlib.rcParams.update(_RC_PARAMS)
+
+
+def setup_plotting() -> None:
+    """Apply shared matplotlib rcParams for paper-quality figures."""
+    matplotlib.rcParams.update(_RC_PARAMS)
 
 
 def _save_fig(fig: plt.Figure, out_path: str | Path) -> None:

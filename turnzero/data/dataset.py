@@ -143,9 +143,14 @@ class VGCDataset(Dataset):
     All examples are loaded into memory on init (dataset fits in RAM).
     """
 
-    def __init__(self, jsonl_path: str | Path, vocab: Vocab) -> None:
+    def __init__(self, jsonl_path: str | Path, vocab: Vocab, tier1_only: bool = False) -> None:
         self.vocab = vocab
         self.examples: list[dict[str, Any]] = list(read_jsonl(jsonl_path))
+        if tier1_only:
+            self.examples = [
+                ex for ex in self.examples
+                if ex["label_quality"]["bring4_observed"]
+            ]
 
     def __len__(self) -> int:
         return len(self.examples)
@@ -188,6 +193,7 @@ def build_dataloaders(
     batch_size: int = 512,
     num_workers: int = 4,
     vocab_path: str | Path | None = None,
+    tier1_only: bool = False,
 ) -> tuple[DataLoader, DataLoader, DataLoader, Vocab]:
     """Build train/val/test DataLoaders from an assembled split directory.
 
@@ -202,6 +208,9 @@ def build_dataloaders(
     vocab_path : path or None
         If None, build vocab from train split and save to split_dir/vocab.json.
         If given, load existing vocab.
+    tier1_only : bool
+        If True, filter the *training* set to Tier 1 examples only
+        (bring4_observed=True). Val/test are always kept full.
 
     Returns
     -------
@@ -221,13 +230,18 @@ def build_dataloaders(
         vocab = Vocab.load(vocab_path)
         train_examples = None
 
-    # Datasets
-    train_ds = VGCDataset(train_path, vocab)
+    # Datasets (tier1_only applies to train only)
+    train_ds = VGCDataset(train_path, vocab, tier1_only=tier1_only)
     val_ds = VGCDataset(val_path, vocab)
     test_ds = VGCDataset(test_path, vocab)
 
     # If we already loaded the train examples, inject them to avoid re-reading
     if train_examples is not None:
+        if tier1_only:
+            train_examples = [
+                ex for ex in train_examples
+                if ex["label_quality"]["bring4_observed"]
+            ]
         train_ds.examples = train_examples
 
     # Loaders

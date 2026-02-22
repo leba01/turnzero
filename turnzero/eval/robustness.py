@@ -15,28 +15,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from turnzero.eval.metrics import compute_metrics
-from turnzero.models.transformer import ModelConfig, OTSTransformer
+from turnzero.eval.plots import _DPI, _save_fig, setup_plotting
+from turnzero.models.transformer import OTSTransformer
 
-matplotlib.rcParams.update(
-    {
-        "font.size": 11,
-        "axes.grid": False,
-        "figure.dpi": 150,
-        "savefig.dpi": 300,
-        "savefig.bbox": "tight",
-        "font.family": "serif",
-    }
-)
-
-_DPI = 300
+setup_plotting()
 _EPS = 1e-12
 
 # ---------------------------------------------------------------------------
@@ -116,30 +104,11 @@ def mask_batch(
     return masked
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers (mirrors ensemble.py patterns)
-# ---------------------------------------------------------------------------
-
-def _load_model_from_ckpt(
-    ckpt_path: str | Path,
-    device: torch.device,
-) -> nn.Module:
-    """Load an OTSTransformer from a checkpoint."""
-    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
-    model_cfg = ModelConfig(**ckpt["model_config"])
-    model = OTSTransformer(ckpt["vocab_sizes"], model_cfg)
-    model.load_state_dict(ckpt["model_state_dict"])
-    model = model.to(device)
-    model.eval()
-    return model
-
-
 @torch.no_grad()
 def _collect_probs_masked(
-    model: nn.Module,
+    model: torch.nn.Module,
     loader: DataLoader,
     device: torch.device,
-    temperature: float,
     mask_config: str,
     rng: np.random.Generator,
 ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
@@ -166,8 +135,7 @@ def _collect_probs_masked(
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             logits = model(team_a, team_b)
 
-        scaled = logits.float() / temperature
-        probs = torch.softmax(scaled, dim=-1).cpu().numpy()
+        probs = torch.softmax(logits.float(), dim=-1).cpu().numpy()
 
         all_probs.append(probs)
         all_action90.append(batch["action90_label"].numpy())
@@ -193,7 +161,6 @@ def run_stress_test(
     ckpt_paths: list[str | Path],
     loader: DataLoader,
     device: torch.device,
-    temperature: float = 1.0,
     mask_configs: list[str] | None = None,
     seed: int = 42,
 ) -> dict[str, dict]:
@@ -210,8 +177,6 @@ def run_stress_test(
         Test DataLoader (shuffle=False, drop_last=False).
     device : torch.device
         GPU or CPU.
-    temperature : float
-        Temperature for softmax calibration.
     mask_configs : list of str or None
         Masking configs to test. If None, uses MASK_ORDER.
     seed : int
@@ -241,12 +206,12 @@ def run_stress_test(
         for i, ckpt_path in enumerate(ckpt_paths):
             print(f"  Member {i + 1}/{M}: {Path(ckpt_path).parent.name}")
 
-            model = _load_model_from_ckpt(ckpt_path, device)
+            model = OTSTransformer.load_from_checkpoint(ckpt_path, device)
 
             # Reset RNG per member so each member sees the same masks
             member_rng = np.random.default_rng(seed)
             probs_m, ld = _collect_probs_masked(
-                model, loader, device, temperature, cfg_name, member_rng,
+                model, loader, device, cfg_name, member_rng,
             )
             member_probs_list.append(probs_m)
 
@@ -287,19 +252,6 @@ def run_stress_test(
         print(f"  Result: {t1}  {t3}  {t5}  {nll}  {conf}")
 
     return results
-
-
-# ---------------------------------------------------------------------------
-# Plotting
-# ---------------------------------------------------------------------------
-
-def _save_fig(fig: plt.Figure, out_path: str | Path) -> None:
-    """Save figure as both PNG and PDF next to *out_path*."""
-    out = Path(out_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out.with_suffix(".png"), dpi=_DPI)
-    fig.savefig(out.with_suffix(".pdf"), dpi=_DPI)
-    plt.close(fig)
 
 
 _COLORS = ["#4c72b0", "#dd8452", "#55a868", "#c44e52", "#8172b3"]

@@ -27,7 +27,6 @@ from turnzero.eval.robustness import (
     plot_stress_test,
     run_stress_test,
 )
-from turnzero.uq.temperature import TemperatureScaler
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -37,7 +36,6 @@ ENSEMBLE_DIR = ROOT / "outputs" / "runs"
 ENSEMBLE_MEMBERS = [
     ENSEMBLE_DIR / f"ensemble_{i:03d}" / "best.pt" for i in range(1, 6)
 ]
-TEMP_JSON = ROOT / "outputs" / "calibration" / "run_001" / "temperature.json"
 VOCAB_PATH = ROOT / "outputs" / "runs" / "ensemble_001" / "vocab.json"
 
 OUT_EVAL = ROOT / "outputs" / "eval"
@@ -54,10 +52,6 @@ def main() -> None:
     print("=" * 70)
     print("  Moves-Hidden Stress Test (Week 4, Task 0)")
     print("=" * 70)
-
-    # --- Load temperature ---
-    scaler = TemperatureScaler.load(TEMP_JSON)
-    print(f"\nTemperature: T={scaler.T:.4f}")
 
     # --- Build test DataLoader ---
     print(f"\nLoading test data from {DATA_A} ...")
@@ -86,7 +80,6 @@ def main() -> None:
         ckpt_paths=ENSEMBLE_MEMBERS,
         loader=test_loader,
         device=DEVICE,
-        temperature=scaler.T,
         mask_configs=MASK_ORDER,
         seed=42,
     )

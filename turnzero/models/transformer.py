@@ -92,6 +92,28 @@ class OTSTransformer(nn.Module):
 
         self._init_weights()
 
+    @classmethod
+    def load_from_checkpoint(
+        cls, ckpt_path: str | Path, device: torch.device,
+    ) -> "OTSTransformer":
+        """Load an OTSTransformer from a training checkpoint.
+
+        Args:
+            ckpt_path: Path to best.pt checkpoint.
+            device: Target device.
+
+        Returns:
+            Model in eval mode on the given device.
+        """
+        from pathlib import Path as _Path
+        ckpt = torch.load(_Path(ckpt_path), map_location=device, weights_only=False)
+        model_cfg = ModelConfig(**ckpt["model_config"])
+        model = cls(ckpt["vocab_sizes"], model_cfg)
+        model.load_state_dict(ckpt["model_state_dict"])
+        model = model.to(device)
+        model.eval()
+        return model
+
     def _init_weights(self) -> None:
         """Initialize embeddings with small std (0.02)."""
         init_std = 0.02

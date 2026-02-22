@@ -17,31 +17,7 @@ import torch.nn as nn
 from scipy.optimize import minimize_scalar
 from torch.utils.data import DataLoader
 
-
-# ---------------------------------------------------------------------------
-# ECE helper (mirrors eval/metrics.py _ece but operates on numpy arrays)
-# ---------------------------------------------------------------------------
-
-def _ece(confidence: np.ndarray, correct: np.ndarray, n_bins: int = 15) -> float:
-    """Expected Calibration Error with equal-width confidence bins."""
-    bin_edges = np.linspace(0.0, 1.0, n_bins + 1)
-    ece = 0.0
-    n_total = len(confidence)
-    if n_total == 0:
-        return 0.0
-    for i in range(n_bins):
-        lo, hi = bin_edges[i], bin_edges[i + 1]
-        if i == 0:
-            mask = (confidence >= lo) & (confidence <= hi)
-        else:
-            mask = (confidence > lo) & (confidence <= hi)
-        n_in_bin = mask.sum()
-        if n_in_bin == 0:
-            continue
-        avg_conf = float(confidence[mask].mean())
-        avg_acc = float(correct[mask].astype(np.float64).mean())
-        ece += (n_in_bin / n_total) * abs(avg_acc - avg_conf)
-    return ece
+from turnzero.eval.metrics import _ece
 
 
 # ---------------------------------------------------------------------------
@@ -74,6 +50,10 @@ class TemperatureScaler:
 
     Fits a single scalar T > 0 on validation logits to minimize NLL.
     At inference: calibrated_probs = softmax(logits / T)
+
+    Note: Temperature scaling is not applied in the final pipeline
+    (T~1.0 on the ensemble confirms it is already well-calibrated).
+    This class is retained for documentation and experimentation.
     """
 
     def __init__(self) -> None:

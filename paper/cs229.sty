@@ -1,0 +1,79 @@
+% CS229 style file (based on NeurIPS format)
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cs229}[2026/02/21 CS229 Final Project Style]
+
+% Fonts and encoding
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage{times}
+
+% Page geometry
+\RequirePackage[letterpaper,
+  top=1in,
+  bottom=1in,
+  left=1in,
+  right=1in]{geometry}
+
+% Math
+\RequirePackage{amsmath,amssymb,amsfonts}
+
+% Graphics and tables
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{multirow}
+
+% Colors and links
+\RequirePackage[dvipsnames]{xcolor}
+\RequirePackage[colorlinks=true,
+  linkcolor=MidnightBlue,
+  citecolor=MidnightBlue,
+  urlcolor=MidnightBlue]{hyperref}
+
+% Compact lists
+\RequirePackage{enumitem}
+\setlist{nosep,leftmargin=*}
+
+% Caption formatting
+\RequirePackage[font=small,labelfont=bf]{caption}
+
+% Natbib for citations
+\RequirePackage[numbers,sort&compress]{natbib}
+
+% Compact sections
+\RequirePackage[compact]{titlesec}
+\titlespacing*{\section}{0pt}{1.5ex plus 0.5ex minus 0.3ex}{0.8ex plus 0.2ex}
+\titlespacing*{\subsection}{0pt}{1.2ex plus 0.4ex minus 0.2ex}{0.5ex plus 0.1ex}
+\titlespacing*{\subsubsection}{0pt}{1.0ex plus 0.3ex minus 0.1ex}{0.3ex plus 0.1ex}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{1em}{}
+
+% Paragraph spacing
+\setlength{\parskip}{0.3ex plus 0.1ex minus 0.1ex}
+\setlength{\parindent}{1em}
+
+% Float parameters for better figure placement
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.8}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{5}
+
+% Title formatting
+\newcommand{\cs@title}{}
+\newcommand{\cs@author}{}
+\renewcommand{\title}[1]{\renewcommand{\cs@title}{#1}}
+\renewcommand{\author}[1]{\renewcommand{\cs@author}{#1}}
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\LARGE\bfseries \cs@title \par}
+    \vspace{0.5em}
+    {\large \cs@author \par}
+    \vspace{0.3em}
+    {\normalsize Stanford University \par}
+    \vspace{0.3em}
+    {\normalsize CS229: Machine Learning --- Winter 2025--26 \par}
+  \end{center}
+  \vspace{1em}
+}

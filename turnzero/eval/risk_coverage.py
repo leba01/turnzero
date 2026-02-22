@@ -10,31 +10,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-matplotlib.rcParams.update(
-    {
-        "font.size": 11,
-        "axes.grid": False,
-        "figure.dpi": 150,
-        "savefig.dpi": 300,
-        "savefig.bbox": "tight",
-        "font.family": "serif",
-    }
-)
+from turnzero.eval.plots import _save_fig, setup_plotting
 
-_DPI = 300
-
-
-def _save_fig(fig: plt.Figure, out_path: str | Path) -> None:
-    """Save figure as both PNG and PDF next to *out_path*."""
-    out = Path(out_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out.with_suffix(".png"), dpi=_DPI)
-    fig.savefig(out.with_suffix(".pdf"), dpi=_DPI)
-    plt.close(fig)
+setup_plotting()
 
 
 # ---------------------------------------------------------------------------

@@ -13,7 +13,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.12-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/pytorch-2.1+-ee4c2c?style=flat-square&logo=pytorch&logoColor=white" alt="PyTorch"/>
-  <img src="https://img.shields.io/badge/tests-180_passing-2ea043?style=flat-square" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-179_passing-2ea043?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
 </p>
 
@@ -55,9 +55,11 @@ In competitive Pokemon VGC, both players reveal their full 6-mon team sheets bef
 |:---|:---:|:---:|:---:|
 | **Action-90 Top-1** | 6.4% | 1.3% | 1.1% |
 | **Action-90 Top-3** | 15.5% | 3.9% | 3.3% |
-| **Lead-2 Top-1** | 19.8% | 6.0% | 6.7% |
+| **Lead-2 Top-1** | 19.8% | 7.1% | 6.7% |
 | **NLL** | 4.031 | 4.497 | 4.500 |
 | **ECE** | 0.011 | 0.065 | — |
+
+> Action-90 metrics on Tier 1 (32K examples with fully observed bring-4); Lead-2 on all (40K). Point estimates shown; 95% cluster-aware bootstrap CIs available in `outputs/eval/bootstrap_cis.json`. All numbers will be updated after ablation retraining.
 
 > **The accuracy story, reframed:** The model's top-17 predictions cover the expert's actual choice 50% of the time (random needs 45). At 90% coverage, you need 54 of 90 actions — the model concentrates probability mass where it belongs.
 
@@ -110,18 +112,21 @@ turnzero/
 │
 ├── configs/                    # Model configs (YAML)
 │   ├── transformer_base.yaml   #   d=128, L=4, H=4, 1.16M params
-│   └── ensemble/               #   Per-member seed configs
+│   ├── ensemble/               #   Per-member seed configs
+│   └── ablation_{a,b,c}/      #   3-way loss mode ablation (15 configs)
 │
 ├── scripts/                    # Standalone analysis scripts
 │   ├── eval_baselines.py       #   Run both baselines, generate comparison plots
 │   ├── train_ensemble.sh       #   Train all 5 ensemble members
+│   ├── train_ablations.sh      #   Train 15 ablation models (3 loss modes × 5 seeds)
+│   ├── eval_ablations.py       #   Evaluate ablation ensembles + comparison table
 │   ├── build_retrieval_index.py
 │   ├── run_stress_test.py      #   7-level feature masking ablation
 │   ├── run_final_figures.py    #   All 10 paper figures
 │   ├── run_cluster_analysis.py #   Per-team entropy vs accuracy
 │   └── run_supplementary_analysis.py  # Top-k curve, decomposition, speed control
 │
-├── tests/                      # 180 tests
+├── tests/                      # 179 tests
 │   ├── test_action_space.py    #   Bijection correctness
 │   ├── test_parser.py          #   Showdown protocol edge cases
 │   ├── test_canonicalize.py    #   Name normalization + dedup
@@ -238,7 +243,6 @@ turnzero eval --model_ckpt outputs/runs/run_001/best.pt \
 ```bash
 turnzero demo \
   --ensemble_dir outputs/runs \
-  --calib outputs/calibration/run_001/temperature.json \
   --team_a "Rillaboom,Flutter Mane,Incineroar,Urshifu,Farigiraf,Ogerpon" \
   --team_b "Tornadus,Rillaboom,Incineroar,Urshifu-Rapid-Strike,Flutter Mane,Landorus" \
   --index_path outputs/retrieval/train_index
@@ -249,7 +253,7 @@ The demo outputs top-k plans with calibrated probabilities, role annotations, fe
 ### Tests
 
 ```bash
-pytest                # 180 tests, ~2s
+pytest                # 179 tests, ~2s
 ```
 
 ## The model
@@ -269,7 +273,7 @@ Input: 6 mons (Team A) + 6 mons (Team B) = 12 tokens
 
 **Deep ensemble** (5 members): independent random inits, averaged probabilities. Gives predictive entropy + mutual information for free.
 
-**Temperature scaling**: T=1.158 on validation — near identity, confirming the ensemble is already well-calibrated. We apply it anyway because it's free.
+**Temperature scaling**: T=1.158 on validation — near identity, confirming the ensemble is already well-calibrated. Dropped from the final pipeline (T~1.0 adds no benefit).
 
 ## The data
 

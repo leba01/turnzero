@@ -230,42 +230,6 @@ class TestCrossSplitTripleDedup:
         result = _cross_split_triple_dedup(examples, team_to_split)
         assert len(result) == 2
 
-    def test_cross_split_triple_removed(self):
-        """Same triple in train and test → removed from train."""
-        team_to_split = {"ta": "train", "tb": "test"}
-        examples = [
-            _ex("e1", "ta", "tx", action90_id=5),  # train
-            _ex("e2", "tb", "tx", action90_id=5),  # test — same triple if ta==tb
-        ]
-        # These have different team_a_ids, so they're different triples
-        # Let me make them actually the same triple
-        examples = [
-            _ex("e1", "ta", "tx", action90_id=5),
-            _ex("e2", "ta", "tx", action90_id=5),
-        ]
-        # But ta maps to train in both... Let me use different team_to_split
-        team_to_split = {"ta": "train"}
-        # Hmm, both map to train, so no cross-split issue.
-        # Need different team_a_ids that map to different splits but same triple
-        # Actually, the triple is (team_a_id, team_b_id, action90). So team_a_id
-        # is part of the triple. Two examples with different team_a_ids can't
-        # form the same triple. This dedup catches cases where the same
-        # (team_a_id, team_b_id, action90) appears in multiple splits — which
-        # can only happen if team_a_id maps to multiple splits (shouldn't happen
-        # after match_group resolution). But it CAN happen via different
-        # match_group_ids producing the same triple.
-        # Simulate: same team pair, same action, different match_groups,
-        # resolved to different splits.
-        team_to_split_custom = {"ta_train": "train", "ta_test": "test"}
-        # Actually no — the triple includes team_a_id so these would be different.
-        # The only way is if the SAME team_a_id appears in two match groups
-        # that get resolved to different splits. But team_a_id → split is
-        # deterministic from the cluster assignment. After match_group resolution,
-        # a team_a_id should only be in one split. So cross-split triples should
-        # be very rare in practice. Let me just test that the function works
-        # correctly when forced:
-        pass
-
     def test_keeps_higher_priority_split(self):
         """When forced into cross-split scenario, keep test over train."""
         # Manually construct: force team_to_split to give different results

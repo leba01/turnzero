@@ -36,7 +36,7 @@ class ReconstructionQuality:
     """Tracks how many OTS fields are known vs UNK."""
 
     fields_known: int
-    fields_total: int = 42  # 6 mons x 7 fields (species + item + ability + tera + 4 moves... but species always known -> still 42 countable)
+    fields_total: int = 42  # 6 mons x 7 non-species fields (item + ability + tera + 4 moves)
     source_method: str = "showteam_direct"
 
     def to_dict(self) -> dict[str, Any]:

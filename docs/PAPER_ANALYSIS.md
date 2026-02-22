@@ -205,7 +205,9 @@ This is remarkably well-calibrated for a 90-class problem. Temperature scaling b
 
 **But here's the unexpected part:** Regime B *accuracy is higher* than Regime A (11.7% vs 6.4% top-1). This seems paradoxical but makes sense — Regime B's held-out clusters are rarer/more distinctive teams, so when the model IS confident about them, it's often right. The experts using these unusual teams may also be more predictable (fewer viable strategies with niche compositions).
 
-**Paper angle:** This is your "the model does the right thing" story. On novel matchups, it abstains more AND is more accurate when it does predict. That's exactly what you want from a decision support system.
+**Calibration caveat:** Regime B ECE = 0.076 (vs 0.011 for Regime A). The ensemble is notably less calibrated on OOD data — a genuine limitation. The abstention mechanism partially compensates (higher-confidence predictions are still reasonably calibrated), but report this honestly.
+
+**Paper angle:** This is your "the model does the right thing" story. On novel matchups, it abstains more AND is more accurate when it does predict. That's exactly what you want from a decision support system. Acknowledge ECE degradation on OOD as a limitation.
 
 ### 4. Moves are king — the stress test proves feature importance
 
@@ -251,6 +253,8 @@ Logistic NLL = 4.580 vs Popularity NLL = 4.497. The logistic baseline overfits t
 
 Ensemble top-1 CI: [2.6%, 6.6%]. That's a 4pp range. The cluster-aware bootstrap reveals that performance varies dramatically by team composition cluster. Some clusters the model nails, others it's lost.
 
+**Bootstrap mean vs point estimate discrepancy:** The bootstrap mean may differ slightly from the point estimate (e.g., 6.4% point vs ~6.2% bootstrap mean for top-1). This is expected because cluster-aware resampling changes the effective weighting across clusters — larger clusters get proportionally more weight in point estimates but are sampled uniformly in bootstrap. Report both.
+
 **The mirror CIs are wild:** Mirror top-1 CI has a *lower bound of 0.0%*. This means there exist team clusters where the model gets zero top-1 accuracy. The 6.8% mean masks enormous heterogeneity.
 
 ### S3. Regime B is better on accuracy — the selection effect
@@ -259,11 +263,13 @@ As noted above, Regime B top-1 = 11.7% vs Regime A = 6.4%. This isn't the model 
 
 **Paper angle:** This is a nice illustration of selective prediction at work. The system knows its limitations.
 
-### S4. Temperature scaling does almost nothing
+### S4. Temperature scaling does almost nothing — dropped from pipeline
 
 T = 1.158 (close to 1.0). Val NLL improvement: 4.063 → 4.055 (tiny). Val ECE: 0.011 → 0.003. The ensemble is already well-calibrated before temperature scaling. This suggests the 5-member ensemble's probability averaging is doing most of the calibration work.
 
-**Paper angle:** This validates deep ensembles as a strong calibration mechanism in their own right, not just a way to get uncertainty estimates.
+**Decision:** Temperature scaling has been **dropped from the final pipeline** since T≈1.0 adds no meaningful benefit. The `TemperatureScaler` class is retained for documentation and experimentation, but `ensemble_predict()` and the coach demo now use raw softmax directly.
+
+**Paper angle:** This validates deep ensembles as a strong calibration mechanism in their own right, not just a way to get uncertainty estimates. Framed as: "we tried temperature scaling; the near-identity T confirms the ensemble is already well-calibrated, so we omit it."
 
 ### S5. Confidence values are universally low
 
@@ -321,6 +327,58 @@ constraints like the Commander ability."
 
 ---
 
+## Ablation Study: Multi-Task Loss for Tier 2 Labels
+
+### Motivation
+
+~20% of training examples (Tier 2, `bring4_observed=False`) have **fabricated action-90
+labels** — the parser fills back-2 slots with a deterministic lowest-index heuristic since
+only leads are observed. The model trains on these as ground truth. While evaluation
+correctly restricts to Tier 1, the training signal is contaminated.
+
+### Three Loss Modes
+
+| Mode | Label | Tier 1 Loss | Tier 2 Loss | Train Data |
+|------|-------|-------------|-------------|------------|
+| `action90_all` | A (baseline) | Action-90 CE | Action-90 CE (fabricated) | Full |
+| `multitask` | B | Action-90 CE | Lead-2 CE via marginalization | Full |
+| `tier1_only` | C | Action-90 CE | — (dropped) | Tier 1 only |
+
+### Multi-task loss math
+
+For Tier 2 examples, marginalize 90-way action probs to 15-way lead-2 probs:
+```
+probs_90 = softmax(logits)         # (n, 90) — in probability space
+lead2_probs = probs_90 @ M         # (n, 15) — M is (90, 15) binary margin matrix
+loss_t2 = NLL(log(lead2_probs), lead2_true)
+```
+
+**Critical**: Marginalization happens in probability space, NOT logit space.
+`softmax(logits) @ M ≠ softmax(logits @ M)`.
+
+Combined loss weighted by batch proportion: `(n_tier1/N)*L1 + (n_tier2/N)*L2`.
+
+### Configs & Training
+
+- 15 configs: `configs/ablation_{a,b,c}/member_{001..005}.yaml`
+- Seeds: 42, 137, 256, 512, 777 (same as existing ensemble)
+- Train: `bash scripts/train_ablations.sh`
+- Eval: `python scripts/eval_ablations.py [--bootstrap]`
+
+### Expected Outcomes
+
+- Ablation B (multitask) should improve lead-2 metrics since Tier 2 now trains on
+  correct lead-2 labels instead of fabricated action-90 labels.
+- Ablation C (tier1_only) loses ~20% of training data but avoids all label noise.
+- If B and C are close, Tier 2 examples contribute useful lead-2 signal.
+- If A ≈ B, the fabricated Tier 2 labels are not hurting much (noise is tolerable).
+
+### Results
+
+*To be filled after training completes.*
+
+---
+
 ## Numbers for the Paper — Quick Reference
 
 ### Main Results Table
@@ -346,7 +404,7 @@ constraints like the Commander ability."
 - 8 fields per mon: species, item, ability, tera, 4 moves
 
 ### Key UQ Numbers
-- Temperature: T = 1.158
+- Temperature: T = 1.158 (near-identity; dropped from final pipeline)
 - AURC (top-1): 0.890 ensemble vs 0.905 single
 - AURC (top-3): 0.761 ensemble vs 0.791 single
 - OOD entropy shift: +0.168 nats

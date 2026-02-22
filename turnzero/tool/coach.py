@@ -249,9 +249,12 @@ def run_demo(
     team_a_tensor = _encode_team(team_a_dict, vocab).unsqueeze(0).to(device)
     team_b_tensor = _encode_team(team_b_dict, vocab).unsqueeze(0).to(device)
 
-    # Load temperature
-    scaler = TemperatureScaler.load(calib_path)
-    T = scaler.T
+    # Load temperature (T=1.0 if no calibration file provided)
+    if calib_path is not None:
+        scaler = TemperatureScaler.load(calib_path)
+        T = scaler.T
+    else:
+        T = 1.0
 
     # Load ensemble and run inference
     models = _load_ensemble(ensemble_dir, device)
