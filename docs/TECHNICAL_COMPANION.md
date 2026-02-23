@@ -397,9 +397,12 @@ granularity.
 - 153 teams with ≥20 Tier 1 examples
 - Entropy range: [3.099, 4.406], mean 4.034 ± 0.212
 - r = -0.561 between entropy and top-3 accuracy (strong negative correlation)
-- Most linear: Dondozo commander teams (H=3.10, 50% top-1) — the Commander
-  ability requires Dondozo + Tatsugiri to lead together, mechanically
-  constraining the decision
+- Per-team accuracy correlates with action-mode frequency (r = 0.55); 7/10 most
+  accurate teams have model_acc == mode_freq — the model predicts the mode action
+- Most linear: Dondozo commander teams (H=3.10, 50% top-1, matching mode
+  frequency) — the Commander ability requires Dondozo + Tatsugiri to lead
+  together, concentrating the action distribution into a single dominant play.
+  The model identifies this concentration, not opponent-conditional reasoning.
 - Most flexible: Diverse goodstuffs teams (H=4.41, 0% top-1) — many viable
   lead configurations, no single dominant strategy
 
@@ -680,7 +683,8 @@ experts disagree with *each other* and our top-17 predictions capture the
 right action 50% of the time. The real contribution isn't the classifier —
 it's the uncertainty quantification stack around it. Deep ensembles give us
 calibrated probabilities (ECE 0.011), selective prediction (abstention doubles
-on novel teams), and per-team linearity scores that reveal which archetypes
-are predictable (Dondozo commander: 50% top-1) and which aren't (goodstuffs:
-0%). No prior work treats VGC team preview as a standalone prediction problem
-with UQ."
+on novel teams), and per-team linearity scores that reveal a heterogeneous
+distribution driven by action concentration — commander teams with a single
+dominant play hit 50% top-1 (matching mode frequency), while flexible
+goodstuffs teams sit at 0%. No prior work treats VGC team preview as a
+standalone prediction problem with UQ."

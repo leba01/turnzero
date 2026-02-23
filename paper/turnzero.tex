@@ -15,7 +15,7 @@ Experts routinely disagree on the correct play for the same matchup, so I treat 
 The core result: a 5-member deep ensemble of permutation-invariant transformers needs only 17 predictions to cover 50\% of expert actions in a 90-way action space.
 Its top-3 lead-pair suggestions match the expert 43\% of the time.
 The ensemble is well-calibrated (adaptive ECE $= 0.012$)---when it says 15\%, it means 15\%---and reliably detects out-of-distribution teams, doubling its abstention rate on unseen archetypes (AUROC $= 0.80$).
-Per-team analysis reveals that predictability is bimodal: mechanically constrained ``commander'' teams reach 50\% top-1 accuracy, while flexible ``goodstuffs'' teams sit at 0\%.
+Per-team analysis reveals that predictability is driven by action concentration: mechanically constrained ``commander'' teams have a single dominant play (50\% top-1, matching the mode frequency), while flexible ``goodstuffs'' teams spread across many viable plans (0\% top-1).
 \end{abstract}
 
 
@@ -39,7 +39,7 @@ I present TurnZero, a calibrated decision support system that treats team previe
 \begin{itemize}
     \item A position-invariant transformer architecture trained on 382K expert replays, with popularity and logistic regression baselines.
     \item A complete UQ pipeline: 5-member deep ensemble, reliability calibration (adaptive ECE $= 0.012$), risk-coverage analysis (AURC $= 0.890$, E-AURC $= 0.452$), and distribution-shift sensitivity quantified by AUROC $= 0.80$.
-    \item Per-team predictability analysis showing that aggregate accuracy masks a bimodal distribution driven by mechanical constraints, not strategic complexity.
+    \item Per-team predictability analysis showing that aggregate accuracy masks a heterogeneous distribution where per-team accuracy tracks action-mode frequency ($r = 0.55$), driven by mechanical constraints rather than opponent modeling.
     \item A 7-level feature ablation identifying moves as the dominant signal (masking all moves drops top-3 accuracy from 15.5\% to 3.2\%).
 \end{itemize}
 
@@ -159,7 +159,6 @@ Transformer & 1.16M & 5.5 & 14.0 & 4.105 & 0.016 \\
 
 The ensemble achieves 6.4\% top-1 and 15.5\% top-3 on the 90-way action space (5.8$\times$ and 4.7$\times$ random).
 NLL of 4.031 (vs.\ 4.497 popularity) confirms the model learns matchup-specific signal beyond metagame frequencies, and adaptive ECE of 0.012 means the confidence scores are honest.
-The ensemble also achieves the lowest Brier score (0.974 vs.\ 0.989 popularity), confirming calibration under a proper scoring rule.
 The wide bootstrap CIs (top-1: [2.6\%, 6.6\%]) reflect genuine heterogeneity across team archetypes, explored in Section~\ref{sec:perteam}.
 
 \subsection{Reframing Accuracy: Top-k Coverage}
@@ -214,15 +213,16 @@ Calibration degrades on OOD data (adaptive ECE: $0.012 \to 0.076$).
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.68\columnwidth]{figures/cluster_entropy_vs_accuracy.pdf}
-    \caption{Mean ensemble entropy vs.\ top-3 accuracy for 153 team archetypes ($\geq$20 Tier~1 examples). Point size $\propto n$. $r = {-}0.56$: low-entropy ``commander'' teams reach 50\% top-1; high-entropy ``goodstuffs'' sit at 0\%.}
+    \caption{Mean ensemble entropy vs.\ top-3 accuracy for 153 team archetypes ($\geq$20 Tier~1 examples). Point size $\propto n$. $r = {-}0.56$: low-entropy teams have concentrated action distributions; high-entropy teams spread across many viable plans.}
     \label{fig:entropy_scatter}
 \end{figure}
 
-The aggregate 6.4\% top-1 average obscures a bimodal distribution.
+The aggregate 6.4\% top-1 average obscures substantial heterogeneity.
 Figure~\ref{fig:entropy_scatter} groups the test set by species composition (153 archetypes with $\geq$20 examples) and plots each team's mean ensemble entropy against its accuracy.
-The correlation is strong ($r = {-}0.56$ for top-3) and domain-plausible (partly mechanical for any calibrated model, but the domain structure---Commander vs.\ goodstuffs---confirms genuine predictability differences):
-the most predictable teams are ``commander'' archetypes (e.g., Dondozo + Tatsugiri, $H = 3.10$, 50\% top-1) where the Commander ability mechanically requires both Pok\'emon to lead together.
-The least predictable are flexible ``goodstuffs'' teams with many viable configurations ($H = 4.41$, 0\% top-1).
+The correlation is strong ($r = {-}0.56$ for top-3) and domain-plausible:
+the most predictable teams are ``commander'' archetypes (e.g., Dondozo + Tatsugiri, $H = 3.10$, 50\% top-1) where the Commander ability mechanically requires both Pok\'emon to lead together, concentrating the action distribution into a single dominant play.
+The model correctly identifies these concentrated distributions---per-team accuracy correlates with action-mode frequency ($r = 0.55$)---but this reflects learning \emph{which teams have solved lead selection}, not opponent-conditional reasoning.
+The least predictable are flexible ``goodstuffs'' teams with many viable configurations ($H = 4.41$, 0\% top-1), where the model's predictions miss the ground truth entirely.
 
 Speed control mode (Trick Room vs.\ Tailwind) does \emph{not} explain this: the entropy gap is 0.016 nats---effectively zero.
 Predictability is driven by mechanical constraints (Commander ability), not strategic choices.

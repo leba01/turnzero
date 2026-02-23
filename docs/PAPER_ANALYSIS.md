@@ -11,7 +11,8 @@ lightweight transformer ensemble (1.16M params, 5 members) with temperature
 scaling, selective prediction, and entropy-based team linearity scoring produces
 a system that (a) is well-calibrated (adaptive ECE = 0.012, Brier = 0.974), (b) knows when it doesn't
 know (OOD abstention doubles from 20% to 46%, AUROC = 0.80), and (c) reveals which team
-archetypes are predictable (Dondozo commander: 50% top-1) vs. which are not
+archetypes have concentrated action distributions (Dondozo commander: 50% top-1,
+matching mode frequency) vs. which spread across many viable plans
 (goodstuffs: 0% top-1). No prior work isolates the team preview decision as a
 first-class prediction problem with UQ — VGC-Bench subsumes it into full-game
 RL, and the only other lead prediction paper (Carli 2025) uses LSA on 1,174
@@ -28,8 +29,9 @@ don't pretend otherwise. The paper IS:
 > proper calibration, selective prediction, and entropy-based team linearity
 > scoring creates a decision support system that honestly communicates what it
 > knows and doesn't know. Per-team analysis reveals that aggregate accuracy
-> masks a bimodal distribution — some teams are 50% predictable, others are 0%
-> — and ensemble entropy cleanly separates them (r = -0.56).
+> masks a heterogeneous distribution where per-team accuracy tracks mode
+> frequency (r = 0.55) — concentrated action distributions are easy to predict,
+> diffuse ones are not — and ensemble entropy cleanly separates them (r = -0.56).
 
 The three money figures:
 1. **Reliability diagram** — calibration is excellent (adaptive ECE = 0.012, Brier = 0.974)
@@ -299,8 +301,10 @@ Grouping by species-6 composition and computing mean ensemble entropy per team r
 
 **The correlation is real:** entropy vs top-3 accuracy: r = -0.561. Teams with lower entropy (more predictable game plans) are significantly easier to model. Entropy vs top-1: r = -0.353 (weaker but still significant).
 
+**Mode-frequency analysis:** Per-team accuracy correlates with action-mode frequency (r = 0.55). 7 of the 10 most accurate teams have model_acc == mode_freq — the model is effectively predicting the mode action for these teams. Mean delta (model_acc - mode_freq) = -6.8pp across all 153 teams, meaning the model is *worse* than a per-team mode lookup on average. The model identifies which teams have concentrated action distributions (i.e., solved lead selection), not what to do against specific opponents.
+
 **Domain-plausible extremes:**
-- **Most linear (H=3.10):** Calyrex-Shadow / Dondozo / Ogerpon-Cornerstone / Roaring Moon — 50% top-1, 68% top-3. The Dondozo "commander" archetype has an extremely telegraphed game plan.
+- **Most linear (H=3.10):** Calyrex-Shadow / Dondozo / Ogerpon-Cornerstone / Roaring Moon — 50% top-1, 68% top-3. The Dondozo "commander" archetype has an extremely telegraphed game plan. The 50% top-1 matches the mode frequency — the model predicts the same dominant action for all examples.
 - **Most linear #2 (H=3.21):** Calyrex-Shadow / Dondozo / Indeedee-F / Tatsugiri-Droopy — 27% top-1, 50% top-3. Another commander variant.
 - **Most flexible (H=4.41):** Ceruledge / Garchomp / Samurott-Hisui / Staraptor — 0% top-1, 10% top-3. Diverse goodstuffs with many viable lead configurations.
 
@@ -309,7 +313,7 @@ Grouping by species-6 composition and computing mean ensemble entropy per team r
 - 47/153 teams (31%) exceed 10% top-1 — well above the 6.4% aggregate
 - Median top-1: 7.7%, median top-3: 17.2% (both above aggregate, since high-n teams pull the aggregate down)
 
-**Paper angle:** This is the centerpiece Week 5 extension. The aggregate 6.4% top-1 is a misleading average over a bimodal distribution — some teams are 50% predictable, others are 0%. The entropy-accuracy scatter is a publication-quality figure that tells the whole story.
+**Paper angle:** This is the centerpiece Week 5 extension. The aggregate 6.4% top-1 is a misleading average over a heterogeneous, right-skewed distribution driven by action concentration — teams with a single dominant play (commander archetypes, mode freq ≈ 50%) are easy to predict, while teams that spread across many viable plans (goodstuffs) are not. The entropy-accuracy scatter is a publication-quality figure that tells the whole story.
 
 ### S8. Speed control does NOT explain team linearity (negative result)
 
@@ -482,10 +486,11 @@ carry correct lead-2 information. **Validates training on all data with standard
    - Table 3: OOD comparison (Regime A vs B — abstention doubles)
    - Figure 6: Team entropy histogram (annotated with linear vs flexible extremes)
 
-6. **Discussion** — Per-team heterogeneity (6.4% aggregate masks bimodal
-   distribution), bring-4 vs lead-2 (teams agree on what to bring, disagree on
-   who leads), mirror/non-mirror gap (model learns convention not strategy),
-   speed control negative result (Commander mechanics, not TR, drive linearity),
+6. **Discussion** — Per-team heterogeneity (6.4% aggregate masks heterogeneous
+   distribution driven by action concentration), bring-4 vs lead-2 (teams agree
+   on what to bring, disagree on who leads), mirror/non-mirror gap (model learns
+   convention not strategy), speed control negative result (Commander mechanics,
+   not TR, drive linearity),
    wide CIs (honest about variance), position invariance vs EliteFurretAI's
    leakage. Future work: conformal prediction sets, opponent-conditional
    analysis (does team_b matter for linear teams?), cluster-specific models.
