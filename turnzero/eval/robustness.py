@@ -21,11 +21,13 @@ import torch
 from torch.utils.data import DataLoader
 
 from turnzero.eval.metrics import compute_metrics
+from turnzero.eval.plots import COLORS as _COLORS
 from turnzero.eval.plots import _DPI, _save_fig, setup_plotting
 from turnzero.models.transformer import OTSTransformer
 
+from turnzero.constants import LOG_EPS as _EPS
+
 setup_plotting()
-_EPS = 1e-12
 
 # ---------------------------------------------------------------------------
 # Masking configurations
@@ -254,7 +256,7 @@ def run_stress_test(
     return results
 
 
-_COLORS = ["#4c72b0", "#dd8452", "#55a868", "#c44e52", "#8172b3"]
+# Color cycle imported from turnzero.eval.plots
 
 
 def plot_stress_test(

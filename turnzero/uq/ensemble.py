@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 
 from turnzero.models.transformer import OTSTransformer
 
-_EPS = 1e-12
+from turnzero.constants import LOG_EPS as _EPS
 
 
 def _entropy(probs: np.ndarray) -> np.ndarray:

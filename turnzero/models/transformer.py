@@ -10,8 +10,8 @@ Reference: docs/PROJECT_BIBLE.md Section 3, Option A
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -105,8 +105,7 @@ class OTSTransformer(nn.Module):
         Returns:
             Model in eval mode on the given device.
         """
-        from pathlib import Path as _Path
-        ckpt = torch.load(_Path(ckpt_path), map_location=device, weights_only=False)
+        ckpt = torch.load(Path(ckpt_path), map_location=device, weights_only=False)
         model_cfg = ModelConfig(**ckpt["model_config"])
         model = cls(ckpt["vocab_sizes"], model_cfg)
         model.load_state_dict(ckpt["model_state_dict"])

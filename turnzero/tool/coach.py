@@ -32,7 +32,7 @@ from turnzero.tool.lexicon import annotate_team
 from turnzero.tool.retrieval import RetrievalIndex
 from turnzero.uq.temperature import TemperatureScaler
 
-_EPS = 1e-12
+from turnzero.constants import LOG_EPS as _EPS
 
 
 def _load_ensemble(

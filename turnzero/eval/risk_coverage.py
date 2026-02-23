@@ -13,6 +13,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from turnzero.eval.plots import COLORS as _COLORS
 from turnzero.eval.plots import _save_fig, setup_plotting
 
 setup_plotting()
@@ -149,8 +150,7 @@ def risk_coverage_curve(
 # Plotting
 # ---------------------------------------------------------------------------
 
-# Color cycle for multi-model comparison
-_COLORS = ["#4c72b0", "#dd8452", "#55a868", "#c44e52", "#8172b3", "#937860"]
+# Color cycle imported from turnzero.eval.plots
 
 
 def plot_risk_coverage(

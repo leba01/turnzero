@@ -19,6 +19,8 @@ import numpy as np
 
 _DPI = 300
 
+COLORS = ["#4c72b0", "#dd8452", "#55a868", "#c44e52", "#8172b3", "#937860"]
+
 _RC_PARAMS = {
     "font.size": 11,
     "axes.grid": False,

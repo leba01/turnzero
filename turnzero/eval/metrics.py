@@ -43,7 +43,7 @@ def _marginalize_to_lead2(probs: np.ndarray) -> np.ndarray:
 # Helper metrics
 # ---------------------------------------------------------------------------
 
-_EPS = 1e-12  # clamp for log
+from turnzero.constants import LOG_EPS as _EPS
 
 
 def _topk_accuracy(probs: np.ndarray, labels: np.ndarray, k: int) -> float:

@@ -30,7 +30,7 @@ from torch.utils.data import DataLoader
 from turnzero.action_space import action90_to_lead_back
 from turnzero.models.transformer import OTSTransformer
 
-_EPS = 1e-12
+from turnzero.constants import LOG_EPS as _EPS
 
 
 # ---------------------------------------------------------------------------

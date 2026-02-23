@@ -24,7 +24,7 @@ from turnzero.eval.metrics import _ece
 # Softmax + NLL helpers (pure numpy, operates on pre-collected logits)
 # ---------------------------------------------------------------------------
 
-_EPS = 1e-12
+from turnzero.constants import LOG_EPS as _EPS
 
 
 def _softmax(logits: np.ndarray) -> np.ndarray:

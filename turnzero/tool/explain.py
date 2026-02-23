@@ -34,7 +34,7 @@ for _a, (_lead, _back) in enumerate(ACTION_TABLE):
     for _i in _back:
         BRING_MASK[_a, _i] = 1.0
 
-_EPS = 1e-12
+from turnzero.constants import LOG_EPS as _EPS
 
 
 # ---------------------------------------------------------------------------

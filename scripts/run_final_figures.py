@@ -26,42 +26,18 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-# ---------------------------------------------------------------------------
-# Setup
-# ---------------------------------------------------------------------------
-
 matplotlib.use("Agg")  # non-interactive backend
-
-matplotlib.rcParams.update(
-    {
-        "font.size": 11,
-        "axes.grid": False,
-        "figure.dpi": 150,
-        "savefig.dpi": 300,
-        "savefig.bbox": "tight",
-        "font.family": "serif",
-    }
-)
-
-_DPI = 300
-_COLORS = ["#4c72b0", "#dd8452", "#55a868", "#c44e52", "#8172b3", "#937860"]
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from turnzero.eval.plots import COLORS as _COLORS  # noqa: E402
+from turnzero.eval.plots import _save_fig, setup_plotting  # noqa: E402
+
+setup_plotting()
+
 PAPER_DIR = ROOT / "outputs" / "plots" / "paper"
 PAPER_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def _save_fig(fig: plt.Figure, out_path: str | Path) -> None:
-    """Save figure as both PNG and PDF next to *out_path*."""
-    out = Path(out_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out.with_suffix(".png"), dpi=_DPI)
-    fig.savefig(out.with_suffix(".pdf"), dpi=_DPI)
-    plt.close(fig)
-    print(f"  Saved: {out.with_suffix('.png')}")
-    print(f"  Saved: {out.with_suffix('.pdf')}")
 
 
 def _load_json(path: Path) -> dict:
