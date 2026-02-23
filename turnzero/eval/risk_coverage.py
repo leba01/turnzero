@@ -88,6 +88,27 @@ def risk_coverage_curve(
     else:
         aurc = float("nan")
 
+    # Optimal AURC: sort predictions correct-first, then compute area.
+    # This gives the best possible risk-coverage curve for a given error rate.
+    n_correct = int(correct.sum())
+    n_wrong = N - n_correct
+    if N > 0 and not np.isnan(aurc):
+        # Optimal strategy: predict correct examples first (risk=0 until
+        # coverage exceeds the fraction of correct examples), then wrong
+        # examples (risk rises linearly). Closed-form area:
+        #   aurc_opt = (n_wrong / N) * (n_wrong / (2 * N))
+        # which is the triangle of risk from coverage=(n_correct/N) to 1.0
+        # More precisely, integrate the step function via trapezoidal rule:
+        frac_correct = n_correct / N
+        # At coverage = frac_correct, risk = 0.
+        # At coverage = 1.0, risk = n_wrong / N.
+        # The curve is 0 up to frac_correct, then rises linearly.
+        aurc_optimal = float(0.5 * (1.0 - frac_correct) * (n_wrong / N))
+        e_aurc = aurc - aurc_optimal
+    else:
+        aurc_optimal = float("nan")
+        e_aurc = float("nan")
+
     # Operating points at target coverage levels
     operating_points: dict[str, dict[str, float]] = {}
     for target_pct in ("95", "80", "60"):
@@ -118,6 +139,8 @@ def risk_coverage_curve(
         "risk": risk_arr,
         "thresholds": thresholds,
         "aurc": aurc,
+        "aurc_optimal": aurc_optimal,
+        "e_aurc": e_aurc,
         "operating_points": operating_points,
     }
 

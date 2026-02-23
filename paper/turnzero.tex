@@ -13,7 +13,7 @@ In competitive Pok\'emon VGC, each player privately selects 4 of 6 Pok\'emon to 
 Because experts routinely disagree on the correct play, raw accuracy is a poor measure of model quality.
 I frame team preview as a 90-way classification problem and show that uncertainty quantification matters more than point accuracy in this multi-modal domain.
 A 5-member deep ensemble of permutation-invariant transformers (1.16M params each) achieves 6.4\% top-1 on 32K test examples---modest alone, but $k{=}17$ predictions cover 50\% of outcomes (vs.\ $k{=}45$ random).
-The ensemble is well-calibrated (ECE $= 0.011$), supports selective prediction (AURC $= 0.890$), and doubles abstention on out-of-distribution teams (20\%$\to$46\%).
+The ensemble is well-calibrated (adaptive ECE $= 0.012$, Brier $= 0.974$), supports selective prediction (AURC $= 0.890$, E-AURC $= 0.452$), and doubles abstention on out-of-distribution teams (20\%$\to$46\%, AUROC $= 0.80$).
 Per-team analysis reveals a bimodal distribution: ``commander'' archetypes reach 50\% top-1, while flexible ``goodstuffs'' teams sit at 0\%. Ensemble entropy separates them ($r = {-}0.56$).
 \end{abstract}
 
@@ -37,7 +37,7 @@ I present TurnZero, a calibrated decision support system that treats team previe
 \textbf{Contributions.}
 \begin{itemize}
     \item A position-invariant transformer architecture trained on 382K expert replays, with popularity and logistic regression baselines.
-    \item A complete UQ pipeline: 5-member deep ensemble, reliability calibration (ECE $= 0.011$), risk-coverage analysis (AURC $= 0.890$), and out-of-distribution detection via entropy shift.
+    \item A complete UQ pipeline: 5-member deep ensemble, reliability calibration (adaptive ECE $= 0.012$), risk-coverage analysis (AURC $= 0.890$, E-AURC $= 0.452$), and distribution-shift sensitivity quantified by AUROC $= 0.80$.
     \item Per-team predictability analysis showing that aggregate accuracy masks a bimodal distribution driven by mechanical constraints, not strategic complexity.
     \item A 7-level feature ablation identifying moves as the dominant signal (masking all moves drops top-3 accuracy from 15.5\% to 3.2\%).
 \end{itemize}
@@ -75,7 +75,7 @@ Each player chooses 4 of 6 Pok\'emon to bring ($\binom{6}{4} = 15$ options) and 
 I encode each action as an integer $a \in \{0, \ldots, 89\}$ via a canonical bijection.
 
 \textbf{Dataset.}
-I extract 382K directed examples (two per game, one from each player's perspective) from 212K Regulation~G battles on Pok\'emon Showdown, sourced from the \texttt{vgc-battle-logs} dataset~\cite{vgcbench}.
+I parse 212K Regulation~G battles from Pok\'emon Showdown into 425K directed examples (one from each player's perspective), then deduplicate to 382K, sourced from the \texttt{vgc-battle-logs} dataset~\cite{vgcbench}.
 Each example consists of two full Open Team Sheets---species, item, ability, tera type, and all four moves for each of 12 Pok\'emon---and a ground-truth action label.
 
 \textbf{Label observability.}
@@ -137,7 +137,7 @@ The risk-coverage curve plots error rate against the fraction of examples predic
 
 \begin{table}[t]
 \centering
-\caption{Test set performance (Regime A, Tier 1, $n{=}$32,328). Top-1/3 accuracy (\%, $\uparrow$), NLL ($\downarrow$), ECE ($\downarrow$). Bootstrap 95\% CIs for the ensemble are cluster-aware ($B{=}$1000). The logistic baseline's worse NLL than popularity reflects overconfident wrong predictions.}
+\caption{Test set performance (Regime A, Tier 1, $n{=}$32,328). Top-1/3 accuracy (\%, $\uparrow$), NLL ($\downarrow$), adaptive ECE ($\downarrow$, equal-mass binning~\cite{nixon2019}). Bootstrap 95\% CIs for the ensemble are cluster-aware ($B{=}$1000). The logistic baseline's worse NLL than popularity reflects overconfident wrong predictions.}
 \label{tab:main}
 \small
 \begin{tabular}{@{}lrcccc@{}}
@@ -148,7 +148,7 @@ Random & --- & 1.1 & 3.3 & 4.500 & --- \\
 Popularity & 0 & 1.3 & 3.9 & 4.497 & 0.001 \\
 Logistic & $\sim$4K & 4.0 & 10.1 & 4.580 & 0.059 \\
 Transformer & 1.16M & 5.5 & 14.0 & 4.105 & 0.016 \\
-\textbf{Ensemble (5)} & \textbf{5.8M} & \textbf{6.4} & \textbf{15.5} & \textbf{4.031} & \textbf{0.011} \\
+\textbf{Ensemble (5)} & \textbf{5.8M} & \textbf{6.4} & \textbf{15.5} & \textbf{4.031} & \textbf{0.012} \\
 \midrule
 \multicolumn{2}{@{}l}{\footnotesize Ensemble 95\% CI} & \footnotesize [2.6, 6.6] & \footnotesize [6.8, 16.0] & \footnotesize [4.01, 4.43] & \footnotesize [0.002, 0.013] \\
 \bottomrule
@@ -156,7 +156,8 @@ Transformer & 1.16M & 5.5 & 14.0 & 4.105 & 0.016 \\
 \end{table}
 
 The ensemble achieves 6.4\% top-1 and 15.5\% top-3 on the 90-way action space (5.8$\times$ and 4.7$\times$ random).
-NLL of 4.031 (vs.\ 4.497 popularity) confirms the model learns matchup-specific signal beyond metagame frequencies, and ECE of 0.011 means the confidence scores are honest.
+NLL of 4.031 (vs.\ 4.497 popularity) confirms the model learns matchup-specific signal beyond metagame frequencies, and adaptive ECE of 0.012 means the confidence scores are honest.
+The ensemble also achieves the lowest Brier score (0.974 vs.\ 0.987 popularity), confirming calibration under a proper scoring rule.
 The wide bootstrap CIs (top-1: [2.6\%, 6.6\%]) reflect genuine heterogeneity across team archetypes, explored in Section~\ref{sec:perteam}.
 
 \subsection{Reframing Accuracy: Top-k Coverage}
@@ -181,7 +182,7 @@ Teams agree on \emph{what} to bring but disagree about \emph{who leads}.
     \centering
     \begin{subfigure}[t]{0.48\columnwidth}
         \includegraphics[width=\textwidth]{figures/reliability_diagram.pdf}
-        \caption{Reliability diagram. ECE $= 0.011$.}
+        \caption{Reliability diagram. Adaptive ECE $= 0.012$.}
         \label{fig:reliability}
     \end{subfigure}
     \hfill
@@ -190,19 +191,20 @@ Teams agree on \emph{what} to bring but disagree about \emph{who leads}.
         \caption{Risk-coverage curve (top-1).}
         \label{fig:riskcov}
     \end{subfigure}
-    \caption{\textbf{(a)} Predicted confidence closely tracks observed accuracy---the ensemble's probabilities mean what they say. \textbf{(b)} By abstaining on low-confidence predictions, the ensemble achieves lower error at every coverage level. AURC: 0.890 (ensemble) vs.\ 0.905 (single) vs.\ 0.953 (logistic).}
+    \caption{\textbf{(a)} Predicted confidence closely tracks observed accuracy---the ensemble's probabilities mean what they say. \textbf{(b)} By abstaining on low-confidence predictions, the ensemble achieves lower error at every coverage level. AURC: 0.890 (ensemble) vs.\ 0.905 (single) vs.\ 0.953 (logistic). E-AURC: 0.452 (ensemble) vs.\ 0.404 (top-3).}
     \label{fig:calibration}
 \end{figure}
 
 Figure~\ref{fig:reliability} shows that predicted confidence closely tracks observed accuracy across all bins.
 For a decision support tool, this matters more than raw accuracy: a player can trust that a 15\% prediction is roughly a 1-in-7 chance.
 Figure~\ref{fig:riskcov} shows the risk-coverage tradeoff.
-The ensemble's AURC of 0.890 (vs.\ 0.905 single, 0.953 logistic) confirms that ensembling improves not just accuracy but the model's ability to rank its own predictions by reliability.
+The ensemble's AURC of 0.890 (E-AURC $= 0.452$ after normalizing for the 93.6\% base error rate) vs.\ 0.905 single and 0.953 logistic confirms that ensembling improves not just accuracy but the model's ability to rank its own predictions by reliability.
 
-\textbf{OOD behavior.}
+\textbf{Distribution-shift sensitivity.}
 On Regime~B (held-out clusters), abstention jumps from 20\% to 46\%---the ensemble automatically becomes more cautious on unfamiliar teams.
+Mutual-information-based ID/OOD discrimination achieves AUROC $= 0.80$, confirming that epistemic uncertainty reliably separates in-distribution from novel team compositions.
 Top-1 accuracy on non-abstained Regime~B examples is \emph{higher} (11.7\% vs.\ 6.4\%): OOD teams that survive the confidence filter tend to be distinctive archetypes with fewer viable strategies.
-Calibration degrades on OOD data (ECE: $0.011 \to 0.076$).
+Calibration degrades on OOD data (adaptive ECE: $0.012 \to 0.076$).
 
 \subsection{Per-Team Predictability}
 \label{sec:perteam}
@@ -216,7 +218,7 @@ Calibration degrades on OOD data (ECE: $0.011 \to 0.076$).
 
 The aggregate 6.4\% top-1 average obscures a bimodal distribution.
 Figure~\ref{fig:entropy_scatter} groups the test set by species composition (153 archetypes with $\geq$20 examples) and plots each team's mean ensemble entropy against its accuracy.
-The correlation is strong ($r = {-}0.56$ for top-3) and domain-plausible:
+The correlation is strong ($r = {-}0.56$ for top-3) and domain-plausible (partly mechanical for any calibrated model, but the domain structure---Commander vs.\ goodstuffs---confirms genuine predictability differences):
 the most predictable teams are ``commander'' archetypes (e.g., Dondozo + Tatsugiri, $H = 3.10$, 50\% top-1) where the Commander ability mechanically requires both Pok\'emon to lead together.
 The least predictable are flexible ``goodstuffs'' teams with many viable configurations ($H = 4.41$, 0\% top-1).
 
@@ -225,9 +227,60 @@ Predictability is driven by mechanical constraints (Commander ability), not stra
 
 \subsection{Feature Importance}
 
-A 7-level feature masking stress test confirms that moves dominate the signal: masking all moves drops top-3 from 15.5\% to 3.2\% (near the popularity baseline's 3.9\%), while items or tera type alone cost ${\sim}$3pp each.
-Species alone still beats random, confirming composition-level patterns.
+\begin{table}[t]
+\centering
+\caption{Feature masking stress test (Regime A, Tier 1). Each row masks a cumulative set of input features and re-evaluates the frozen ensemble.}
+\label{tab:ablation_features}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Masked features} & \textbf{Top-1} & \textbf{Top-3} & \textbf{NLL} \\
+\midrule
+None (baseline) & 6.4 & 15.5 & 4.031 \\
+Items & 4.5 & 12.2 & 4.188 \\
+Tera type & 5.1 & 12.2 & 4.177 \\
+2 of 4 moves & 3.1 & 8.1 & 4.388 \\
+All 4 moves & 1.0 & 3.2 & 4.714 \\
+All moves + items & 1.2 & 3.7 & 4.636 \\
+All except species & 1.2 & 3.4 & 4.672 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:ablation_features} shows a 7-level feature masking stress test.
+Moves dominate: masking all four drops top-3 from 15.5\% to 3.2\%, near the popularity baseline's 3.9\%.
+Items and tera type each cost ${\sim}$3pp individually.
+Species alone still beats random (top-1: 1.2\% vs.\ 1.1\%), confirming composition-level patterns.
 The mirror/non-mirror gap (6.8\% vs.\ 3.8\% top-1) further shows the model's reliance on convention---common archetypes have established lead patterns that novel matchups lack.
+
+\subsection{Label Quality Ablation}
+
+Roughly 20\% of training examples (Tier~2) have fabricated action-90 labels: the back-2 is filled with a deterministic lowest-index heuristic when fewer than 4 Pok\'emon appear in the log.
+To test whether this noise matters, I compare three loss modes across 5-member ensembles (5 seeds each):
+(a)~standard cross-entropy on all data (\textsc{all}),
+(b)~a multi-task loss that marginalizes Tier~2 labels to lead-2 via a $90{\times}15$ aggregation matrix (\textsc{multitask}),
+and (c)~training on Tier~1 only (\textsc{tier1-only}).
+
+\begin{table}[t]
+\centering
+\caption{Label quality ablation (Regime A, Tier 1 test). Differences are $\leq$0.6pp top-1.}
+\label{tab:ablation_label}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Loss mode} & \textbf{Top-1} & \textbf{Top-3} & \textbf{NLL} \\
+\midrule
+\textsc{all} (baseline) & 6.4 & 15.5 & 4.022 \\
+\textsc{multitask} & 6.5 & 15.8 & 4.017 \\
+\textsc{tier1-only} & 5.9 & 15.1 & 4.047 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:ablation_label} shows minimal differences.
+Dropping Tier~2 entirely (\textsc{tier1-only}) slightly hurts performance ($-$0.5pp top-1), consistent with losing 20\% of training data.
+The principled marginalization loss (\textsc{multitask}) offers no significant gain over na\"ive cross-entropy on all data---the model is robust to ${\sim}$20\% label noise in the back-2 component, unsurprising given that the noisy labels still carry correct lead-2 information.
+This validates the decision to train on all data with standard cross-entropy.
 
 
 %=============================================================================
@@ -246,7 +299,7 @@ Valuable for decision support, but not strategic reasoning.
 The leakage-safe split (avoiding the 99.9\%$\to$79\% collapse documented in~\cite{elitefurretai}), Tier~1/2 delineation, and cluster-aware bootstrap all had outsized impact.
 
 \textbf{Limitations.}
-Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]). Calibration degrades OOD (ECE: $0.011 \to 0.076$). Training data is ladder games, not tournament best-of-three.
+Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]). Calibration degrades OOD (adaptive ECE: $0.012 \to 0.076$). Training data is ladder games, not tournament best-of-three.
 
 \textbf{Future work.}
 Conformal prediction sets would provide coverage guarantees with adaptive set sizes.
@@ -313,6 +366,11 @@ Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian~Q. Weinberger.
 Yonatan Geifman and Ran El-Yaniv.
 \newblock Selective classification for deep neural networks.
 \newblock In \emph{NeurIPS}, 2017.
+
+\bibitem[Nixon et~al.(2019)]{nixon2019}
+Jeremy Nixon, Mike Dusenberry, Linchuan Zhang, Ghassen Jerfel, and Dustin Tran.
+\newblock Measuring calibration in deep learning.
+\newblock In \emph{CVPR Workshops}, 2019.
 
 \end{thebibliography}
 

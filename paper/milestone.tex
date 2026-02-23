@@ -71,7 +71,7 @@ Each player chooses 4 of 6 Pok\'emon to bring ($\binom{6}{4} = 15$ options) and 
 I encode each action as an integer $a \in \{0, \ldots, 89\}$ via a canonical bijection.
 
 \textbf{Dataset.}
-I extract 382K directed examples (two per game, one from each player's perspective) from 212K Regulation~G battles on Pok\'emon Showdown, sourced from the \texttt{vgc-battle-logs} dataset~\cite{vgcbench}.
+I parse 212K Regulation~G battles from Pok\'emon Showdown into 425K directed examples (one from each player's perspective), then deduplicate to 382K, sourced from the \texttt{vgc-battle-logs} dataset~\cite{vgcbench}.
 Each example consists of two full Open Team Sheets---species, item, ability, tera type, and all four moves for each of 12 Pok\'emon---and a ground-truth action label.
 Raw battle logs are parsed by extracting \texttt{|showteam|} protocol lines, which provide complete OTS information for 96.8\% of games.
 Names are normalized from Showdown's CamelCase format to canonical display names, moves are lexicographically sorted within each Pok\'emon, and Pok\'emon are sorted within each team by a canonical key to ensure permutation invariance at the data level.

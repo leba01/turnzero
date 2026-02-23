@@ -98,6 +98,44 @@ def _ece(
     return ece
 
 
+def _ece_adaptive(
+    confidence: np.ndarray, correct: np.ndarray, n_bins: int = 15
+) -> float:
+    """Adaptive (equal-mass) ECE per Nixon et al. 2019.
+
+    Sorts examples by confidence and splits into *n_bins* bins of
+    approximately equal size, avoiding the empty-bin problem that
+    plagues equal-width ECE on low-confidence distributions.
+
+    Args:
+        confidence: (N,) max predicted probability per example.
+        correct: (N,) bool — whether top-1 prediction matches the true label.
+        n_bins: number of equal-mass bins.
+
+    Returns:
+        Weighted average of |accuracy - confidence| across bins.
+    """
+    n_total = len(confidence)
+    if n_total == 0:
+        return 0.0
+
+    order = np.argsort(confidence)
+    confidence = confidence[order]
+    correct = correct[order].astype(np.float64)
+
+    # Split into approximately equal-mass bins
+    bin_boundaries = np.linspace(0, n_total, n_bins + 1).astype(int)
+    ece = 0.0
+    for i in range(n_bins):
+        lo, hi = bin_boundaries[i], bin_boundaries[i + 1]
+        if lo == hi:
+            continue
+        avg_conf = float(confidence[lo:hi].mean())
+        avg_acc = float(correct[lo:hi].mean())
+        ece += (hi - lo) / n_total * abs(avg_acc - avg_conf)
+    return ece
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -164,6 +202,9 @@ def compute_metrics(
             conf_a = p_a.max(axis=1)
             correct_a = p_a.argmax(axis=1) == y_a
             results[f"{name}/ece_action90"] = _ece(conf_a, correct_a)
+            results[f"{name}/ece_adaptive_action90"] = _ece_adaptive(
+                conf_a, correct_a
+            )
 
         # --- Lead-2 metrics (all examples in stratum) ---
         if n_stratum > 0:
