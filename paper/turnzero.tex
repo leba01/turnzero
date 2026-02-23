@@ -9,12 +9,13 @@
 \maketitle
 
 \begin{abstract}
-In competitive Pok\'emon VGC, each player privately selects 4 of 6 Pok\'emon to bring and 2 to lead---a ``team preview'' decision with $\binom{6}{4}\times\binom{4}{2}=90$ valid actions.
-Because experts routinely disagree on the correct play, raw accuracy is a poor measure of model quality.
-I frame team preview as a 90-way classification problem and show that uncertainty quantification matters more than point accuracy in this multi-modal domain.
-A 5-member deep ensemble of permutation-invariant transformers (1.16M params each) achieves 6.4\% top-1 on 32K test examples---modest alone, but $k{=}17$ predictions cover 50\% of outcomes (vs.\ $k{=}45$ random).
-The ensemble is well-calibrated (adaptive ECE $= 0.012$, Brier $= 0.974$), supports selective prediction (AURC $= 0.890$, E-AURC $= 0.452$), and doubles abstention on out-of-distribution teams (20\%$\to$46\%, AUROC $= 0.80$).
-Per-team analysis reveals a bimodal distribution: ``commander'' archetypes reach 50\% top-1, while flexible ``goodstuffs'' teams sit at 0\%. Ensemble entropy separates them ($r = {-}0.56$).
+TurnZero is a calibrated decision-support system for competitive Pok\'emon VGC, trained on 382K expert replays from best-of-three tournament play.
+Given two Open Team Sheets (12 Pok\'emon, full movesets), it produces a probability distribution over all 90 legal team-preview actions---which 4 to bring and which 2 to lead.
+Experts routinely disagree on the correct play for the same matchup, so I treat uncertainty quantification as the primary objective rather than point accuracy.
+The core result: a 5-member deep ensemble of permutation-invariant transformers needs only 17 predictions to cover 50\% of expert actions in a 90-way action space.
+Its top-3 lead-pair suggestions match the expert 43\% of the time.
+The ensemble is well-calibrated (adaptive ECE $= 0.012$)---when it says 15\%, it means 15\%---and reliably detects out-of-distribution teams, doubling its abstention rate on unseen archetypes (AUROC $= 0.80$).
+Per-team analysis reveals that predictability is bimodal: mechanically constrained ``commander'' teams reach 50\% top-1 accuracy, while flexible ``goodstuffs'' teams sit at 0\%.
 \end{abstract}
 
 
