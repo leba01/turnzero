@@ -76,6 +76,7 @@ I encode each action as an integer $a \in \{0, \ldots, 89\}$ via a canonical bij
 
 \textbf{Dataset.}
 I parse 212K Regulation~G battles from Pok\'emon Showdown into 425K directed examples (one from each player's perspective), then deduplicate to 382K, sourced from the \texttt{vgc-battle-logs} dataset~\cite{vgcbench}.
+Data is drawn exclusively from best-of-three tournament play---the official VGC competition format---rather than ladder games, so that training conditions match deployment.
 Each example consists of two full Open Team Sheets---species, item, ability, tera type, and all four moves for each of 12 Pok\'emon---and a ground-truth action label.
 
 \textbf{Label observability.}
@@ -290,6 +291,10 @@ This validates the decision to train on all data with standard cross-entropy.
 
 \textbf{Multi-modality is the ceiling.}
 The challenge is not model capacity but intrinsic label disagreement: teams converge on which 4 to bring (17.8\% top-1 over 15 classes) but diverge on lead arrangement (32\% conditional accuracy over 6 classes, just 2$\times$ random).
+A concrete source of this multi-modality is within-set adaptation.
+Across 53K linkable BO3 sets (136K game-to-game transitions), players change their lead pair between games 59\% of the time---rising to 72\% after a loss versus 46\% after a win ($\chi^2 = 10{,}126$, $p < 10^{-6}$).
+This means the training set contains genuine label contradictions: the same matchup produces different expert leads not because experts disagree on the optimal play, but because the \emph{same} player adapts to revealed information from the prior game.
+No turn-zero model can capture this within-player rationality, establishing a principled floor on irreducible label noise.
 
 \textbf{Convention, not strategy.}
 The mirror/non-mirror gap (6.8\% vs.\ 3.8\% top-1) and entropy-accuracy correlation point to the same conclusion: the model learns what experts \emph{typically} do, not what they \emph{should} do.
@@ -299,7 +304,7 @@ Valuable for decision support, but not strategic reasoning.
 The leakage-safe split (avoiding the 99.9\%$\to$79\% collapse documented in~\cite{elitefurretai}), Tier~1/2 delineation, and cluster-aware bootstrap all had outsized impact.
 
 \textbf{Limitations.}
-Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]). Calibration degrades OOD (adaptive ECE: $0.012 \to 0.076$). Training data is ladder games, not tournament best-of-three.
+Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]). Calibration degrades OOD (adaptive ECE: $0.012 \to 0.076$). Training data is drawn exclusively from BO3 tournament play (the official VGC competition format); ladder games were deliberately excluded to match deployment conditions.
 
 \textbf{Future work.}
 Conformal prediction sets would provide coverage guarantees with adaptive set sizes.
