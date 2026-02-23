@@ -9,7 +9,7 @@
 \maketitle
 
 \begin{abstract}
-TurnZero is a calibrated decision-support system for competitive Pok\'emon VGC, trained on 382K expert replays from best-of-three tournament play.
+TurnZero is a calibrated decision-support system for competitive Pok\'emon VGC, trained on 212K best-of-three tournament replays (382K directed examples, one per player per game).
 Given two Open Team Sheets (12 Pok\'emon, full movesets), it produces a probability distribution over all 90 legal team-preview actions---which 4 to bring and which 2 to lead.
 Experts routinely disagree on the correct play for the same matchup, so I treat uncertainty quantification as the primary objective rather than point accuracy.
 The core result: a 5-member deep ensemble of permutation-invariant transformers needs only 17 predictions to cover 50\% of expert actions in a 90-way action space.
@@ -159,7 +159,7 @@ Transformer & 1.16M & 5.5 & 14.0 & 4.105 & 0.016 \\
 
 The ensemble achieves 6.4\% top-1 and 15.5\% top-3 on the 90-way action space (5.8$\times$ and 4.7$\times$ random).
 NLL of 4.031 (vs.\ 4.497 popularity) confirms the model learns matchup-specific signal beyond metagame frequencies, and adaptive ECE of 0.012 means the confidence scores are honest.
-The ensemble also achieves the lowest Brier score (0.974 vs.\ 0.987 popularity), confirming calibration under a proper scoring rule.
+The ensemble also achieves the lowest Brier score (0.974 vs.\ 0.989 popularity), confirming calibration under a proper scoring rule.
 The wide bootstrap CIs (top-1: [2.6\%, 6.6\%]) reflect genuine heterogeneity across team archetypes, explored in Section~\ref{sec:perteam}.
 
 \subsection{Reframing Accuracy: Top-k Coverage}
