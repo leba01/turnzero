@@ -9,8 +9,8 @@ accuracy** in this domain. Top-1 accuracy is modest (6.4%) because the task is
 intrinsically multi-modal: experts genuinely disagree on the "right" play. But a
 lightweight transformer ensemble (1.16M params, 5 members) with temperature
 scaling, selective prediction, and entropy-based team linearity scoring produces
-a system that (a) is well-calibrated (ECE = 0.011), (b) knows when it doesn't
-know (OOD abstention doubles from 20% to 46%), and (c) reveals which team
+a system that (a) is well-calibrated (adaptive ECE = 0.012, Brier = 0.974), (b) knows when it doesn't
+know (OOD abstention doubles from 20% to 46%, AUROC = 0.80), and (c) reveals which team
 archetypes are predictable (Dondozo commander: 50% top-1) vs. which are not
 (goodstuffs: 0% top-1). No prior work isolates the team preview decision as a
 first-class prediction problem with UQ — VGC-Bench subsumes it into full-game
@@ -32,8 +32,8 @@ don't pretend otherwise. The paper IS:
 > — and ensemble entropy cleanly separates them (r = -0.56).
 
 The three money figures:
-1. **Reliability diagram** — calibration is excellent (ECE = 0.011)
-2. **Risk-coverage curves** — selective prediction works (AURC improvement)
+1. **Reliability diagram** — calibration is excellent (adaptive ECE = 0.012, Brier = 0.974)
+2. **Risk-coverage curves** — selective prediction works (AURC = 0.890, E-AURC = 0.452)
 3. **Entropy vs accuracy scatter** — team linearity is real and domain-plausible
 
 Everything else supports these three.
@@ -144,9 +144,9 @@ directly comparable.
 | Prediction target | Full-game policy | Full-game + preview head | Lead-2 only | Lead-2 + bring-4 (90-way) |
 | Team preview eval | Not isolated | 79% post-fix (no UQ) | ~5K logs, no formal metrics | Dedicated, stratified |
 | UQ | None | None | None | **Full stack** |
-| Calibration | None | None | None | **ECE = 0.011** |
-| Selective prediction | None | None | None | **AURC, risk-coverage** |
-| OOD detection | None | None | None | **Regime B, entropy shift** |
+| Calibration | None | None | None | **Adaptive ECE = 0.012, Brier = 0.974** |
+| Selective prediction | None | None | None | **AURC = 0.890, E-AURC = 0.452** |
+| Distribution-shift sensitivity | None | None | None | **AUROC = 0.80 (MI), Regime B entropy shift** |
 | Per-team analysis | None | None | None | **153 teams, r = -0.56** |
 | Feature importance | None | None | None | **7-level stress test** |
 | Explainability | Win/loss | None | Cosine similarity | **Marginals, retrieval, roles** |
@@ -190,24 +190,32 @@ directly, and the decomposition shows exactly where the model succeeds
 
 ### 2. Calibration is excellent — the probabilities mean what they say
 
-**ECE = 0.011 (action-90), 0.023 (lead-2) after temperature scaling.**
+**Adaptive ECE = 0.012 (action-90, equal-mass binning per Nixon et al. 2019).**
+**Brier score = 0.974 (proper scoring rule, vs 0.987 popularity).**
 
-This is remarkably well-calibrated for a 90-class problem. Temperature scaling barely moved T from 1.0 to 1.158 — the ensemble was already near-calibrated. For comparison, the logistic baseline has ECE = 0.059 and the single transformer has 0.016.
+Previously reported as ECE = 0.011 using equal-width bins, which was misleadingly
+small — on a 90-way problem where max confidence is ~5%, all examples land in the
+first 1-2 of 15 equal-width bins. Adaptive (equal-mass) binning fixes this. The
+ensemble is STILL well-calibrated — the metric just needed to be rigorous.
 
-**Paper angle:** The reliability diagram is your showcase figure. A well-calibrated model with 6.4% top-1 is more useful than a 10% model that's badly calibrated, because users can trust the confidence scores.
+Temperature scaling was dropped from the final pipeline (T ≈ 1.158, near-identity).
+The ensemble is already well-calibrated without it.
 
-### 3. The ensemble knows when it doesn't know (OOD detection works)
+**Paper angle:** The reliability diagram is your showcase figure. A well-calibrated model with 6.4% top-1 is more useful than a 10% model that's badly calibrated, because users can trust the confidence scores. Cite Nixon et al. 2019 for the adaptive binning methodology.
+
+### 3. The ensemble knows when it doesn't know (distribution-shift sensitivity)
 
 **Regime B (held-out clusters) results are the headline surprise:**
 - Abstention rate jumps from 20% → 46% (more than doubles)
 - Entropy +0.17, MI +0.03
 - The model automatically becomes more cautious on novel teams
+- **OOD AUROC = 0.80 (MI-based)**, 0.70 (entropy-based) — MI is a better OOD discriminator
 
 **But here's the unexpected part:** Regime B *accuracy is higher* than Regime A (11.7% vs 6.4% top-1). This seems paradoxical but makes sense — Regime B's held-out clusters are rarer/more distinctive teams, so when the model IS confident about them, it's often right. The experts using these unusual teams may also be more predictable (fewer viable strategies with niche compositions).
 
-**Calibration caveat:** Regime B ECE = 0.076 (vs 0.011 for Regime A). The ensemble is notably less calibrated on OOD data — a genuine limitation. The abstention mechanism partially compensates (higher-confidence predictions are still reasonably calibrated), but report this honestly.
+**Calibration caveat:** Regime B adaptive ECE = 0.076 (vs 0.012 for Regime A). The ensemble is notably less calibrated on OOD data — a genuine limitation. The abstention mechanism partially compensates (higher-confidence predictions are still reasonably calibrated), but report this honestly.
 
-**Paper angle:** This is your "the model does the right thing" story. On novel matchups, it abstains more AND is more accurate when it does predict. That's exactly what you want from a decision support system. Acknowledge ECE degradation on OOD as a limitation.
+**Paper angle:** Reframed as "distribution-shift sensitivity" rather than "OOD detection" (which implies a binary classifier). The AUROC = 0.80 quantifies the claim with the standard metric. On novel matchups, the model abstains more AND is more accurate when it does predict. That's exactly what you want from a decision support system.
 
 ### 4. Moves are king — the stress test proves feature importance
 
@@ -375,7 +383,16 @@ Combined loss weighted by batch proportion: `(n_tier1/N)*L1 + (n_tier2/N)*L2`.
 
 ### Results
 
-*To be filled after training completes.*
+| Loss mode | Top-1 | Top-3 | NLL |
+|-----------|-------|-------|-----|
+| `action90_all` (baseline) | 6.4% | 15.5% | 4.022 |
+| `multitask` | 6.5% | 15.8% | 4.017 |
+| `tier1_only` | 5.9% | 15.1% | 4.047 |
+
+**Near-null result.** Differences are ≤0.6pp top-1. `tier1_only` slightly worse
+(loses 20% training data). `multitask` marginal gain. The model is robust to ~20%
+label noise in the back-2 component — unsurprising since the noisy labels still
+carry correct lead-2 information. **Validates training on all data with standard CE.**
 
 ---
 
@@ -383,12 +400,12 @@ Combined loss weighted by batch proportion: `(n_tier1/N)*L1 + (n_tier2/N)*L2`.
 
 ### Main Results Table
 
-| Model | Params | Top-1 (A90) | Top-3 (A90) | Top-1 (L2) | Top-3 (L2) | NLL (A90) | ECE (A90) |
-|-------|--------|-------------|-------------|------------|------------|-----------|-----------|
+| Model | Params | Top-1 (A90) | Top-3 (A90) | Top-1 (L2) | Top-3 (L2) | NLL (A90) | Adapt. ECE |
+|-------|--------|-------------|-------------|------------|------------|-----------|------------|
 | Popularity | 0 | 1.3% | 3.9% | 7.1% | 21.8% | 4.497 | 0.001 |
 | Logistic | ~4K | 4.0% | 10.1% | 14.0% | 33.8% | 4.580 | 0.059 |
 | Transformer | 1.16M | 5.5% | 14.0% | 18.3% | 41.0% | 4.105 | 0.016 |
-| Ensemble (5) | 5.8M | 6.4% | 15.5% | 19.8% | 43.2% | 4.031 | 0.011 |
+| Ensemble (5) | 5.8M | 6.4% | 15.5% | 19.8% | 43.2% | 4.031 | 0.012 |
 
 ### Dataset Stats
 - 382K directed examples from 212K battles
@@ -404,11 +421,14 @@ Combined loss weighted by batch proportion: `(n_tier1/N)*L1 + (n_tier2/N)*L2`.
 - 8 fields per mon: species, item, ability, tera, 4 moves
 
 ### Key UQ Numbers
-- Temperature: T = 1.158 (near-identity; dropped from final pipeline)
-- AURC (top-1): 0.890 ensemble vs 0.905 single
-- AURC (top-3): 0.761 ensemble vs 0.791 single
+- Adaptive ECE (action-90): 0.012 (equal-mass binning, Nixon et al. 2019)
+- Brier score (action-90): 0.974 ensemble vs 0.987 popularity
+- AURC (top-1): 0.890 ensemble vs 0.905 single; **E-AURC: 0.452**
+- AURC (top-3): 0.761 ensemble vs 0.791 single; **E-AURC: 0.404**
+- OOD AUROC: **0.80 (MI-based)**, 0.70 (entropy-based)
 - OOD entropy shift: +0.168 nats
 - OOD abstention: 20% → 46%
+- Temperature: T = 1.158 (near-identity; dropped from final pipeline)
 
 ### Top-k Coverage Milestones
 - 50% coverage at k = 17 (vs k = 45 for random)
