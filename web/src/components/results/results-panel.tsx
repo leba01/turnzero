@@ -20,7 +20,7 @@ function DisclosureSection({ title, children }: { title: string; children: React
     <details className="group border-2 border-night bg-white shadow-[2px_2px_0px_#3D5A80]">
       <summary className="flex cursor-pointer items-center justify-between p-3 font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night select-none hover:bg-mist/20">
         {title}
-        <span className="text-rock transition-transform group-open:rotate-90">
+        <span aria-hidden="true" className="text-rock transition-transform group-open:rotate-90">
           ▶
         </span>
       </summary>

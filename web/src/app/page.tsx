@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
@@ -35,6 +35,7 @@ export default function Home() {
   const [teamB, setTeamB] = useState<TeamSheet>(EXAMPLE_TEAM_B);
   const autoPredictFired = useRef(false);
   const predictRef = useRef<((a: TeamSheet, b: TeamSheet) => void) | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const onReady = useCallback(() => {
     if (!autoPredictFired.current) {
@@ -53,6 +54,12 @@ export default function Home() {
     hasValidSpecies(teamB);
 
   const showingExample = isExample(teamA, teamB);
+
+  useEffect(() => {
+    if (result && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [result]);
 
   const handleClear = () => {
     setTeamA(emptyTeam());
@@ -100,6 +107,14 @@ export default function Home() {
           <p className="font-[family-name:var(--font-label)] text-xs text-red-600">
             Failed to load models: {modelState.message}
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+            className="mt-3 border-red-400 text-red-600 hover:bg-red-100"
+          >
+            RETRY
+          </Button>
         </div>
       )}
 
@@ -152,7 +167,9 @@ export default function Home() {
         </div>
 
         {/* Results */}
-        {result && <ResultsPanel result={result} teamA={teamA} teamB={teamB} />}
+        <div ref={resultsRef}>
+          {result && <ResultsPanel result={result} teamA={teamA} teamB={teamB} />}
+        </div>
       </div>
 
       {/* Footer */}
