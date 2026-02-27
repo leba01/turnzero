@@ -8,7 +8,7 @@ import { TeamInputPanel } from '@/components/team-input/team-input-panel';
 import { ResultsPanel } from '@/components/results/results-panel';
 import { AboutDialog } from '@/components/about-dialog';
 import { usePrediction } from '@/hooks/use-prediction';
-import { EXAMPLE_TEAM_A, EXAMPLE_TEAM_B } from '@/lib/data/example-matchup';
+import { EXAMPLES, EXAMPLE_TEAM_A, EXAMPLE_TEAM_B } from '@/lib/data/example-matchup';
 import type { Pokemon, TeamSheet } from '@/types/pokemon';
 
 function emptyMon(): Pokemon {
@@ -23,10 +23,11 @@ function hasValidSpecies(team: TeamSheet): boolean {
   return team.pokemon.some((m) => m.species !== 'UNK' && m.species !== '');
 }
 
-function isExample(teamA: TeamSheet, teamB: TeamSheet): boolean {
-  return (
-    teamA.pokemon[0].species === EXAMPLE_TEAM_A.pokemon[0].species &&
-    teamB.pokemon[0].species === EXAMPLE_TEAM_B.pokemon[0].species
+function isAnyExample(teamA: TeamSheet, teamB: TeamSheet): boolean {
+  return EXAMPLES.some(
+    (ex) =>
+      teamA.pokemon[0].species === ex.teamA.pokemon[0].species &&
+      teamB.pokemon[0].species === ex.teamB.pokemon[0].species,
   );
 }
 
@@ -53,7 +54,7 @@ export default function Home() {
     hasValidSpecies(teamA) &&
     hasValidSpecies(teamB);
 
-  const showingExample = isExample(teamA, teamB);
+  const showingExample = isAnyExample(teamA, teamB);
 
   useEffect(() => {
     if (result && resultsRef.current) {
@@ -66,10 +67,12 @@ export default function Home() {
     setTeamB(emptyTeam());
   };
 
-  const handleLoadExample = () => {
-    setTeamA(EXAMPLE_TEAM_A);
-    setTeamB(EXAMPLE_TEAM_B);
-    predict(EXAMPLE_TEAM_A, EXAMPLE_TEAM_B);
+  const handleLoadExample = (exampleId: string) => {
+    const ex = EXAMPLES.find((e) => e.id === exampleId);
+    if (!ex) return;
+    setTeamA(ex.teamA);
+    setTeamB(ex.teamB);
+    predict(ex.teamA, ex.teamB);
   };
 
   return (
@@ -135,35 +138,49 @@ export default function Home() {
         />
 
         {/* Action buttons */}
-        <div className="flex items-center justify-center gap-3">
-          {showingExample ? (
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClear}
-              className="border-night text-night hover:bg-mist"
+              size="lg"
+              onClick={() => predict(teamA, teamB)}
+              disabled={!canPredict}
+              className="bg-jam px-8 py-3 text-white hover:bg-jam/90 disabled:bg-rock"
             >
-              CLEAR
+              {predicting ? 'Predicting...' : modelState.status !== 'ready' ? 'Loading...' : 'PREDICT'}
             </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLoadExample}
-              className="border-night text-night hover:bg-mist"
-            >
-              TRY EXAMPLE
-            </Button>
-          )}
+            {showingExample && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClear}
+                className="border-night text-night hover:bg-mist"
+              >
+                CLEAR
+              </Button>
+            )}
+          </div>
 
-          <Button
-            size="lg"
-            onClick={() => predict(teamA, teamB)}
-            disabled={!canPredict}
-            className="bg-jam px-8 py-3 text-white hover:bg-jam/90 disabled:bg-rock"
-          >
-            {predicting ? 'Predicting...' : modelState.status !== 'ready' ? 'Loading...' : 'PREDICT'}
-          </Button>
+          {/* Example matchup buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="font-[family-name:var(--font-label)] text-[10px] text-rock">
+              EXAMPLES:
+            </span>
+            {EXAMPLES.map((ex) => (
+              <Button
+                key={ex.id}
+                variant="outline"
+                size="sm"
+                onClick={() => handleLoadExample(ex.id)}
+                disabled={!canPredict}
+                className="border-night px-2 py-1 text-night hover:bg-mist disabled:border-rock disabled:text-rock"
+              >
+                <span className="flex flex-col items-start leading-tight">
+                  <span className="font-[family-name:var(--font-label)] text-[10px]">{ex.label}</span>
+                  <span className="font-[family-name:var(--font-body)] text-[8px] text-rock">{ex.description}</span>
+                </span>
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Results */}

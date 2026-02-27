@@ -14,6 +14,38 @@ import { loadLexicon, type ReverseLexicon } from '@/lib/data/lexicon';
 import { loadPokemonData, type PokemonData } from '@/lib/data/pokemon-data';
 import { RetrievalIndex } from '@/lib/retrieval/index';
 
+// Module-level singleton to survive React StrictMode double-mount.
+// Without this, the second mount tries to init the ONNX WASM backend
+// while the first is still running → "Session already started" error.
+let initPromise: Promise<{
+  engine: InferenceEngine;
+  vocab: VocabMap;
+  lexicon: ReverseLexicon;
+  pokemonData: PokemonData;
+  temperature: number;
+}> | null = null;
+
+function getInitPromise(onProgress: (loaded: number, total: number) => void) {
+  if (!initPromise) {
+    initPromise = (async () => {
+      const [vocab, lexicon, pd, tempData] = await Promise.all([
+        loadVocab(),
+        loadLexicon(),
+        loadPokemonData(),
+        fetch('/data/temperature.json').then((r) => r.json()),
+      ]);
+
+      const engine = new InferenceEngine();
+      await engine.load((loaded, total) => {
+        onProgress(loaded, total);
+      });
+
+      return { engine, vocab, lexicon, pokemonData: pd, temperature: tempData.T };
+    })();
+  }
+  return initPromise;
+}
+
 export function usePrediction(onReady?: () => void) {
   const [modelState, setModelState] = useState<ModelLoadState>({ status: 'idle' });
   const [pokemonData, setPokemonData] = useState<PokemonData | null>(null);
@@ -33,44 +65,30 @@ export function usePrediction(onReady?: () => void) {
   useEffect(() => {
     let cancelled = false;
 
-    async function init() {
-      try {
-        // Load static data first (fast)
-        const [vocab, lexicon, pd, tempData] = await Promise.all([
-          loadVocab(),
-          loadLexicon(),
-          loadPokemonData(),
-          fetch('/data/temperature.json').then((r) => r.json()),
-        ]);
-
+    setModelState({ status: 'loading', loaded: 0, total: 5 });
+    getInitPromise((loaded, total) => {
+      if (!cancelled) setModelState({ status: 'loading', loaded, total });
+    })
+      .then((resources) => {
         if (cancelled) return;
-        vocabRef.current = vocab;
-        lexiconRef.current = lexicon;
-        setPokemonData(pd);
-        temperatureRef.current = tempData.T;
-
-        // Load ONNX models
-        setModelState({ status: 'loading', loaded: 0, total: 5 });
-        const engine = new InferenceEngine();
-        await engine.load((loaded, total) => {
-          if (!cancelled) setModelState({ status: 'loading', loaded, total });
-        });
-
-        if (cancelled) return;
-        engineRef.current = engine;
+        engineRef.current = resources.engine;
+        vocabRef.current = resources.vocab;
+        lexiconRef.current = resources.lexicon;
+        setPokemonData(resources.pokemonData);
+        temperatureRef.current = resources.temperature;
         setModelState({ status: 'ready' });
         onReadyRef.current?.();
-      } catch (err) {
+      })
+      .catch((err) => {
         if (!cancelled) {
+          initPromise = null; // Allow retry on next mount
           setModelState({
             status: 'error',
             message: err instanceof Error ? err.message : 'Failed to load models',
           });
         }
-      }
-    }
+      });
 
-    init();
     return () => { cancelled = true; };
   }, []);
 

@@ -14,11 +14,47 @@ interface TopPlansProps {
   ensembleAgreement: number;
 }
 
-function confidenceLabel(agreement: number, abstain: boolean): { text: string; color: string } {
-  if (abstain) return { text: 'Uncertain — scouting mode', color: 'text-red-500' };
-  if (agreement >= 4) return { text: `High confidence · ${agreement}/5 models agree`, color: 'text-moss' };
-  if (agreement >= 3) return { text: `Moderate confidence · ${agreement}/5 models agree`, color: 'text-night' };
-  return { text: `Low confidence · ${agreement}/5 models agree`, color: 'text-rock' };
+function confidenceTier(agreement: number, abstain: boolean): {
+  label: string;
+  sublabel: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  dots: boolean[];
+} {
+  const dots = Array.from({ length: 5 }, (_, i) => i < agreement);
+  if (abstain) return {
+    label: 'Uncertain',
+    sublabel: 'The model is guessing — treat as scouting info',
+    color: 'text-red-500',
+    bgColor: 'bg-red-50',
+    borderColor: 'border-red-400',
+    dots,
+  };
+  if (agreement >= 4) return {
+    label: 'Strong',
+    sublabel: 'Clear game plan — models converge on the same strategy',
+    color: 'text-moss',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-moss',
+    dots,
+  };
+  if (agreement >= 3) return {
+    label: 'Moderate',
+    sublabel: 'Likely bring-4 is clear, but lead order is flexible',
+    color: 'text-night',
+    bgColor: 'bg-sky-50',
+    borderColor: 'border-night',
+    dots,
+  };
+  return {
+    label: 'Low',
+    sublabel: 'Multiple viable plans — check marginals for guidance',
+    color: 'text-rock',
+    bgColor: 'bg-stone-50',
+    borderColor: 'border-rock',
+    dots,
+  };
 }
 
 function MonSprite({
@@ -140,7 +176,7 @@ function PlanRow({
 }
 
 export function TopPlans({ plans, species, abstain, confidence, ensembleAgreement }: TopPlansProps) {
-  const label = confidenceLabel(ensembleAgreement, abstain);
+  const tier = confidenceTier(ensembleAgreement, abstain);
 
   // Hero treatment when #1 separates from the pack.
   // In a 90-way space with low baselines, even a modest lead is real signal.
@@ -151,34 +187,68 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
     plans.length >= 3 &&
     plans[0].probability > ((plans[1].probability + plans[2].probability) / 2) * 1.3;
 
+  // Relative strength: how many times better than the 1/90 uniform baseline.
+  const vsRandom = confidence / (1 / 90);
+
   return (
     <div className="flex flex-col gap-3">
-      {/* Header: title + confidence inline */}
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night">
-          Recommended Plans
-        </h3>
-        <div className="flex items-center gap-2">
-          <span className={cn('font-[family-name:var(--font-body)] text-[11px]', label.color)}>
-            {label.text}
+      {/* Header */}
+      <h3 className="font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night">
+        Recommended Plans
+      </h3>
+
+      {/* Confidence banner */}
+      <div className={cn(
+        'flex items-center gap-3 border-2 p-3',
+        tier.borderColor,
+        tier.bgColor,
+      )}>
+        {/* Agreement dots */}
+        <div className="flex shrink-0 flex-col items-center gap-1">
+          <div className="flex gap-1">
+            {tier.dots.map((filled, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'size-2.5 border border-current',
+                  filled ? tier.color : 'bg-transparent opacity-30',
+                  filled && (abstain ? 'bg-red-500' : ensembleAgreement >= 4 ? 'bg-moss' : ensembleAgreement >= 3 ? 'bg-night' : 'bg-rock'),
+                )}
+              />
+            ))}
+          </div>
+          <span className={cn('font-[family-name:var(--font-label)] text-[9px]', tier.color)}>
+            {ensembleAgreement}/5
           </span>
-          {abstain && (
-            <Badge className="animate-pulse bg-red-500 font-[family-name:var(--font-label)] text-[8px] text-white">
-              ABSTAIN
-            </Badge>
-          )}
+        </div>
+
+        {/* Label and explanation */}
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <span className={cn('font-[family-name:var(--font-heading)] text-sm', tier.color)}>
+              {tier.label}
+            </span>
+            {abstain && (
+              <Badge className="animate-pulse bg-red-500 font-[family-name:var(--font-label)] text-[8px] text-white">
+                ABSTAIN
+              </Badge>
+            )}
+          </div>
+          <span className="font-[family-name:var(--font-body)] text-[10px] text-rock">
+            {tier.sublabel}
+          </span>
+        </div>
+
+        {/* Relative strength pill */}
+        <div className="ml-auto flex shrink-0 flex-col items-end">
+          <span className={cn('font-[family-name:var(--font-label)] text-xs', tier.color)}>
+            {vsRandom.toFixed(0)}x
+          </span>
+          <span className="font-[family-name:var(--font-body)] text-[8px] text-rock">
+            vs random
+          </span>
         </div>
       </div>
-
-      {/* Abstain warning */}
-      {abstain && (
-        <div className="border-2 border-red-400 bg-red-50 p-3 shadow-[2px_2px_0px_#E63946]">
-          <p className="font-[family-name:var(--font-body)] text-[11px] text-red-600">
-            The model is uncertain about this matchup. Experts themselves disagree frequently
-            on similar teams. Check the marginals and similar matchups below for guidance.
-          </p>
-        </div>
-      )}
 
       {/* Plans — hero only when there's a clear favorite */}
       {plans.map((plan, i) => (
@@ -190,9 +260,9 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
         />
       ))}
 
-      {/* Confidence fine print */}
+      {/* Fine print for the nerds */}
       <span className="font-[family-name:var(--font-body)] text-[9px] text-rock">
-        {(confidence * 100).toFixed(1)}% max probability · H={plans.length > 0 ? (
+        {(confidence * 100).toFixed(1)}% max probability (1/{90} = {(100 / 90).toFixed(1)}% random baseline) · H={plans.length > 0 ? (
           -Math.log2(confidence).toFixed(1)
         ) : '—'} bits
       </span>

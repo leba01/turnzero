@@ -62,8 +62,23 @@ export class InferenceEngine {
   ): Promise<void> {
     this.sessions = [];
     for (let i = 0; i < N_MODELS; i++) {
-      const session = await ort.InferenceSession.create(MODEL_PATHS[i], {
+      const modelPath = MODEL_PATHS[i];
+      const dataFileName = modelPath.split("/").pop() + ".data";
+      // Fetch external data file as bytes — onnxruntime-web can't resolve
+      // URL strings for external data in the browser WASM backend.
+      const dataResponse = await fetch(modelPath + ".data");
+      if (!dataResponse.ok) {
+        throw new Error(`Failed to fetch ${modelPath}.data: ${dataResponse.status}`);
+      }
+      const dataBuffer = new Uint8Array(await dataResponse.arrayBuffer());
+      const session = await ort.InferenceSession.create(modelPath, {
         executionProviders: ["wasm"],
+        externalData: [
+          {
+            path: dataFileName,
+            data: dataBuffer,
+          },
+        ],
       });
       this.sessions.push(session);
       onProgress(i + 1, N_MODELS);
@@ -85,14 +100,15 @@ export class InferenceEngine {
     const teamATensor = new ort.Tensor("int32", teamA, [1, 6, 8]);
     const teamBTensor = new ort.Tensor("int32", teamB, [1, 6, 8]);
 
-    const results = await Promise.all(
-      this.sessions.map((session) =>
-        session.run({ team_a: teamATensor, team_b: teamBTensor }),
-      ),
-    );
-
-    const logits = results.map((r) => r.logits.data as Float32Array);
-    const embeddings = results.map((r) => r.embedding.data as Float32Array);
+    // Run sessions sequentially — the WASM backend shares a single thread pool
+    // and cannot handle concurrent session.run() calls.
+    const logits: Float32Array[] = [];
+    const embeddings: Float32Array[] = [];
+    for (const session of this.sessions) {
+      const result = await session.run({ team_a: teamATensor, team_b: teamBTensor });
+      logits.push(result.logits.data as Float32Array);
+      embeddings.push(result.embedding.data as Float32Array);
+    }
 
     return { logits, embeddings };
   }
