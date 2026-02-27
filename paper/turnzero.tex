@@ -277,7 +277,8 @@ The mirror/non-mirror gap reinforces this picture: top-1 is 6.8\% on mirror matc
 %=============================================================================
 
 \textbf{The ceiling is multi-modality, not model capacity.}
-Across 53K linkable best-of-three sets (136K game-to-game transitions), players change their lead pair 59\% of the time---rising to 72\% after a loss versus 46\% after a win ($\chi^2 = 10{,}126$, $p < 10^{-6}$).
+Across 53K linkable best-of-three sets (136K game-to-game transitions), players change their lead pair 59\% of the time but their bring-4 roster only 52\%---and lead changes rise to 72\% after a loss versus 46\% after a win ($\chi^2 = 10{,}126$, $p < 10^{-6}$).
+This confirms the marginal decomposition from a behavioral angle: even the same player treats roster composition as more stable than lead arrangement.
 The training set contains genuine label contradictions: the same matchup produces different leads not because experts disagree, but because the \emph{same} player adapts to information revealed in prior games.
 No turn-zero model can capture this within-set adaptation, establishing a principled floor on irreducible label noise.
 Replacing the flat self-attention architecture with a hierarchical cross-attention variant (1.56M params, +34\%) produced identical accuracy ($\pm$0.3pp), consistent with this ceiling.
@@ -300,6 +301,46 @@ Training data is exclusively best-of-three tournament play; ladder games were de
 \textbf{Contributions.}
 Solo project.
 Code: \url{https://github.com/leba01/turnzero}
+
+
+%=============================================================================
+\section*{Addendum: Additional Observations}
+\label{sec:addendum}
+%=============================================================================
+
+The following findings informed the design but did not fit the main narrative.
+
+\textbf{A1. Label noise is tolerable.}
+Roughly 20\% of training examples have fabricated back-2 labels (the parser fills unobserved slots with a deterministic heuristic).
+Three loss modes were compared across 5-member ensembles: (a)~standard cross-entropy on all data, (b)~a multi-task loss that marginalizes Tier~2 labels to lead-2 probabilities via a $90{\times}15$ aggregation matrix in probability space, and (c)~training on Tier~1 only.
+Differences were $\leq$0.6pp top-1 (a:~6.4\%, b:~6.5\%, c:~5.9\%).
+Dropping 20\% of data hurts more than the noise does.
+
+\textbf{A2. Architecture does not matter (hierarchical ablation).}
+Replacing flat 12-token self-attention with a hierarchical design---shared intra-team encoder (2 layers, 6 tokens per team) followed by bidirectional cross-attention (2 layers)---yielded 1.56M parameters (+34\%) and identical performance ($\pm$0.3pp across all metrics).
+This is consistent with the multi-modality ceiling: with 59\% within-set lead changes, the binding constraint is label noise, not model expressiveness.
+
+\textbf{A3. The metagame is a small-world network.}
+The species-overlap clustering ($\geq$4-of-6 shared $\to$ connected components) places 91\% of test data in a single mega-cluster.
+This is not a bug: hub species (Incineroar 37\%, Urshifu-Rapid-Strike 38\%, Rillaboom 29\%) create transitive bridges through the union-find, producing one giant connected component.
+Only 1.8\% of random team pairs share $\geq$4 species directly, but the small-world structure connects nearly everything.
+This motivated the switch to exact species-6 composition for per-team analysis (153 archetypes with $\geq$20 Tier~1 examples).
+
+\textbf{A4. Per-team extremes.}
+The most predictable teams are mechanically constrained: Dondozo commander variants reach 50\% top-1 ($H = 3.10$), and a Trick Room team with Lunala/Torkoal reaches 32\% ($H = 3.53$).
+At the other extreme, 22 of 153 teams (14\%) have 0\% top-1 accuracy---the model never predicts the expert's exact action.
+The worst large team is Gothitelle/Incineroar/Kyogre/Raging Bolt/Rillaboom/Scream Tail ($n{=}193$, 0.5\% top-1, $H = 4.22$).
+
+\textbf{A5. Confidence in a 90-class world.}
+Mean confidence (max predicted probability) is 5.3\%, median 4.5\%, maximum 38.1\%.
+Only 6\% of predictions exceed 10\% confidence; 0.8\% exceed 20\%.
+This is correct behavior for a 90-class problem with high intrinsic uncertainty---even the model's ``most confident'' prediction assigns less than 40\% to a single action.
+A decision support system should communicate this honestly rather than pretending certainty exists.
+
+\textbf{A6. The model tracks the mode, not the matchup.}
+Per-team accuracy correlates with action-mode frequency ($r = 0.55$): for the most predictable teams, the model's top-1 prediction matches the per-team mode action.
+The mean accuracy-minus-mode-frequency gap across 153 teams is $-6.8$pp---the model is on average \emph{worse} than a simple per-team mode lookup.
+Its value lies not in beating the mode but in providing calibrated probabilities across all 90 actions and flagging when no mode dominates.
 
 
 %=============================================================================
