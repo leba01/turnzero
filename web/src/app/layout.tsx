@@ -14,6 +14,20 @@ export const metadata: Metadata = {
   description:
     "AI-powered team preview advisor for Pokémon VGC. Predicts expert lead + bring decisions from Open Team Sheets using an ensemble of 5 transformers.",
   keywords: ["pokemon", "vgc", "team preview", "ots", "competitive"],
+  openGraph: {
+    title: "TurnZero — VGC Turn-Zero Coach",
+    description:
+      "AI-powered team preview advisor for Pokémon VGC. 5-model ensemble · 246K matches · runs in your browser.",
+    type: "website",
+    images: ["/og.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TurnZero — VGC Turn-Zero Coach",
+    description:
+      "AI-powered team preview advisor for Pokémon VGC. 5-model ensemble · 246K matches · runs in your browser.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({
