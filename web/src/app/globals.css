@@ -1,0 +1,247 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Roboto+Mono:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── TurnZero Palette ──
+   night:  #3D5A80 — borders, text, shadows
+   milk:   #F7F7F7 — page background
+   jam:    #F4845F — primary CTA, active states
+   mist:   #A8D8EA — selection, highlights
+   grass:  #C5D86D — success, secondary accent
+   moss:   #6B8F71 — tags, badges
+   sky:    #98C1D9 — hover states
+   rock:   #8D8D8D — disabled, muted
+*/
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+
+  /* Custom palette tokens */
+  --color-night: #3D5A80;
+  --color-milk: #F7F7F7;
+  --color-jam: #F4845F;
+  --color-mist: #A8D8EA;
+  --color-grass: #C5D86D;
+  --color-moss: #6B8F71;
+  --color-sky: #98C1D9;
+  --color-rock: #8D8D8D;
+
+  /* Font families */
+  --font-heading: "Press Start 2P", monospace;
+  --font-label: "Silkscreen", monospace;
+  --font-body: "Roboto Mono", monospace;
+}
+
+:root {
+  --radius: 0px;
+  --background: #F7F7F7;
+  --foreground: #3D5A80;
+  --card: #FFFFFF;
+  --card-foreground: #3D5A80;
+  --popover: #FFFFFF;
+  --popover-foreground: #3D5A80;
+  --primary: #F4845F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #A8D8EA;
+  --secondary-foreground: #3D5A80;
+  --muted: #E8E8E8;
+  --muted-foreground: #8D8D8D;
+  --accent: #C5D86D;
+  --accent-foreground: #3D5A80;
+  --destructive: #E63946;
+  --border: #3D5A80;
+  --input: #3D5A80;
+  --ring: #F4845F;
+}
+
+/* ── Base ── */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-milk text-night font-[family-name:var(--font-body)];
+    font-feature-settings: "liga" 0;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+  }
+
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 0.875rem; }
+  h3 { font-size: 0.75rem; }
+}
+
+/* ── Pixel-art component overrides ── */
+@layer components {
+  /* Cards: chunky border, offset shadow */
+  [data-slot="card"] {
+    border: 3px solid #3D5A80;
+    border-radius: 0;
+    box-shadow: 4px 4px 0px #3D5A80;
+    background: #FFFFFF;
+  }
+
+  /* Buttons: pixel press effect */
+  [data-slot="button"] {
+    border: 3px solid #3D5A80;
+    border-radius: 0;
+    box-shadow: 4px 4px 0px #3D5A80;
+    font-family: "Silkscreen", monospace;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  [data-slot="button"]:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #3D5A80;
+  }
+
+  [data-slot="button"]:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+  }
+
+  /* Inputs: chunky border */
+  [data-slot="input"],
+  [data-slot="select-trigger"],
+  [data-slot="command-input"] {
+    border: 2px solid #3D5A80;
+    border-radius: 0;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.875rem;
+  }
+
+  [data-slot="input"]:focus,
+  [data-slot="command-input"]:focus {
+    border-color: #F4845F;
+    outline: none;
+    box-shadow: 0 0 0 2px #F4845F40;
+  }
+
+  /* Tabs: pixel underline style */
+  [data-slot="tabs-trigger"] {
+    border-radius: 0;
+    font-family: "Silkscreen", monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  [data-slot="tabs-trigger"][data-state="active"] {
+    border-bottom: 3px solid #F4845F;
+    color: #F4845F;
+  }
+
+  /* Badges */
+  [data-slot="badge"] {
+    border: 2px solid #3D5A80;
+    border-radius: 0;
+    font-family: "Silkscreen", monospace;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Progress bar */
+  [data-slot="progress"] {
+    border: 2px solid #3D5A80;
+    border-radius: 0;
+    height: 1.25rem;
+    background: #E8E8E8;
+  }
+
+  [data-slot="progress-indicator"] {
+    border-radius: 0;
+  }
+
+  /* Skeleton: pixel shimmer */
+  [data-slot="skeleton"] {
+    border-radius: 0;
+    background: #E8E8E8;
+  }
+
+  /* Tooltips */
+  [data-slot="tooltip-content"] {
+    border: 2px solid #3D5A80;
+    border-radius: 0;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.75rem;
+  }
+
+  /* Separator */
+  [data-slot="separator"] {
+    background: #3D5A80;
+    height: 3px;
+  }
+
+  /* Dialog */
+  [data-slot="dialog-content"] {
+    border: 3px solid #3D5A80;
+    border-radius: 0;
+    box-shadow: 4px 4px 0px #3D5A80;
+  }
+
+  [data-slot="dialog-overlay"] {
+    background: rgba(61, 90, 128, 0.3);
+  }
+}
+
+/* ── Pixel scrollbar ── */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E8E8E8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3D5A80;
+  border: 2px solid #E8E8E8;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #F4845F;
+}
+
+/* ── Selection ── */
+::selection {
+  background: #A8D8EA;
+  color: #3D5A80;
+}

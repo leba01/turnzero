@@ -1,0 +1,443 @@
+{
+  "Bulldoze": [
+    "speed_control",
+    "spread"
+  ],
+  "Icy Wind": [
+    "speed_control",
+    "spread"
+  ],
+  "String Shot": [
+    "speed_control"
+  ],
+  "Rock Tomb": [
+    "speed_control"
+  ],
+  "Tailwind": [
+    "speed_control"
+  ],
+  "Drum Beating": [
+    "speed_control"
+  ],
+  "Trick Room": [
+    "speed_control"
+  ],
+  "Scary Face": [
+    "speed_control"
+  ],
+  "Electroweb": [
+    "speed_control",
+    "spread"
+  ],
+  "Cotton Spore": [
+    "speed_control"
+  ],
+  "Rage Powder": [
+    "redirection"
+  ],
+  "Spotlight": [
+    "redirection"
+  ],
+  "Follow Me": [
+    "redirection"
+  ],
+  "Fake Out": [
+    "fake_out"
+  ],
+  "Shadow Sneak": [
+    "priority"
+  ],
+  "Extreme Speed": [
+    "priority"
+  ],
+  "Jet Punch": [
+    "priority"
+  ],
+  "Sucker Punch": [
+    "priority"
+  ],
+  "Accelerock": [
+    "priority"
+  ],
+  "Grassy Glide": [
+    "priority"
+  ],
+  "Mach Punch": [
+    "priority"
+  ],
+  "Quick Attack": [
+    "priority"
+  ],
+  "Ice Shard": [
+    "priority"
+  ],
+  "Aqua Jet": [
+    "priority"
+  ],
+  "Water Shuriken": [
+    "priority"
+  ],
+  "First Impression": [
+    "priority"
+  ],
+  "Bullet Punch": [
+    "priority"
+  ],
+  "Surf": [
+    "spread"
+  ],
+  "Snarl": [
+    "spread"
+  ],
+  "Heat Wave": [
+    "spread"
+  ],
+  "Lava Plume": [
+    "spread"
+  ],
+  "Blizzard": [
+    "spread"
+  ],
+  "Muddy Water": [
+    "spread"
+  ],
+  "Brutal Swing": [
+    "spread"
+  ],
+  "Dazzling Gleam": [
+    "spread"
+  ],
+  "Hyper Voice": [
+    "spread"
+  ],
+  "Expanding Force": [
+    "spread"
+  ],
+  "Make It Rain": [
+    "spread"
+  ],
+  "Discharge": [
+    "spread"
+  ],
+  "Breaking Swipe": [
+    "spread"
+  ],
+  "Rock Slide": [
+    "spread"
+  ],
+  "Earthquake": [
+    "spread"
+  ],
+  "Wide Guard": [
+    "protect"
+  ],
+  "Spiky Shield": [
+    "protect"
+  ],
+  "Obstruct": [
+    "protect"
+  ],
+  "Burning Bulwark": [
+    "protect"
+  ],
+  "Protect": [
+    "protect"
+  ],
+  "Quick Guard": [
+    "protect"
+  ],
+  "King's Shield": [
+    "protect"
+  ],
+  "Silk Trap": [
+    "protect"
+  ],
+  "Detect": [
+    "protect"
+  ],
+  "Baneful Bunker": [
+    "protect"
+  ],
+  "Max Guard": [
+    "protect"
+  ],
+  "Sleep Powder": [
+    "disruption"
+  ],
+  "Flip Turn": [
+    "disruption"
+  ],
+  "Spore": [
+    "disruption"
+  ],
+  "Trick": [
+    "disruption"
+  ],
+  "Switcheroo": [
+    "disruption"
+  ],
+  "Encore": [
+    "disruption"
+  ],
+  "Taunt": [
+    "disruption"
+  ],
+  "Volt Switch": [
+    "disruption"
+  ],
+  "Clear Smog": [
+    "disruption"
+  ],
+  "Torment": [
+    "disruption"
+  ],
+  "Imprison": [
+    "disruption"
+  ],
+  "U-turn": [
+    "disruption"
+  ],
+  "Will-O-Wisp": [
+    "disruption"
+  ],
+  "Thunder Wave": [
+    "disruption"
+  ],
+  "Yawn": [
+    "disruption"
+  ],
+  "Ally Switch": [
+    "disruption"
+  ],
+  "Parting Shot": [
+    "disruption"
+  ],
+  "Helping Hand": [
+    "disruption"
+  ],
+  "Disable": [
+    "disruption"
+  ],
+  "Haze": [
+    "disruption"
+  ],
+  "Snowscape": [
+    "weather_setter"
+  ],
+  "Rain Dance": [
+    "weather_setter"
+  ],
+  "Sunny Day": [
+    "weather_setter"
+  ],
+  "Hail": [
+    "weather_setter"
+  ],
+  "Sandstorm": [
+    "weather_setter"
+  ],
+  "Misty Terrain": [
+    "terrain_setter"
+  ],
+  "Electric Terrain": [
+    "terrain_setter"
+  ],
+  "Grassy Terrain": [
+    "terrain_setter"
+  ],
+  "Psychic Terrain": [
+    "terrain_setter"
+  ],
+  "Calm Mind": [
+    "setup"
+  ],
+  "Dragon Dance": [
+    "setup"
+  ],
+  "Shell Smash": [
+    "setup"
+  ],
+  "Decorate": [
+    "setup"
+  ],
+  "Quiver Dance": [
+    "setup"
+  ],
+  "Autotomize": [
+    "setup"
+  ],
+  "Belly Drum": [
+    "setup"
+  ],
+  "Curse": [
+    "setup"
+  ],
+  "Coaching": [
+    "setup"
+  ],
+  "Coil": [
+    "setup"
+  ],
+  "Agility": [
+    "setup"
+  ],
+  "Nasty Plot": [
+    "setup"
+  ],
+  "Iron Defense": [
+    "setup"
+  ],
+  "Swords Dance": [
+    "setup"
+  ],
+  "Work Up": [
+    "setup"
+  ],
+  "Bulk Up": [
+    "setup"
+  ],
+  "Geomancy": [
+    "setup"
+  ],
+  "Giga Drain": [
+    "recovery"
+  ],
+  "Synthesis": [
+    "recovery"
+  ],
+  "Soft-Boiled": [
+    "recovery"
+  ],
+  "Recover": [
+    "recovery"
+  ],
+  "Strength Sap": [
+    "recovery"
+  ],
+  "Slack Off": [
+    "recovery"
+  ],
+  "Leech Seed": [
+    "recovery"
+  ],
+  "Moonlight": [
+    "recovery"
+  ],
+  "Morning Sun": [
+    "recovery"
+  ],
+  "Drain Punch": [
+    "recovery"
+  ],
+  "Roost": [
+    "recovery"
+  ],
+  "Shore Up": [
+    "recovery"
+  ],
+  "Horn Leech": [
+    "recovery"
+  ],
+  "Choice Specs": [
+    "choice_item"
+  ],
+  "Choice Band": [
+    "choice_item"
+  ],
+  "Choice Scarf": [
+    "choice_item"
+  ],
+  "Focus Sash": [
+    "sash"
+  ],
+  "Iapapa Berry": [
+    "berry"
+  ],
+  "Roseli Berry": [
+    "berry"
+  ],
+  "Lum Berry": [
+    "berry"
+  ],
+  "Charti Berry": [
+    "berry"
+  ],
+  "Shuca Berry": [
+    "berry"
+  ],
+  "Aguav Berry": [
+    "berry"
+  ],
+  "Wiki Berry": [
+    "berry"
+  ],
+  "Kasib Berry": [
+    "berry"
+  ],
+  "Occa Berry": [
+    "berry"
+  ],
+  "Mago Berry": [
+    "berry"
+  ],
+  "Coba Berry": [
+    "berry"
+  ],
+  "Wacan Berry": [
+    "berry"
+  ],
+  "Yache Berry": [
+    "berry"
+  ],
+  "Figy Berry": [
+    "berry"
+  ],
+  "Chople Berry": [
+    "berry"
+  ],
+  "Haban Berry": [
+    "berry"
+  ],
+  "Sitrus Berry": [
+    "berry"
+  ],
+  "Intimidate": [
+    "intimidate"
+  ],
+  "Sand Stream": [
+    "weather_ability"
+  ],
+  "Primordial Sea": [
+    "weather_ability"
+  ],
+  "Orichalcum Pulse": [
+    "weather_ability"
+  ],
+  "Snow Warning": [
+    "weather_ability"
+  ],
+  "Desolate Land": [
+    "weather_ability"
+  ],
+  "Drizzle": [
+    "weather_ability"
+  ],
+  "Drought": [
+    "weather_ability"
+  ],
+  "Hadron Engine": [
+    "terrain_ability"
+  ],
+  "Grassy Surge": [
+    "terrain_ability"
+  ],
+  "Psychic Surge": [
+    "terrain_ability"
+  ],
+  "Electric Surge": [
+    "terrain_ability"
+  ],
+  "Misty Surge": [
+    "terrain_ability"
+  ]
+}
