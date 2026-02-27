@@ -52,7 +52,7 @@ export function ResultsPanel({ result, teamA }: ResultsPanelProps) {
       </Card>
 
       {/* ── Tier 2: Supporting Evidence (side by side on larger screens) ── */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardContent className="p-4">
             <h3 className="mb-3 font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night">

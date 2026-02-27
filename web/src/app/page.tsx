@@ -66,7 +66,7 @@ export default function Home() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
+    <main className="mx-auto max-w-5xl px-4 py-4 sm:py-8">
       {/* Header */}
       <header className="mb-8 text-center">
         <h1 className="mb-2 font-[family-name:var(--font-heading)] text-xl text-night">
@@ -90,7 +90,7 @@ export default function Home() {
           </span>
           <Progress
             value={(modelState.loaded / modelState.total) * 100}
-            className="h-4 w-64"
+            className="h-4 w-full max-w-64"
           />
         </div>
       )}

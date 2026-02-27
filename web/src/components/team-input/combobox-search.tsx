@@ -60,7 +60,7 @@ export function ComboboxSearch({
       <Popover.Portal>
         <Popover.Content
           className={cn(
-            'z-50 w-[var(--radix-popover-trigger-width)] min-w-[200px]',
+            'z-50 w-[var(--radix-popover-trigger-width)] min-w-[200px] max-w-[calc(100vw-2rem)]',
             'border-2 border-night bg-white shadow-[4px_4px_0px_#3D5A80]',
             'data-[state=open]:animate-in data-[state=open]:fade-in-0',
             'data-[state=closed]:animate-out data-[state=closed]:fade-out-0',

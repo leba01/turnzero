@@ -52,7 +52,7 @@ export function OpponentCues({ cues }: OpponentCuesProps) {
             className="shrink-0 object-contain"
             unoptimized
           />
-          <span className="w-28 shrink-0 truncate font-[family-name:var(--font-label)] text-xs text-night">
+          <span className="w-20 shrink-0 truncate font-[family-name:var(--font-label)] text-xs text-night sm:w-28">
             {cue.species}
           </span>
           <div className="flex flex-wrap gap-1">

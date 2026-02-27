@@ -48,7 +48,7 @@ export function RetrievalEvidenceDisplay({ evidence, loading }: RetrievalEvidenc
               const pct = fraction * 100;
               return (
                 <div key={pair} className="flex items-center gap-2">
-                  <span className="w-36 shrink-0 truncate font-[family-name:var(--font-label)] text-[10px] text-night">
+                  <span className="w-24 shrink-0 truncate font-[family-name:var(--font-label)] text-[10px] text-night sm:w-36">
                     {pair}
                   </span>
                   <div className="h-3 flex-1 border border-night bg-muted">
@@ -78,7 +78,7 @@ export function RetrievalEvidenceDisplay({ evidence, loading }: RetrievalEvidenc
               const pct = fraction * 100;
               return (
                 <div key={species} className="flex items-center gap-2">
-                  <span className="w-28 shrink-0 truncate font-[family-name:var(--font-label)] text-[10px] text-night">
+                  <span className="w-20 shrink-0 truncate font-[family-name:var(--font-label)] text-[10px] text-night sm:w-28">
                     {species}
                   </span>
                   <div className="h-3 flex-1 border border-night bg-muted">

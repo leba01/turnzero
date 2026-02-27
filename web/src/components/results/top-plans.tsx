@@ -43,7 +43,7 @@ function MonSprite({
       <span
         className={cn(
           'truncate text-center font-[family-name:var(--font-label)] text-night',
-          size >= 48 ? 'max-w-16 text-[9px]' : 'max-w-12 text-[7px]',
+          size >= 48 ? 'max-w-16 text-[9px]' : 'max-w-12 text-[8px]',
         )}
       >
         {name}
@@ -64,6 +64,8 @@ function PlanRow({
   const pct = plan.probability * 100;
   const spriteSize = isHero ? 52 : 36;
   const backSize = isHero ? 36 : 28;
+  const mobileSpriteSize = isHero ? 40 : 28;
+  const mobileBackSize = isHero ? 28 : 22;
 
   return (
     <div
@@ -86,8 +88,14 @@ function PlanRow({
 
       {/* Lead pair */}
       <div className="flex items-end gap-1">
-        <MonSprite name={species[plan.lead[0]]} size={spriteSize} />
-        <MonSprite name={species[plan.lead[1]]} size={spriteSize} />
+        <span className="hidden sm:contents">
+          <MonSprite name={species[plan.lead[0]]} size={spriteSize} />
+          <MonSprite name={species[plan.lead[1]]} size={spriteSize} />
+        </span>
+        <span className="contents sm:hidden">
+          <MonSprite name={species[plan.lead[0]]} size={mobileSpriteSize} />
+          <MonSprite name={species[plan.lead[1]]} size={mobileSpriteSize} />
+        </span>
       </div>
 
       {/* Divider */}
@@ -95,8 +103,14 @@ function PlanRow({
 
       {/* Back pair */}
       <div className="flex items-end gap-1">
-        <MonSprite name={species[plan.back[0]]} size={backSize} dimmed />
-        <MonSprite name={species[plan.back[1]]} size={backSize} dimmed />
+        <span className="hidden sm:contents">
+          <MonSprite name={species[plan.back[0]]} size={backSize} dimmed />
+          <MonSprite name={species[plan.back[1]]} size={backSize} dimmed />
+        </span>
+        <span className="contents sm:hidden">
+          <MonSprite name={species[plan.back[0]]} size={mobileBackSize} dimmed />
+          <MonSprite name={species[plan.back[1]]} size={mobileBackSize} dimmed />
+        </span>
       </div>
 
       {/* Probability */}
@@ -112,7 +126,7 @@ function PlanRow({
         <div
           className={cn(
             'border border-night bg-muted',
-            isHero ? 'h-2.5 w-24' : 'h-2 w-16',
+            isHero ? 'h-2.5 w-16 sm:w-24' : 'h-2 w-12 sm:w-16',
           )}
         >
           <div

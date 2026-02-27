@@ -42,7 +42,7 @@ function ProbBar({
           unoptimized
         />
       )}
-      <span className="w-28 shrink-0 truncate font-[family-name:var(--font-label)] text-[10px] text-night">
+      <span className="w-20 shrink-0 truncate font-[family-name:var(--font-label)] text-[10px] text-night sm:w-28">
         {label}
       </span>
       <div className="h-3 flex-1 border border-night bg-muted">

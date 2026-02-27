@@ -48,7 +48,7 @@ export function PokemonSlot({ index, pokemon, onChange, pokemonData }: PokemonSl
     <div className="flex gap-3 border-2 border-night bg-white p-3 shadow-[2px_2px_0px_#3D5A80]">
       {/* Sprite */}
       <div className="flex shrink-0 flex-col items-center gap-1">
-        <div className="flex size-24 items-center justify-center border-2 border-night bg-muted">
+        <div className="flex size-16 items-center justify-center border-2 border-night bg-muted sm:size-24">
           {hasSpecies ? (
             <Image
               src={spriteUrl(pokemon.species)}
@@ -65,7 +65,7 @@ export function PokemonSlot({ index, pokemon, onChange, pokemonData }: PokemonSl
           )}
         </div>
         {hasSpecies && (
-          <span className="max-w-24 truncate text-center font-[family-name:var(--font-label)] text-[10px] text-night">
+          <span className="max-w-16 truncate text-center font-[family-name:var(--font-label)] text-[10px] text-night sm:max-w-24">
             {pokemon.species}
           </span>
         )}
@@ -142,7 +142,7 @@ function FieldRow({
 }) {
   return (
     <div className={className}>
-      <label className="mb-0.5 block font-[family-name:var(--font-label)] text-[9px] uppercase tracking-wider text-rock">
+      <label className="mb-0.5 block font-[family-name:var(--font-label)] text-[10px] uppercase tracking-wider text-rock">
         {label}
       </label>
       {children}
