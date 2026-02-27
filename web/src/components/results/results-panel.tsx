@@ -1,8 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ConfidenceGauge } from './confidence-gauge';
 import { TopPlans } from './top-plans';
 import { MarginalsDisplay } from './marginals-display';
 import { OpponentCues } from './opponent-cues';
@@ -16,16 +15,19 @@ interface ResultsPanelProps {
   teamB: TeamSheet;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function DisclosureSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    <details className="group border-2 border-night bg-white shadow-[2px_2px_0px_#3D5A80]">
+      <summary className="flex cursor-pointer items-center justify-between p-3 font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night select-none hover:bg-mist/20">
+        {title}
+        <span className="text-rock transition-transform group-open:rotate-90">
+          ▶
+        </span>
+      </summary>
+      <div className="border-t-2 border-night p-4">
+        {children}
+      </div>
+    </details>
   );
 }
 
@@ -33,37 +35,53 @@ export function ResultsPanel({ result, teamA }: ResultsPanelProps) {
   const species = teamA.pokemon.map((m) => m.species);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <Separator />
 
-      <Section title="Confidence">
-        <ConfidenceGauge
-          confidence={result.confidence}
-          entropy={result.entropy}
-          mutual_information={result.mutual_information}
-          abstain={result.abstain}
-        />
-      </Section>
+      {/* ── Tier 1: The Recommendation ── */}
+      <Card>
+        <CardContent className="p-4">
+          <TopPlans
+            plans={result.top_plans}
+            species={species}
+            abstain={result.abstain}
+            confidence={result.confidence}
+            ensembleAgreement={result.ensemble_agreement}
+          />
+        </CardContent>
+      </Card>
 
-      <Section title="Recommended Plans">
-        <TopPlans plans={result.top_plans} species={species} abstain={result.abstain} />
-      </Section>
+      {/* ── Tier 2: Supporting Evidence (side by side on larger screens) ── */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="mb-3 font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night">
+              Why These Leads
+            </h3>
+            <MarginalsDisplay marginals={result.marginals} species={species} />
+          </CardContent>
+        </Card>
 
-      <Section title="Why These Leads">
-        <MarginalsDisplay marginals={result.marginals} species={species} />
-      </Section>
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="mb-3 font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night">
+              Similar Matchups
+            </h3>
+            <RetrievalEvidenceDisplay evidence={result.evidence} />
+          </CardContent>
+        </Card>
+      </div>
 
-      <Section title="Key Opponent Cues">
-        <OpponentCues cues={result.opponent_cues} />
-      </Section>
+      {/* ── Tier 3: Deep Dive (collapsed by default) ── */}
+      <div className="flex flex-col gap-2">
+        <DisclosureSection title="Opponent Cues">
+          <OpponentCues cues={result.opponent_cues} />
+        </DisclosureSection>
 
-      <Section title="Feature Sensitivity">
-        <SensitivityDisplay sensitivity={result.sensitivity} />
-      </Section>
-
-      <Section title="Similar Matchups">
-        <RetrievalEvidenceDisplay evidence={result.evidence} />
-      </Section>
+        <DisclosureSection title="Feature Sensitivity">
+          <SensitivityDisplay sensitivity={result.sensitivity} />
+        </DisclosureSection>
+      </div>
     </div>
   );
 }

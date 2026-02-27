@@ -62,6 +62,7 @@ export interface PredictionResult {
   confidence: number;
   entropy: number;
   mutual_information: number;
+  ensemble_agreement: number; // how many of 5 models agree on the top-1 action
   abstain: boolean;
   marginals: Marginals;
   opponent_cues: OpponentCue[];

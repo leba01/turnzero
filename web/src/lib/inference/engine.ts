@@ -146,8 +146,26 @@ export class InferenceEngine {
 
     // 7. Confidence = max(p_bar).
     let confidence = 0;
+    let topAction = 0;
     for (let i = 0; i < pBar.length; i++) {
-      if (pBar[i] > confidence) confidence = pBar[i];
+      if (pBar[i] > confidence) {
+        confidence = pBar[i];
+        topAction = i;
+      }
+    }
+
+    // 7b. Ensemble agreement: how many members' argmax matches the ensemble's top-1.
+    let ensembleAgreement = 0;
+    for (const mp of memberProbs) {
+      let memberMax = 0;
+      let memberArgmax = 0;
+      for (let i = 0; i < mp.length; i++) {
+        if (mp[i] > memberMax) {
+          memberMax = mp[i];
+          memberArgmax = i;
+        }
+      }
+      if (memberArgmax === topAction) ensembleAgreement++;
     }
 
     // 8. Abstention decision.
@@ -194,6 +212,7 @@ export class InferenceEngine {
       confidence,
       entropy,
       mutual_information: mutualInformation,
+      ensemble_agreement: ensembleAgreement,
       abstain,
       marginals,
       opponent_cues: opponentCues,
