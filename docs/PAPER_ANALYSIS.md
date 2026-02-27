@@ -523,7 +523,7 @@ carry correct lead-2 information. **Validates training on all data with standard
 ### What went well
 - **The pipeline is rock-solid.** From raw Showdown logs to calibrated ensemble predictions with full integrity checks at every stage. No data leakage, proper cluster-aware splits, clear Tier 1/Tier 2 delineation.
 - **UQ stack is the real product.** Temperature scaling + deep ensembles + risk-coverage + bootstrap CIs + OOD detection. This is a complete uncertainty quantification story that's rare for a course project.
-- **The model is right-sized.** 1.16M params, trains in ~5 minutes per member, 23 epochs to convergence. No massive compute needed, reproducible on consumer hardware.
+- **The model is right-sized.** 1.16M params, trains in ~5 minutes per member, converges at epoch ~8 (patience=15 early stopping runs ~21-26 total). No massive compute needed, reproducible on consumer hardware.
 - **Explanations are grounded.** Marginals come from the model's own distribution. Retrieval evidence comes from real training examples. Role lexicon is deterministic domain knowledge. Feature sensitivity is causal (mask and measure). No hand-waving.
 
 ### What was harder than expected
@@ -604,7 +604,8 @@ value.
 
 **Implementation:** `turnzero/models/hierarchical.py` (172 lines),
 `configs/ablation_d/member_{001..005}.yaml`, 5-member ensemble with same seeds.
-~25 min total training, early stopping at epoch 6-9 (vs 20-23 for flat).
+~25 min total training. Both architectures converge at similar best epochs
+(6-9 for hierarchical, 6-11 for flat; patience=15 runs ~21-26 total).
 
 ### Stretch 5: Opponent Dependence Analysis (future work)
 For linear teams (low entropy), does the opponent's OTS even matter? Mask

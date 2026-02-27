@@ -114,7 +114,7 @@ Each of the 12 Pok\'emon is represented as a token---the sum of 8 learned embedd
 The architecture is permutation-invariant by design: Pok\'emon within each team are canonically sorted, and the 12-token sequence is aggregated via mean pooling before a linear classification head.
 No positional encoding is used---order carries no information and would introduce the leakage risk documented in EliteFurretAI~\cite{elitefurretai}.
 Training uses cross-entropy loss, AdamW ($\text{lr}{=}3{\times}10^{-4}$), cosine annealing, and mixed-precision (BF16) on a single RTX 4080 Super.
-Each model converges in ${\sim}$23 epochs (${\sim}$5 minutes).
+Each model converges in ${\sim}$8 epochs (${\sim}$5 minutes; patience-15 early stopping runs ${\sim}$21--26 total).
 
 \subsection{Deep Ensemble and Uncertainty Decomposition}
 
@@ -308,7 +308,6 @@ The leakage-safe split (avoiding the 99.9\%$\to$79\% collapse documented in~\cit
 Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]). Calibration degrades OOD (adaptive ECE: $0.012 \to 0.076$). Training data is drawn exclusively from BO3 tournament play (the official VGC competition format); ladder games were deliberately excluded to match deployment conditions.
 
 \textbf{Future work.}
-Conformal prediction sets would provide coverage guarantees with adaptive set sizes.
 Opponent-conditional analysis could test whether linear teams are truly opponent-invariant.
 
 \textbf{Contributions.}

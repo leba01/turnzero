@@ -111,7 +111,9 @@ better).
 **Architecture specifics:** d=128, L=4, H=4, d_ff=512, dropout=0.1. Total:
 1.16M parameters. This is deliberately small — the dataset (247K train
 examples) is not large enough to train a huge model without overfitting. The
-model converges in ~23 epochs (~5 min per member on an RTX 4080 Super).
+model converges in ~8 epochs (best val NLL at epoch 6-11 across members,
+with patience=15 early stopping running ~21-26 total epochs; ~5 min per
+member on an RTX 4080 Super).
 
 **Why mean pooling, not a [CLS] token?** Mean pooling is naturally
 permutation-invariant — swapping two Pokemon in the input doesn't change the
@@ -708,9 +710,8 @@ intra-team self-attention (2 layers, shared encoder) from cross-team attention
 (2 layers, bidirectional). 1.56M params (34% more than flat baseline).
 
 **Results:** Top-1 6.3% vs 6.4%, Top-3 15.5% vs 15.5%, NLL 4.023 vs 4.022.
-All differences within noise (~0.1-0.3pp). The hierarchical model stopped
-earlier (epoch 6-9 vs 20-23), suggesting the cross-attention structure learns
-faster but converges to the same place. ECE improved (0.0020 vs 0.0050) but
+All differences within noise (~0.1-0.3pp). Both architectures converge at
+similar best epochs (6-9 for hierarchical, 6-11 for flat). ECE improved (0.0020 vs 0.0050) but
 absolute values are small enough that this is likely noise. **The negative
 result confirms: the noise ceiling is the binding constraint, not model
 capacity.**
