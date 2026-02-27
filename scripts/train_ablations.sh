@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
-# Train all 15 ablation models (3 loss modes × 5 seeds).
+# Train all 20 ablation models (4 groups × 5 seeds).
 #
 # Usage:
 #     cd /home/walter/CS229/turnzero
 #     bash scripts/train_ablations.sh
 #
 # Output structure:
-#     outputs/runs/ablation_{a,b,c}_{001..005}/best.pt
+#     outputs/runs/ablation_{a,b,c,d}_{001..005}/best.pt
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PYTHON="$ROOT/.venv/bin/python"
 
-ABLATIONS=("a" "b" "c")
+ABLATIONS=("a" "b" "c" "d")
 MEMBERS=(001 002 003 004 005)
 
 echo "========================================"
-echo "  TurnZero Ablation Training (15 runs)"
+echo "  TurnZero Ablation Training (20 runs)"
 echo "========================================"
 echo "Root: $ROOT"
 echo ""

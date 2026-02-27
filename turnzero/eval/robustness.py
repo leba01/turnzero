@@ -25,6 +25,18 @@ from turnzero.eval.plots import COLORS as _COLORS
 from turnzero.eval.plots import _DPI, _save_fig, setup_plotting
 from turnzero.models.transformer import OTSTransformer
 
+
+def _load_model(
+    ckpt_path: str | Path, device: torch.device,
+) -> torch.nn.Module:
+    """Load model from checkpoint, dispatching on arch field."""
+    ckpt = torch.load(Path(ckpt_path), map_location=device, weights_only=False)
+    arch = ckpt.get("arch", "flat")
+    if arch == "hierarchical":
+        from turnzero.models.hierarchical import HierarchicalDualEncoder
+        return HierarchicalDualEncoder.load_from_checkpoint(ckpt_path, device)
+    return OTSTransformer.load_from_checkpoint(ckpt_path, device)
+
 from turnzero.constants import LOG_EPS as _EPS
 
 setup_plotting()
@@ -208,7 +220,7 @@ def run_stress_test(
         for i, ckpt_path in enumerate(ckpt_paths):
             print(f"  Member {i + 1}/{M}: {Path(ckpt_path).parent.name}")
 
-            model = OTSTransformer.load_from_checkpoint(ckpt_path, device)
+            model = _load_model(ckpt_path, device)
 
             # Reset RNG per member so each member sees the same masks
             member_rng = np.random.default_rng(seed)

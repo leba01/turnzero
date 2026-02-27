@@ -361,6 +361,23 @@ Mirrors are where you'll most often see multiple valid lines — perfect for sho
 
 **Training recipe:** AdamW, batch size 256–1024, early stopping on validation NLL, mixed precision (AMP).
 
+#### Option A2 (ablation): Hierarchical Dual Encoder — DONE (negative result)
+
+Same embedding as Option A, but replaces the flat 12-token self-attention with:
+- **Level 2**: Shared 2-layer intra-team TransformerEncoder (6 tokens per team)
+- **Level 3**: 2 layers of bidirectional cross-attention (each team attends to the other)
+- Same mean-pool + classification head as Option A
+
+1.56M params. Tests whether explicit separation of intra-team synergies from
+matchup reasoning helps. Literature (Saito et al. ECCV 2020; "Label Noise:
+Ignorance Is Bliss" 2024) suggested 0-1pp gain at best given the noise ceiling.
+
+**Result:** Top-1 6.3% vs 6.4% flat, Top-3 15.5% vs 15.5%, NLL 4.023 vs 4.022.
+Within noise — confirms the noise ceiling is the binding constraint, not model
+capacity. Strengthens the UQ thesis.
+
+**Implementation**: `configs/ablation_d/`, `turnzero/models/hierarchical.py`.
+
 #### Option B: DeepSets + cross-interaction pooling (lighter)
 - Per-mon MLP → mon embeddings.
 - Team embedding = sum/mean over mon embeddings.

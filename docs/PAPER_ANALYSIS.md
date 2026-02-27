@@ -9,7 +9,7 @@ accuracy** in this domain. Top-1 accuracy is modest (6.4%) because the task is
 intrinsically multi-modal: experts genuinely disagree on the "right" play. But a
 lightweight transformer ensemble (1.16M params, 5 members) with temperature
 scaling, selective prediction, and entropy-based team linearity scoring produces
-a system that (a) is well-calibrated (adaptive ECE = 0.012, Brier = 0.974), (b) knows when it doesn't
+a system that (a) is well-calibrated (adaptive ECE = 0.012, Brier = 0.974 vs 0.989 popularity), (b) knows when it doesn't
 know (OOD abstention doubles from 20% to 46%, AUROC = 0.80), and (c) reveals which team
 archetypes have concentrated action distributions (Dondozo commander: 50% top-1,
 matching mode frequency) vs. which spread across many viable plans
@@ -34,7 +34,7 @@ don't pretend otherwise. The paper IS:
 > diffuse ones are not — and ensemble entropy cleanly separates them (r = -0.56).
 
 The three money figures:
-1. **Reliability diagram** — calibration is excellent (adaptive ECE = 0.012, Brier = 0.974)
+1. **Reliability diagram** — calibration is excellent (adaptive ECE = 0.012, Brier = 0.974 vs 0.989 popularity)
 2. **Risk-coverage curves** — selective prediction works (AURC = 0.890, E-AURC = 0.452)
 3. **Entropy vs accuracy scatter** — team linearity is real and domain-plausible
 
@@ -146,7 +146,7 @@ directly comparable.
 | Prediction target | Full-game policy | Full-game + preview head | Lead-2 only | Lead-2 + bring-4 (90-way) |
 | Team preview eval | Not isolated | 79% post-fix (no UQ) | ~5K logs, no formal metrics | Dedicated, stratified |
 | UQ | None | None | None | **Full stack** |
-| Calibration | None | None | None | **Adaptive ECE = 0.012, Brier = 0.974** |
+| Calibration | None | None | None | **Adaptive ECE = 0.012, Brier = 0.974 vs 0.989 pop** |
 | Selective prediction | None | None | None | **AURC = 0.890, E-AURC = 0.452** |
 | Distribution-shift sensitivity | None | None | None | **AUROC = 0.80 (MI), Regime B entropy shift** |
 | Per-team analysis | None | None | None | **153 teams, r = -0.56** |
@@ -193,7 +193,7 @@ directly, and the decomposition shows exactly where the model succeeds
 ### 2. Calibration is excellent — the probabilities mean what they say
 
 **Adaptive ECE = 0.012 (action-90, equal-mass binning per Nixon et al. 2019).**
-**Brier score = 0.974 (proper scoring rule, vs 0.987 popularity).**
+**Brier score = 0.974 (proper scoring rule, vs 0.989 popularity).**
 
 Previously reported as ECE = 0.011 using equal-width bins, which was misleadingly
 small — on a 90-way problem where max confidence is ~5%, all examples land in the
@@ -204,6 +204,8 @@ Temperature scaling was dropped from the final pipeline (T ≈ 1.158, near-ident
 The ensemble is already well-calibrated without it.
 
 **Paper angle:** The reliability diagram is your showcase figure. A well-calibrated model with 6.4% top-1 is more useful than a 10% model that's badly calibrated, because users can trust the confidence scores. Cite Nixon et al. 2019 for the adaptive binning methodology.
+
+**Note:** Brier score was dropped from the final paper (values retained here for reference: 0.974 ensemble vs 0.989 popularity). The paper focuses on adaptive ECE and the reliability diagram as the calibration evidence.
 
 ### 3. The ensemble knows when it doesn't know (distribution-shift sensitivity)
 
@@ -315,7 +317,26 @@ Grouping by species-6 composition and computing mean ensemble entropy per team r
 
 **Paper angle:** This is the centerpiece Week 5 extension. The aggregate 6.4% top-1 is a misleading average over a heterogeneous, right-skewed distribution driven by action concentration — teams with a single dominant play (commander archetypes, mode freq ≈ 50%) are easy to predict, while teams that spread across many viable plans (goodstuffs) are not. The entropy-accuracy scatter is a publication-quality figure that tells the whole story.
 
-### S8. Speed control does NOT explain team linearity (negative result)
+### S8. BO3 within-set adaptation explains multi-modality
+
+Best-of-three sets provide a concrete, measurable source of label noise. Across
+53K linkable BO3 sets (136K game-to-game transitions), players change their lead
+pair between games **59% of the time** — rising to **72% after a loss** versus
+**46% after a win** (χ² = 10,126, p < 10⁻⁶). Bring-4 changes at 52%.
+
+This means the training set contains genuine label contradictions: the same
+matchup produces different expert leads not because experts disagree on the
+optimal play, but because the *same* player adapts to revealed information from
+the prior game. No turn-zero model can capture this within-player rationality,
+establishing a principled floor on irreducible label noise.
+
+**Paper angle:** Used in the Discussion section ("Multi-modality is the ceiling")
+to explain *where* multi-modality comes from. The 59% lead-change rate and the
+loss/win asymmetry are quantitative evidence that label disagreement is rational
+adaptation, not noise. See `outputs/eval/bo3_adaptation.json` and
+`outputs/plots/paper/bo3_adaptation_rates.{png,pdf}`.
+
+### S9. Speed control does NOT explain team linearity (negative result)
 
 We hypothesized that speed control mode (Trick Room vs Tailwind) would be the
 main driver of team linearity — Trick Room teams must lead the setter, so their
@@ -372,7 +393,7 @@ Combined loss weighted by batch proportion: `(n_tier1/N)*L1 + (n_tier2/N)*L2`.
 
 ### Configs & Training
 
-- 15 configs: `configs/ablation_{a,b,c}/member_{001..005}.yaml`
+- 15 configs: `configs/ablation_{a,b,c}/member_{001..005}.yaml` (+ 5 for ablation_d)
 - Seeds: 42, 137, 256, 512, 777 (same as existing ensemble)
 - Train: `bash scripts/train_ablations.sh`
 - Eval: `python scripts/eval_ablations.py [--bootstrap]`
@@ -426,7 +447,7 @@ carry correct lead-2 information. **Validates training on all data with standard
 
 ### Key UQ Numbers
 - Adaptive ECE (action-90): 0.012 (equal-mass binning, Nixon et al. 2019)
-- Brier score (action-90): 0.974 ensemble vs 0.987 popularity
+- Brier score (action-90): 0.974 ensemble vs 0.989 popularity
 - AURC (top-1): 0.890 ensemble vs 0.905 single; **E-AURC: 0.452**
 - AURC (top-3): 0.761 ensemble vs 0.791 single; **E-AURC: 0.404**
 - OOD AUROC: **0.80 (MI-based)**, 0.70 (entropy-based)
@@ -454,7 +475,7 @@ carry correct lead-2 information. **Validates training on all data with standard
 
 ---
 
-## Suggested Paper Structure
+## Paper Structure (implemented in `paper/turnzero.tex`)
 
 1. **Intro** — Motivate with "90-class problem where experts disagree." The
    43% lead-2 top-3 is the hook. State the thesis: UQ matters more than raw
@@ -486,14 +507,14 @@ carry correct lead-2 information. **Validates training on all data with standard
    - Table 3: OOD comparison (Regime A vs B — abstention doubles)
    - Figure 6: Team entropy histogram (annotated with linear vs flexible extremes)
 
-6. **Discussion** — Per-team heterogeneity (6.4% aggregate masks heterogeneous
-   distribution driven by action concentration), bring-4 vs lead-2 (teams agree
-   on what to bring, disagree on who leads), mirror/non-mirror gap (model learns
-   convention not strategy), speed control negative result (Commander mechanics,
-   not TR, drive linearity),
-   wide CIs (honest about variance), position invariance vs EliteFurretAI's
-   leakage. Future work: conformal prediction sets, opponent-conditional
-   analysis (does team_b matter for linear teams?), cluster-specific models.
+6. **Discussion** — Multi-modality ceiling (BO3 within-set adaptation: 59% lead
+   change rate, 72% after loss vs 46% after win — irreducible label noise),
+   per-team heterogeneity (6.4% aggregate masks heterogeneous distribution
+   driven by action concentration), bring-4 vs lead-2 (teams agree on what to
+   bring, disagree on who leads), mirror/non-mirror gap (model learns convention
+   not strategy), speed control negative result (Commander mechanics, not TR,
+   drive linearity), wide CIs (honest about variance), position invariance vs
+   EliteFurretAI's leakage. Future work: opponent-conditional analysis.
 
 ---
 
@@ -538,7 +559,54 @@ Extract attention weights from the transformer encoder and visualize which oppon
 ### Stretch 3: Per-Cluster Performance Dashboard — DONE (Week 5)
 Implemented as per-team analysis using species-6 composition grouping (not core_cluster_a, which produces a mega-cluster — see S6). 153 teams with ≥20 Tier 1 examples analyzed. Entropy-accuracy correlation r = -0.561 (top-3). Commander teams hit 50% top-1; goodstuffs teams hit 0%. See `scripts/run_cluster_analysis.py`, `outputs/eval/cluster_analysis.json`, and `outputs/plots/paper/cluster_*.{png,pdf}`.
 
-### Stretch 4: Opponent Dependence Analysis (future work)
+### Stretch 4: Hierarchical Dual Encoder Ablation — DONE
+
+Replace the flat 12-token self-attention with a hierarchical structure:
+1. Shared 2-layer intra-team encoder (6 tokens per team, independently)
+2. 2 layers of bidirectional cross-attention between the two team representations
+3. Mean-pool all 12 cross-attended tokens → classify
+
+**Motivation:** The current architecture treats all 12 tokens identically via
+self-attention. The hierarchical version explicitly separates "understand each
+team's internal synergies" (level 2) from "reason about the matchup interaction"
+(level 3).
+
+**Literature basis:** Exchangeable DNNs for set-to-set matching (Saito et al.,
+ECCV 2020) and CATSETMAT (Sharma et al., 2021) show that cross-set
+transformation modules extract better representations than late fusion. However,
+with only 12 tokens, the flat self-attention already captures all four
+interaction quadrants (A→A, A→B, B→A, B→B) implicitly.
+
+**Results:**
+
+| Metric | Flat (a) | Hierarchical (d) | Delta |
+|--------|----------|-------------------|-------|
+| Top-1 Act90 | 6.4% | 6.3% | -0.1pp |
+| Top-3 Act90 | 15.5% | 15.5% | 0.0pp |
+| Top-5 Act90 | 22.5% | 22.7% | +0.2pp |
+| Top-1 Lead2 | 19.7% | 19.4% | -0.3pp |
+| Top-3 Lead2 | 43.2% | 42.9% | -0.3pp |
+| NLL Act90 | 4.022 | 4.023 | +0.001 |
+| ECE Act90 | 0.0050 | 0.0020 | -0.003 |
+| Params | 1.16M | 1.56M | +34% |
+
+**Verdict: clean negative result, as predicted.** The hierarchical architecture
+performs within noise of the flat baseline (~0.1-0.3pp differences in either
+direction). The noise ceiling from BO3 adaptation is the binding constraint, not
+model capacity. "Label Noise: Ignorance Is Bliss" (2024) confirms standard ERM
+is nearly minimax optimal at this noise level. Interestingly, calibration
+improved (ECE 0.0020 vs 0.0050), though this is likely noise given the small
+absolute values.
+
+**This strengthens the paper's UQ thesis:** architecture doesn't matter because
+the model isn't the bottleneck — the UQ infrastructure around it is what adds
+value.
+
+**Implementation:** `turnzero/models/hierarchical.py` (172 lines),
+`configs/ablation_d/member_{001..005}.yaml`, 5-member ensemble with same seeds.
+~25 min total training, early stopping at epoch 6-9 (vs 20-23 for flat).
+
+### Stretch 5: Opponent Dependence Analysis (future work)
 For linear teams (low entropy), does the opponent's OTS even matter? Mask
 team_b entirely and compare accuracy — if it doesn't drop, linear teams are
 opponent-invariant (they always execute the same game plan regardless of

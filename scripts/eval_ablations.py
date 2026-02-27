@@ -43,9 +43,10 @@ BATCH_SIZE = 512
 NUM_WORKERS = 4
 
 ABLATION_GROUPS = {
-    "a": {"label": "action90_all", "members": [f"ablation_a_{i:03d}" for i in range(1, 6)]},
-    "b": {"label": "multitask",    "members": [f"ablation_b_{i:03d}" for i in range(1, 6)]},
-    "c": {"label": "tier1_only",   "members": [f"ablation_c_{i:03d}" for i in range(1, 6)]},
+    "a": {"label": "action90_all",  "members": [f"ablation_a_{i:03d}" for i in range(1, 6)]},
+    "b": {"label": "multitask",     "members": [f"ablation_b_{i:03d}" for i in range(1, 6)]},
+    "c": {"label": "tier1_only",    "members": [f"ablation_c_{i:03d}" for i in range(1, 6)]},
+    "d": {"label": "hierarchical",  "members": [f"ablation_d_{i:03d}" for i in range(1, 6)]},
 }
 
 

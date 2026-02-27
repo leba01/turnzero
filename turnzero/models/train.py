@@ -302,15 +302,28 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
     vocab.save(out_dir / "vocab.json")
 
     # --- Model ---
-    model_cfg = ModelConfig(
-        d_model=cfg_model["d_model"],
-        n_layers=cfg_model["n_layers"],
-        n_heads=cfg_model["n_heads"],
-        d_ff=cfg_model["d_ff"],
-        dropout=cfg_model["dropout"],
-        pool=cfg_model["pool"],
-    )
-    model = OTSTransformer(vocab.vocab_sizes, model_cfg)
+    arch = cfg_model.get("arch", "flat")
+    if arch == "hierarchical":
+        from turnzero.models.hierarchical import HierarchicalConfig, HierarchicalDualEncoder
+        model_cfg = HierarchicalConfig(
+            d_model=cfg_model["d_model"],
+            n_intra_layers=cfg_model["n_intra_layers"],
+            n_cross_layers=cfg_model["n_cross_layers"],
+            n_heads=cfg_model["n_heads"],
+            d_ff=cfg_model["d_ff"],
+            dropout=cfg_model["dropout"],
+        )
+        model = HierarchicalDualEncoder(vocab.vocab_sizes, model_cfg)
+    else:
+        model_cfg = ModelConfig(
+            d_model=cfg_model["d_model"],
+            n_layers=cfg_model["n_layers"],
+            n_heads=cfg_model["n_heads"],
+            d_ff=cfg_model["d_ff"],
+            dropout=cfg_model["dropout"],
+            pool=cfg_model["pool"],
+        )
+        model = OTSTransformer(vocab.vocab_sizes, model_cfg)
     model = model.to(device)
 
     n_params = sum(p.numel() for p in model.parameters())
@@ -402,18 +415,30 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
             epochs_no_improve = 0
 
             # Save best checkpoint (unwrap compiled model)
+            if arch == "hierarchical":
+                model_config_dict = {
+                    "d_model": model_cfg.d_model,
+                    "n_intra_layers": model_cfg.n_intra_layers,
+                    "n_cross_layers": model_cfg.n_cross_layers,
+                    "n_heads": model_cfg.n_heads,
+                    "d_ff": model_cfg.d_ff,
+                    "dropout": model_cfg.dropout,
+                }
+            else:
+                model_config_dict = {
+                    "d_model": model_cfg.d_model,
+                    "n_layers": model_cfg.n_layers,
+                    "n_heads": model_cfg.n_heads,
+                    "d_ff": model_cfg.d_ff,
+                    "dropout": model_cfg.dropout,
+                    "pool": model_cfg.pool,
+                }
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
                     "vocab_sizes": vocab.vocab_sizes,
-                    "model_config": {
-                        "d_model": model_cfg.d_model,
-                        "n_layers": model_cfg.n_layers,
-                        "n_heads": model_cfg.n_heads,
-                        "d_ff": model_cfg.d_ff,
-                        "dropout": model_cfg.dropout,
-                        "pool": model_cfg.pool,
-                    },
+                    "model_config": model_config_dict,
+                    "arch": arch,
                     "config": config,
                     "loss_mode": loss_mode,
                     "epoch": epoch,
@@ -504,8 +529,14 @@ def evaluate_checkpoint(
     model_config = ckpt["model_config"]
     config = ckpt["config"]
 
-    model_cfg = ModelConfig(**model_config)
-    model = OTSTransformer(vocab_sizes, model_cfg)
+    arch = ckpt.get("arch", "flat")
+    if arch == "hierarchical":
+        from turnzero.models.hierarchical import HierarchicalConfig, HierarchicalDualEncoder
+        model_cfg = HierarchicalConfig(**model_config)
+        model = HierarchicalDualEncoder(vocab_sizes, model_cfg)
+    else:
+        model_cfg = ModelConfig(**model_config)
+        model = OTSTransformer(vocab_sizes, model_cfg)
     model.load_state_dict(ckpt["model_state_dict"])
     model = model.to(device)
     model.eval()

@@ -236,15 +236,21 @@ Intuitively: if the model puts 70% confidence on a class and that class
 actually occurs 70% of the time, the bin contributes zero error. If it occurs
 50% of the time, the gap is 20%.
 
-**Our ECE = 0.011.** This is remarkably low for a 90-class problem. For
-context, a well-calibrated ResNet on ImageNet (1000 classes) typically has ECE
-~0.03-0.05 *after* temperature scaling. Our ensemble achieves 0.011 before
+**Our ECE:** 0.011 (equal-width 15-bin) / **0.012 (adaptive equal-mass 15-bin,
+reported in the paper).** The adaptive measure (Nixon et al. 2019) is preferred
+because equal-width binning on a 90-class problem with max confidence ~5% puts
+nearly all examples in the first 1-2 bins, making the result misleadingly small.
+Equal-mass binning distributes examples evenly across bins, giving a more
+rigorous calibration measure. The ensemble is STILL well-calibrated — the
+metric just needed to be rigorous.
+
+For context, a well-calibrated ResNet on ImageNet (1000 classes) typically has
+ECE ~0.03-0.05 *after* temperature scaling. Our ensemble achieves 0.012 before
 temperature scaling even does much.
 
 **Caveat with ECE:** When maximum confidence is low (ours is 5.3% mean, 38.1%
 max), most predictions fall in the lowest bins where accuracy is naturally
-close to confidence. This makes low ECE partly an artifact of the model never
-being confident. The reliability diagram is a more honest visualization —
+close to confidence. The reliability diagram is a more honest visualization —
 it shows the calibration curve across all confidence levels.
 
 **Why not Brier score?** Brier score = E[(p - y)²] measures both calibration
@@ -275,10 +281,12 @@ uncertainty estimates will have low risk at high coverage (it's accurate when
 confident and abstains when uncertain). A randomly uncertain model will have
 a flat risk-coverage curve.
 
-**Our AURC:** 0.890 (ensemble) vs 0.905 (single transformer). The ensemble's
-uncertainty estimates are better at identifying which predictions to trust.
-This is the practical UQ payoff — not just better probabilities, but better
-*selective* predictions.
+**Our AURC:** 0.890 (ensemble) vs 0.905 (single transformer). **E-AURC
+(excess AURC):** 0.452 — this normalizes out the base error rate (93.6% for
+top-1) and isolates how well the model *ranks* its own predictions. The
+ensemble's uncertainty estimates are better at identifying which predictions to
+trust. This is the practical UQ payoff — not just better probabilities, but
+better *selective* predictions.
 
 **Why not just use a confidence threshold?** That's what selective prediction
 IS — but AURC evaluates it across all possible thresholds simultaneously, so
@@ -317,7 +325,11 @@ compositions.
 - Entropy increases by +0.168 nats on Regime B vs A → model is more uncertain
 - Mutual information increases by +0.03 → models disagree more
 - Abstention rate doubles: 20% → 46%
+- **OOD AUROC = 0.80 (MI-based)**, 0.70 (entropy-based) — MI is a better
+  discriminator because it isolates epistemic uncertainty (model disagreement)
+  from aleatoric uncertainty (inherent task difficulty)
 - But accuracy on non-abstained predictions is *higher*: 11.7% vs 6.4% top-1
+- Calibration degrades OOD: adaptive ECE 0.012 → 0.076
 
 The last finding seems paradoxical. The explanation: Regime B's held-out
 clusters tend to be rare/distinctive teams. When the model IS confident about
@@ -656,14 +668,125 @@ does.
 
 ---
 
+## 18. Why not a fancier architecture? (Architecture ablation)
+
+**Question:** The vanilla transformer concatenates all 12 tokens and does flat
+self-attention. Would a more sophisticated architecture do better?
+
+**What we investigated:** A literature survey across set matching architectures,
+tabular transformers, and game AI precedents (Exchangeable DNNs for set-to-set
+matching, CATSETMAT, FT-Transformer, SAINT, TabNet, VGC-Bench, Dota 2 win
+prediction, cross-attention fusion studies).
+
+**Key findings:**
+
+1. **Cross-attention is already implicit.** When you concatenate 12 tokens (6+6)
+   and run self-attention, the attention matrix naturally decomposes into four
+   quadrants: A→A, A→B, B→A, B→B. This IS cross-attention + self-attention in
+   a single pass. Explicit cross-attention helps when sequences are long (100s+
+   tokens) and you need to restrict the attention pattern. With 12 tokens, it's
+   a wash.
+
+2. **VGC-Bench uses the same architecture.** They independently converged on:
+   embed each Pokemon's fields, concatenate 12 tokens, self-attention, classify.
+   This is evidence the community has settled on this design for this problem.
+
+3. **The noise ceiling is the binding constraint.** "Label Noise: Ignorance Is
+   Bliss" (2024) proves that standard ERM is nearly minimax optimal for
+   multi-class instance-dependent label noise. Our label quality ablation
+   confirmed this empirically (near-null result). Architecture changes cannot
+   push past the Bayes error rate set by expert disagreement.
+
+4. **FT-Transformer ≈ our architecture.** Our design is essentially an
+   FT-Transformer where each "feature" is a Pokemon (8 summed field embeddings),
+   with added set structure. SAINT's inter-sample attention is irrelevant
+   (independent examples). TabNet's sequential feature selection is wrong for
+   sets.
+
+**The ablation we ran:** A Hierarchical Dual Encoder that explicitly separates
+intra-team self-attention (2 layers, shared encoder) from cross-team attention
+(2 layers, bidirectional). 1.56M params (34% more than flat baseline).
+
+**Results:** Top-1 6.3% vs 6.4%, Top-3 15.5% vs 15.5%, NLL 4.023 vs 4.022.
+All differences within noise (~0.1-0.3pp). The hierarchical model stopped
+earlier (epoch 6-9 vs 20-23), suggesting the cross-attention structure learns
+faster but converges to the same place. ECE improved (0.0020 vs 0.0050) but
+absolute values are small enough that this is likely noise. **The negative
+result confirms: the noise ceiling is the binding constraint, not model
+capacity.**
+
+**Why the vanilla transformer was the right choice:** Using a simple,
+well-understood architecture that already matches what VGC-Bench uses makes the
+UQ contribution cleaner. If we'd used a novel architecture AND a UQ stack, it
+would be unclear which drove the results. The vanilla transformer as a
+deliberate baseline lets the UQ story stand on its own. The hierarchical
+ablation proves this empirically — a 34% larger model with explicit structural
+inductive bias achieves identical performance.
+
+---
+
+## 19. Where does multi-modality come from? (BO3 adaptation)
+
+**Question:** Experts facing the same matchup make different lead choices. Is this
+disagreement random, or is there a systematic explanation?
+
+**The key insight:** Our data is from **best-of-three tournament play**. In a
+BO3 set, the same two players face the same matchup 2-3 times in a row. Between
+games, they can adapt based on what happened — change leads to counter the
+opponent's revealed strategy.
+
+**What we measured:** Across 53K linkable BO3 sets (136K game-to-game transitions
+from the same player in the same set):
+
+| Condition | Lead change rate |
+|-----------|-----------------|
+| Overall | **59%** |
+| After a loss | **72%** |
+| After a win | **46%** |
+| Bring-4 change (overall) | **52%** |
+
+The loss/win asymmetry is massive (χ² = 10,126, p < 10⁻⁶). Losing strongly
+triggers adaptation — players don't just randomly vary, they systematically
+adjust.
+
+**Why this matters for TurnZero:** This means the training set contains genuine
+label contradictions at the *same-player* level. The same player, facing the
+same matchup, makes different lead choices in Game 2 vs Game 1 — not because
+they disagree with themselves about the "right" play, but because they're
+adapting to information revealed during the previous game (what the opponent
+led, what moves they used, etc.).
+
+A turn-zero model sees only the team sheets. It cannot access the within-set
+history that drives these adaptations. This establishes a **principled floor on
+irreducible label noise** — even a perfect model cannot predict which adaptation
+a player will make because the information driving the adaptation (previous game
+results) is not in the input.
+
+**Why not train a separate "Game 2 given Game 1" model?** This would require
+conditioning on the previous game's actions and outcome — turning it from a
+turn-zero problem into a sequential decision problem. It's a valid extension
+but changes the fundamental setup. The 59% change rate quantifies how much
+information is lost by treating each game independently.
+
+**Paper angle:** Used in Discussion to explain the multi-modality ceiling.
+The lead-change rate (59%) and bring-4 change rate (52%) provide concrete
+evidence that label disagreement is rational adaptation, not noise. This
+reframes the modest top-1 accuracy (6.4%) as expected rather than disappointing.
+See `outputs/eval/bo3_adaptation.json` and
+`outputs/plots/paper/bo3_adaptation_rates.{png,pdf}`.
+
+---
+
 ## Glossary of Key Terms
 
 | Term | Definition | Our value |
 |------|-----------|-----------|
-| **ECE** | Expected Calibration Error: weighted average gap between predicted confidence and actual accuracy across bins | 0.011 |
+| **ECE** | Expected Calibration Error: weighted average gap between predicted confidence and actual accuracy across bins | 0.012 (adaptive) |
 | **NLL** | Negative Log-Likelihood: -log p(y_true\|x). Lower = the model assigns higher probability to the correct answer | 4.031 |
-| **Brier Score** | E[(p - y)²]. Combines calibration + sharpness. Lower = better. >1.0 means worse than uniform | 0.978 (ens) |
-| **AURC** | Area Under the Risk-Coverage curve. Lower = better selective prediction | 0.890 |
+| **Brier Score** | E[(p - y)²]. Combines calibration + sharpness. Lower = better. >1.0 means worse than uniform | 0.974 (ens) vs 0.989 (pop) |
+| **AURC** | Area Under the Risk-Coverage curve. Lower = better selective prediction | 0.890 (top-1) |
+| **E-AURC** | Excess AURC = AURC - AURC_optimal. Isolates ranking quality from base error rate | 0.452 (top-1), 0.404 (top-3) |
+| **OOD AUROC** | Area Under the ROC curve for ID vs OOD discrimination. Higher = better OOD detection | 0.80 (MI-based) |
 | **Entropy** | H = -Σ p log p. Measures uncertainty of a distribution. Higher = more uncertain | 4.034 mean |
 | **MI** | Mutual Information between prediction and model parameters. Measures epistemic (model) uncertainty | ~0.05 mean |
 | **Temperature** | Scalar T dividing logits before softmax. T>1 softens, T<1 sharpens | 1.158 |
@@ -682,7 +805,7 @@ right play. Raw accuracy is 6.4% top-1, which sounds bad until you realize
 experts disagree with *each other* and our top-17 predictions capture the
 right action 50% of the time. The real contribution isn't the classifier —
 it's the uncertainty quantification stack around it. Deep ensembles give us
-calibrated probabilities (ECE 0.011), selective prediction (abstention doubles
+calibrated probabilities (adaptive ECE 0.012), selective prediction (abstention doubles
 on novel teams), and per-team linearity scores that reveal a heterogeneous
 distribution driven by action concentration — commander teams with a single
 dominant play hit 50% top-1 (matching mode frequency), while flexible

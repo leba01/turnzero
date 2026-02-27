@@ -23,6 +23,18 @@ from turnzero.models.transformer import OTSTransformer
 from turnzero.constants import LOG_EPS as _EPS
 
 
+def _load_model_from_checkpoint(
+    ckpt_path: str | Path, device: torch.device,
+) -> torch.nn.Module:
+    """Load a model from checkpoint, dispatching on arch field."""
+    ckpt = torch.load(Path(ckpt_path), map_location=device, weights_only=False)
+    arch = ckpt.get("arch", "flat")
+    if arch == "hierarchical":
+        from turnzero.models.hierarchical import HierarchicalDualEncoder
+        return HierarchicalDualEncoder.load_from_checkpoint(ckpt_path, device)
+    return OTSTransformer.load_from_checkpoint(ckpt_path, device)
+
+
 def _entropy(probs: np.ndarray) -> np.ndarray:
     """Shannon entropy H(p) = -sum(p * log(p + eps)) along last axis."""
     return -np.sum(probs * np.log(probs + _EPS), axis=-1)
@@ -126,7 +138,7 @@ def ensemble_predict(
     for i, ckpt_path in enumerate(ckpt_paths):
         print(f"Ensemble member {i + 1}/{M}: {Path(ckpt_path).parent.name}")
 
-        model = OTSTransformer.load_from_checkpoint(ckpt_path, device)
+        model = _load_model_from_checkpoint(ckpt_path, device)
         probs_m, ld = _collect_probs(model, loader, device)
         member_probs_list.append(probs_m)
 
