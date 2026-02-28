@@ -31,12 +31,32 @@ function isAnyExample(teamA: TeamSheet, teamB: TeamSheet): boolean {
   );
 }
 
+const LEFT_MIN = 340;
+const LEFT_MAX = 700;
+const LEFT_DEFAULT = 440;
+
 export default function Home() {
   const [teamA, setTeamA] = useState<TeamSheet>(EXAMPLE_TEAM_A);
   const [teamB, setTeamB] = useState<TeamSheet>(EXAMPLE_TEAM_B);
   const autoPredictFired = useRef(false);
   const predictRef = useRef<((a: TeamSheet, b: TeamSheet) => void) | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragging = useRef(false);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const [showScrollHint, setShowScrollHint] = useState(true);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      setLeftWidth(Math.min(LEFT_MAX, Math.max(LEFT_MIN, e.clientX)));
+    };
+    const onUp = () => { dragging.current = false; setIsDragging(false); document.body.style.cursor = ''; document.body.style.userSelect = ''; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+  }, []);
 
   const onReady = useCallback(() => {
     if (!autoPredictFired.current) {
@@ -57,9 +77,25 @@ export default function Home() {
   const showingExample = isAnyExample(teamA, teamB);
 
   useEffect(() => {
+    if (result) setShowScrollHint(true);
+  }, [result]);
+
+  useEffect(() => {
     if (result && resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  }, [result]);
+
+  useEffect(() => {
+    const root = rightPanelRef.current;
+    if (!root || !result) return;
+    const onScroll = () => {
+      if (root.scrollTop + root.clientHeight >= root.scrollHeight - 60) {
+        setShowScrollHint(false);
+      }
+    };
+    root.addEventListener('scroll', onScroll);
+    return () => root.removeEventListener('scroll', onScroll);
   }, [result]);
 
   const handleClear = () => {
@@ -75,137 +111,215 @@ export default function Home() {
     predict(ex.teamA, ex.teamB);
   };
 
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-4 sm:py-8">
-      {/* Header */}
-      <header className="mb-8 text-center">
-        <h1 className="mb-2 font-[family-name:var(--font-heading)] text-xl text-night">
-          TURNZERO
-        </h1>
-        <p className="font-[family-name:var(--font-label)] text-sm text-rock">
-          Turn-Zero OTS Coach for Pokémon VGC
+  /* ── Shared UI blocks ── */
+  const headerBlock = (
+    <header className="mb-6 text-center lg:text-left">
+      <h1 className="mb-2 font-[family-name:var(--font-heading)] text-xl text-night">
+        TURNZERO
+      </h1>
+      <p className="font-[family-name:var(--font-label)] text-sm sm:text-base text-rock">
+        OTS Coach for Pokémon VGC Gen 9 Reg G
+      </p>
+      <div className="mt-3 max-w-md border-2 border-jam bg-jam/10 px-3 py-2.5 text-left">
+        <ol className="list-inside list-decimal space-y-1 font-[family-name:var(--font-label)] text-xs sm:text-sm leading-relaxed text-night">
+          <li>Enter your team and your opponent&apos;s OTS</li>
+          <li>Hit <span className="font-[family-name:var(--font-heading)]">PREDICT</span></li>
+          <li>See what to lead and bring</li>
+        </ol>
+        <p className="mt-1.5 font-[family-name:var(--font-body)] text-[10px] sm:text-sm text-rock">
+          Supports Pokepaste &amp; Showdown imports · Trained on 246K Bo3 matches
         </p>
-        <div className="mt-3">
-          <AboutDialog />
-        </div>
-      </header>
+      </div>
+      <div className="mt-3">
+        <AboutDialog />
+      </div>
+    </header>
+  );
 
-      <Separator className="mb-8" />
+  const loadingBlock = modelState.status === 'loading' ? (
+    <div className="mb-4 flex flex-col items-center gap-2">
+      <span className="font-[family-name:var(--font-label)] text-xs sm:text-sm text-rock">
+        Loading model {modelState.loaded}/{modelState.total}...
+      </span>
+      <Progress
+        value={(modelState.loaded / modelState.total) * 100}
+        className="h-4 w-full max-w-64"
+      />
+    </div>
+  ) : modelState.status === 'error' ? (
+    <div className="mb-4 border-2 border-red-400 bg-red-50 p-4 text-center">
+      <p className="font-[family-name:var(--font-label)] text-xs sm:text-sm text-red-600">
+        Failed to load models: {modelState.message}
+      </p>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => window.location.reload()}
+        className="mt-3 border-red-400 text-red-600 hover:bg-red-100"
+      >
+        RETRY
+      </Button>
+    </div>
+  ) : null;
 
-      {/* Model loading status */}
-      {modelState.status === 'loading' && (
-        <div className="mb-6 flex flex-col items-center gap-2">
-          <span className="font-[family-name:var(--font-label)] text-xs text-rock">
-            Loading model {modelState.loaded}/{modelState.total}...
-          </span>
-          <Progress
-            value={(modelState.loaded / modelState.total) * 100}
-            className="h-4 w-full max-w-64"
-          />
-        </div>
-      )}
+  const teamsBlock = (
+    <div className="flex flex-col gap-4">
+      <TeamInputPanel
+        label="Your Team"
+        team={teamA}
+        onChange={setTeamA}
+        onEditStart={() => setLeftWidth(LEFT_MAX)}
+        pokemonData={pokemonData}
+      />
+      <TeamInputPanel
+        label="Opponent"
+        team={teamB}
+        onChange={setTeamB}
+        onEditStart={() => setLeftWidth(LEFT_MAX)}
+        pokemonData={pokemonData}
+      />
+    </div>
+  );
 
-      {modelState.status === 'error' && (
-        <div className="mb-6 border-2 border-red-400 bg-red-50 p-4 text-center">
-          <p className="font-[family-name:var(--font-label)] text-xs text-red-600">
-            Failed to load models: {modelState.message}
-          </p>
+  const actionsBlock = (
+    <div className="flex flex-col items-center gap-3 lg:items-start">
+      <div className="flex items-center gap-2">
+        <Button
+          size="lg"
+          onClick={() => predict(teamA, teamB)}
+          disabled={!canPredict}
+          className="bg-jam px-8 py-3 font-[family-name:var(--font-heading)] text-base text-white hover:bg-jam/90 disabled:bg-rock"
+        >
+          {predicting ? 'Predicting...' : modelState.status !== 'ready' ? 'Loading...' : 'PREDICT'}
+        </Button>
+        {showingExample && (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.location.reload()}
-            className="mt-3 border-red-400 text-red-600 hover:bg-red-100"
+            onClick={handleClear}
+            className="border-night text-night hover:bg-mist"
           >
-            RETRY
+            CLEAR
           </Button>
-        </div>
-      )}
-
-      {/* Team inputs */}
-      <div className="flex flex-col gap-6">
-        <TeamInputPanel
-          label="Your Team"
-          team={teamA}
-          onChange={setTeamA}
-          pokemonData={pokemonData}
-        />
-
-        <TeamInputPanel
-          label="Opponent"
-          team={teamB}
-          onChange={setTeamB}
-          pokemonData={pokemonData}
-        />
-
-        {/* Action buttons */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Button
-              size="lg"
-              onClick={() => predict(teamA, teamB)}
-              disabled={!canPredict}
-              className="bg-jam px-8 py-3 text-white hover:bg-jam/90 disabled:bg-rock"
-            >
-              {predicting ? 'Predicting...' : modelState.status !== 'ready' ? 'Loading...' : 'PREDICT'}
-            </Button>
-            {showingExample && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClear}
-                className="border-night text-night hover:bg-mist"
-              >
-                CLEAR
-              </Button>
-            )}
-          </div>
-
-          {/* Example matchup buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="font-[family-name:var(--font-label)] text-[10px] text-rock">
-              EXAMPLES:
+        )}
+      </div>
+      <div className="flex flex-col items-center gap-1 lg:items-start">
+        <span className="font-[family-name:var(--font-label)] text-[10px] sm:text-sm text-rock">
+          EXAMPLES:
+        </span>
+        <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+        {EXAMPLES.map((ex) => (
+          <Button
+            key={ex.id}
+            variant="outline"
+            size="sm"
+            onClick={() => handleLoadExample(ex.id)}
+            disabled={!canPredict}
+            className="border-night px-2 py-1 text-night hover:bg-mist disabled:border-rock disabled:text-rock"
+          >
+            <span className="flex flex-col items-start leading-tight">
+              <span className="font-[family-name:var(--font-label)] text-[10px] sm:text-sm">{ex.label}</span>
+              <span className="font-[family-name:var(--font-body)] text-[8px] sm:text-[10px] text-rock">{ex.description}</span>
             </span>
-            {EXAMPLES.map((ex) => (
-              <Button
-                key={ex.id}
-                variant="outline"
-                size="sm"
-                onClick={() => handleLoadExample(ex.id)}
-                disabled={!canPredict}
-                className="border-night px-2 py-1 text-night hover:bg-mist disabled:border-rock disabled:text-rock"
-              >
-                <span className="flex flex-col items-start leading-tight">
-                  <span className="font-[family-name:var(--font-label)] text-[10px]">{ex.label}</span>
-                  <span className="font-[family-name:var(--font-body)] text-[8px] text-rock">{ex.description}</span>
-                </span>
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Results */}
-        <div ref={resultsRef}>
-          {result && <ResultsPanel result={result} teamA={teamA} teamB={teamB} />}
+          </Button>
+        ))}
         </div>
       </div>
+    </div>
+  );
 
-      {/* Footer */}
-      <footer className="mt-12 border-t-2 border-night pt-4 text-center">
-        <p className="font-[family-name:var(--font-body)] text-[10px] text-rock">
-          CS229 Final Project · Stanford University ·{' '}
-          <a
-            href="https://github.com/leba01/turnzero"
-            className="text-night underline hover:text-jam"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
-          </a>
-        </p>
-        <p className="mt-1 font-[family-name:var(--font-body)] text-[9px] text-rock">
-          Sprites from Pokémon Showdown (community fan art). Not affiliated with Nintendo or The Pokémon Company.
-        </p>
-      </footer>
-    </main>
+  const resultsBlock = (
+    <div ref={resultsRef}>
+      {result && <ResultsPanel result={result} teamA={teamA} teamB={teamB} />}
+    </div>
+  );
+
+  const footerBlock = (
+    <footer className="mt-12 border-t-2 border-night pt-4 text-center lg:mt-6">
+      <p className="font-[family-name:var(--font-body)] text-[10px] sm:text-sm text-rock">
+        CS229 Final Project · Stanford University ·{' '}
+        <a
+          href="https://github.com/leba01/turnzero"
+          className="text-night underline hover:text-jam"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+      </p>
+      <p className="mt-1 font-[family-name:var(--font-body)] text-[9px] sm:text-[11px] text-rock">
+        Sprites from Pokémon Showdown (community fan art). Not affiliated with Nintendo or The Pokémon Company.
+      </p>
+    </footer>
+  );
+
+  return (
+    <>
+      {/* ── Mobile layout (< lg): vertical scroll, unchanged ── */}
+      <main className="mx-auto max-w-5xl px-4 py-4 sm:py-8 lg:hidden">
+        {headerBlock}
+        <Separator className="mb-8" />
+        {loadingBlock}
+        <div className="flex flex-col gap-6">
+          {teamsBlock}
+          {actionsBlock}
+          {resultsBlock}
+        </div>
+        {footerBlock}
+      </main>
+
+      {/* ── Desktop layout (lg+): resizable left/right panels ── */}
+      <div className="hidden lg:flex lg:h-screen lg:overflow-hidden">
+        {/* Left panel — input */}
+        <aside
+          className={`flex shrink-0 flex-col gap-4 overflow-y-auto bg-milk px-5 py-6 ${isDragging ? '' : 'transition-[width] duration-300 ease-in-out'}`}
+          style={{ width: leftWidth }}
+        >
+          {headerBlock}
+          <Separator />
+          {loadingBlock}
+          {teamsBlock}
+          {actionsBlock}
+          {footerBlock}
+        </aside>
+
+        {/* Drag handle */}
+        <div
+          className="group relative z-10 flex w-8 shrink-0 cursor-col-resize flex-col items-center"
+          onMouseDown={() => { dragging.current = true; setIsDragging(true); document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none'; }}
+        >
+          {/* Full-height night track */}
+          <div className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 bg-night" />
+          {/* Centered knob */}
+          <div className="pointer-events-none absolute top-1/2 -translate-y-1/2 flex h-14 w-8 flex-col items-center justify-center gap-[3px] border-2 border-night bg-jam shadow-[2px_2px_0px_#3D5A80] transition-shadow group-hover:shadow-[3px_3px_0px_#3D5A80]">
+            <span className="font-[family-name:var(--font-label)] text-[8px] leading-none text-white">◀</span>
+            <span className="font-[family-name:var(--font-label)] text-[8px] leading-none text-white">▶</span>
+          </div>
+        </div>
+
+        {/* Right panel — results */}
+        <div className="relative flex-1 overflow-y-auto bg-milk px-6 py-6 xl:px-10" ref={rightPanelRef}>
+          {result ? (
+            <div ref={resultsRef}><ResultsPanel result={result} teamA={teamA} teamB={teamB} /></div>
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <p className="font-[family-name:var(--font-label)] text-sm sm:text-base text-rock">
+                {modelState.status === 'ready'
+                  ? 'Set up your teams and hit PREDICT'
+                  : 'Loading models...'}
+              </p>
+            </div>
+          )}
+          {/* Scroll hint */}
+          {result && showScrollHint && (
+            <div className="pointer-events-none sticky inset-x-0 bottom-0 flex flex-col items-center pb-3">
+              <div className="pointer-events-auto animate-bounce rounded-full bg-jam/90 px-6 py-1.5 font-[family-name:var(--font-label)] text-lg font-bold tracking-wider text-white shadow-lg">
+                ▼ SCROLL FOR MORE ▼
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
