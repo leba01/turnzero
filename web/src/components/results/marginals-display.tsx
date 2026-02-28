@@ -57,7 +57,7 @@ function ProbStrip({
           return (
             <div
               key={idx}
-              className="flex w-16 flex-col items-center gap-0.5 transition-opacity"
+              className="flex w-20 sm:w-24 flex-col items-center gap-0.5 transition-opacity"
               style={{ opacity }}
             >
               <div
@@ -76,11 +76,11 @@ function ProbStrip({
                   unoptimized
                 />
               </div>
-              <span className="w-full break-words text-center font-[family-name:var(--font-label)] text-[9px] sm:text-[11px] leading-tight text-night">
+              <span className="w-full truncate text-center font-[family-name:var(--font-label)] text-[9px] sm:text-[10px] leading-tight text-night">
                 <SpeciesName species={species[idx]} />
               </span>
               <span
-                className="rounded-full px-1.5 py-0.5 font-[family-name:var(--font-body)] text-[10px] sm:text-sm font-medium"
+                className="rounded-full px-1.5 py-0.5 font-[family-name:var(--font-body)] text-[9px] sm:text-[11px] font-medium"
                 style={{
                   backgroundColor: (highlighted || nearMiss) ? `${accentColor}30` : '#f0f0f0',
                   color: (highlighted || nearMiss) ? accentColor : '#8D8D8D',
