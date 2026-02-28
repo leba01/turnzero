@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { spriteUrl } from '@/lib/sprites';
+import { spriteUrl, displayName } from '@/lib/sprites';
+import { SpeciesName } from '@/components/ui/species-name';
 import { Button } from '@/components/ui/button';
 import type { TeamSheet } from '@/types/pokemon';
 
@@ -13,7 +14,7 @@ interface TeamSummaryProps {
 export function TeamSummary({ team, onEdit }: TeamSummaryProps) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex flex-1 flex-wrap items-center gap-3">
+      <div className="grid flex-1 grid-cols-3 gap-y-1">
         {team.pokemon.map((mon, i) => (
           <div key={i} className="flex flex-col items-center">
             <Image
@@ -24,8 +25,8 @@ export function TeamSummary({ team, onEdit }: TeamSummaryProps) {
               className="object-contain"
               unoptimized
             />
-            <span className="max-w-14 truncate text-center font-[family-name:var(--font-label)] text-[9px] text-night">
-              {mon.species}
+            <span className="text-center font-[family-name:var(--font-label)] text-[9px] sm:text-[11px] text-night">
+              <SpeciesName species={mon.species} />
             </span>
           </div>
         ))}

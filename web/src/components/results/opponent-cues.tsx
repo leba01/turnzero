@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { spriteUrl } from '@/lib/sprites';
+import { spriteUrl, displayName } from '@/lib/sprites';
+import { SpeciesName } from '@/components/ui/species-name';
 import { Badge } from '@/components/ui/badge';
 import type { OpponentCue } from '@/types/pokemon';
 
@@ -52,8 +53,8 @@ export function OpponentCues({ cues }: OpponentCuesProps) {
             className="shrink-0 object-contain"
             unoptimized
           />
-          <span className="w-20 shrink-0 truncate font-[family-name:var(--font-label)] text-xs text-night sm:w-28">
-            {cue.species}
+          <span className="min-w-0 break-words font-[family-name:var(--font-label)] text-xs sm:text-sm text-night">
+            <SpeciesName species={cue.species} />
           </span>
           <div className="flex flex-wrap gap-1">
             {cue.roles.length > 0 ? (
@@ -61,13 +62,13 @@ export function OpponentCues({ cues }: OpponentCuesProps) {
                 <Badge
                   key={role}
                   variant="outline"
-                  className={`text-[9px] ${getRoleStyle(role)}`}
+                  className={`text-[9px] sm:text-[11px] ${getRoleStyle(role)}`}
                 >
                   {role.replace(/_/g, ' ')}
                 </Badge>
               ))
             ) : (
-              <span className="font-[family-name:var(--font-body)] text-[10px] text-rock">
+              <span className="font-[family-name:var(--font-body)] text-[10px] sm:text-sm text-rock">
                 (no cues)
               </span>
             )}
