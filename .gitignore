@@ -1,5 +1,5 @@
 .next/
-.claude/scratch/
+.claude/
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -17,3 +17,7 @@ data/assembled/
 data/final/
 data/exploration/
 outputs/
+
+# Compiled paper (keep figures/)
+paper/*.pdf
+!paper/figures/*.pdf
