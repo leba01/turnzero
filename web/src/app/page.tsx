@@ -41,7 +41,7 @@ export default function Home() {
   const autoPredictFired = useRef(false);
   const predictRef = useRef<((a: TeamSheet, b: TeamSheet) => void) | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT);
+  const [leftWidth, setLeftWidth] = useState(LEFT_MAX);
   const [isDragging, setIsDragging] = useState(false);
   const dragging = useRef(false);
   const rightPanelRef = useRef<HTMLDivElement>(null);
