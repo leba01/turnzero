@@ -24,15 +24,15 @@ export function AboutDialog() {
             TURNZERO
           </DialogTitle>
           <DialogDescription className="font-[family-name:var(--font-body)] text-xs sm:text-sm text-rock">
-            Turn-zero team preview advisor for Pokémon VGC Regulation G.
+            Team preview patterns from 246K tournament games · Pokémon VGC Regulation G
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 font-[family-name:var(--font-body)] text-xs sm:text-sm leading-relaxed text-night">
           <p>
-            Given two Open Team Sheets, TurnZero predicts which Pokémon to
-            lead and bring — the first decision in every VGC game, made before
-            any moves are selected.
+            Given two Open Team Sheets, TurnZero shows what experts typically
+            led and brought in similar matchups — the first decision in every
+            VGC game, made before any moves are selected.
           </p>
 
           <Separator />
@@ -52,9 +52,9 @@ export function AboutDialog() {
                 all lead-2 + back-2 combinations
               </li>
               <li>
-                <span className="text-jam">Honest uncertainty</span> — the model
-                abstains when it doesn&apos;t know, because experts themselves
-                disagree 59% of the time on similar matchups
+                <span className="text-jam">Uncertainty-aware</span> — the model
+                abstains when ensemble members disagree, which happens often:
+                experts themselves change leads 59% of the time between games
               </li>
               <li>
                 <span className="text-jam">Retrieval evidence</span> from 246K

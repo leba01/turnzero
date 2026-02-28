@@ -35,7 +35,7 @@ function confidenceTier(agreement: number, abstain: boolean): {
   };
   if (agreement >= 4) return {
     label: 'Strong',
-    sublabel: 'Clear game plan — models converge on the same strategy',
+    sublabel: 'Models agree — this is a common pattern in tournament data',
     color: 'text-moss',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-moss',
@@ -43,7 +43,7 @@ function confidenceTier(agreement: number, abstain: boolean): {
   };
   if (agreement >= 3) return {
     label: 'Moderate',
-    sublabel: 'Likely bring-4 is clear, but lead order is flexible',
+    sublabel: 'Bring-4 is likely clear, but lead order varies in the data',
     color: 'text-night',
     bgColor: 'bg-sky-50',
     borderColor: 'border-night',
@@ -51,7 +51,7 @@ function confidenceTier(agreement: number, abstain: boolean): {
   };
   return {
     label: 'Low',
-    sublabel: 'Multiple viable plans — check marginals for guidance',
+    sublabel: 'Multiple viable plans in the data — check marginals and evidence',
     color: 'text-rock',
     bgColor: 'bg-stone-50',
     borderColor: 'border-rock',

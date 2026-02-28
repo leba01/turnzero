@@ -14,7 +14,7 @@ There is no single correct answer: experts facing the same matchup routinely cho
 This makes uncertainty quantification the central challenge---a trainer preparing for a tournament needs to know which leads are viable and when the matchup is too novel for patterns to apply, not just a single prediction.
 I train a 5-member deep ensemble of permutation-invariant transformers on 382K expert replays.
 The ensemble covers 50\% of expert actions by its 17th-ranked prediction (vs.\ 45th random), is well-calibrated (adaptive ECE $= 0.012$), and automatically doubles its abstention rate on unseen team archetypes (AUROC $= 0.80$).
-When all five members agree, accuracy reaches 16.6\%---nearly 3$\times$ the aggregate---giving trainers a reliable signal; when they fully disagree, the system honestly flags the matchup as unresolved.
+When all five members agree (5.8\% of examples), accuracy reaches 16.6\%---nearly 3$\times$ the aggregate; when they fully disagree, it drops to 3.1\%, indicating no historical consensus.
 Per-team analysis reveals that predictability is driven by mechanical constraints (commander teams: 50\% top-1) rather than strategic reasoning (flexible teams: 0\% top-1).
 \end{abstract}
 
@@ -34,13 +34,13 @@ Accuracy still matters---a model that learns real matchup signal is better than 
 A player preparing for a tournament does not need the ``correct'' lead; they need to know which leads are viable, how confident the evidence is, and when the matchup is too novel for historical patterns to apply.
 This makes uncertainty quantification the higher-value challenge.
 
-I present TurnZero, a decision support system for competitive trainers and researchers that treats team preview as 90-way classification wrapped in a complete uncertainty quantification stack.
+I present TurnZero, which treats team preview as 90-way classification with an uncertainty quantification stack built on deep ensembles.
 The system is built on four claims:
 \begin{enumerate}
-    \item A permutation-invariant transformer ensemble trained on 382K replays learns real matchup signal: its top-17 predictions cover 50\% of expert actions (2.6$\times$ a uniform baseline).
-    \item The ensemble is well-calibrated (adaptive ECE $= 0.012$): when it says 15\%, it means 15\%.
-    \item It knows what it doesn't know---abstention rate doubles on unseen teams (AUROC $= 0.80$ for OOD detection via mutual information).
-    \item Per-team analysis reveals that the 6.4\% aggregate top-1 masks a heterogeneous distribution driven by mechanical constraints, not strategic reasoning.
+    \item Per-team analysis reveals that the 6.4\% aggregate top-1 masks a heterogeneous landscape: mechanically constrained teams reach 50\% top-1 while flexible teams reach 0\%, driven by game-rule constraints (Commander ability), not strategic reasoning (speed control: $\Delta H = 0.016$ nats, null).
+    \item Within-set adaptation creates irreducible label noise---players change leads 59\% of the time between games, 72\% after a loss---and a +34\% parameter architecture ablation confirms the model is at the noise ceiling, not the capacity ceiling.
+    \item A permutation-invariant transformer ensemble trained on 382K replays learns matchup-specific signal above baselines: its top-17 predictions cover 50\% of expert actions (2.6$\times$ uniform). The architecture avoids by construction the positional leakage that inflated prior work from 99.9\% to 79\% after correction.
+    \item Standard UQ techniques (calibration, selective prediction, OOD detection via mutual information) are applied; the ensemble is well-calibrated (adaptive ECE $= 0.012$) though typical confidence is low (median 4.5\%) and calibration degrades on OOD data (ECE: $0.012 \to 0.076$).
 \end{enumerate}
 
 No prior work isolates VGC team preview as a standalone prediction problem with uncertainty quantification.
@@ -60,7 +60,7 @@ Metamon~\cite{metamon} and PokeChamp~\cite{pokechamp} target Singles---a differe
 
 \textbf{Lead prediction.}
 Carli~\cite{carli2025} is the only prior work to specifically predict VGC leads, using SVD-based similarity matching on ${\sim}$5K logs with species-only features and no formal evaluation metrics or UQ.
-TurnZero differs in every dimension: supervised 90-way classification with full OTS features, 382K examples, and a complete UQ stack.
+TurnZero differs in every dimension: supervised 90-way classification with full OTS features, 382K examples, and uncertainty quantification.
 
 \textbf{Set architectures.}
 The permutation-invariant design draws on Deep Sets~\cite{deepsets} and Set Transformer~\cite{settransformer}, using self-attention over unordered token sets with mean-pool aggregation.
@@ -101,7 +101,7 @@ Identical (team\_a, team\_b, action) triples are deduplicated across splits, but
 This captures metagame convention without matchup reasoning.
 
 \textbf{Logistic regression} (${\sim}$4K params): bag-of-embeddings over 12 Pok\'emon's discrete features through a linear layer to 90-way softmax.
-The logistic baseline achieves higher top-1 than popularity (4.0\% vs.\ 1.3\%) but \emph{worse} NLL (4.580 vs.\ 4.497)---its overconfident wrong predictions are actively harmful for decision support, validating the need for both a flexible model and proper calibration.
+The logistic baseline achieves higher top-1 than popularity (4.0\% vs.\ 1.3\%) but \emph{worse} NLL (4.580 vs.\ 4.497)---it learns some signal but assigns overconfident probabilities to wrong actions, illustrating that accuracy and calibration can diverge.
 
 \subsection{Transformer Ensemble}
 
@@ -128,7 +128,7 @@ The risk-coverage curve and its area (AURC) summarize this tradeoff.
 
 All results are on Regime~A test data, Tier~1 only ($n{=}$32,328), unless noted.
 
-\subsection{The Model Learns Real Signal}
+\subsection{Aggregate Performance}
 
 \begin{table}[t]
 \centering
@@ -151,7 +151,7 @@ Transformer & 1.16M & 5.5 & 14.0 & 4.105 & 0.016 \\
 \end{table}
 
 Table~\ref{tab:main} shows that the ensemble achieves 6.4\% top-1 and 15.5\% top-3 on the 90-way task (5.8$\times$ and 4.7$\times$ random).
-The NLL improvement over popularity (4.031 vs.\ 4.497) confirms the model learns matchup-specific signal beyond metagame frequencies.
+The NLL improvement over popularity (4.031 vs.\ 4.497, where $\ln 90 \approx 4.50$ is the maximum-entropy baseline) confirms the model learns matchup-specific signal beyond metagame frequencies, though the absolute improvement is modest on this scale.
 The wide bootstrap CIs (top-1: [2.6\%, 6.6\%]) are not a weakness of the model but a property of the task---performance varies dramatically across team archetypes (Section~\ref{sec:perteam}).
 
 \subsection{Beyond Top-1: Coverage in a Multi-Modal Space}
@@ -159,11 +159,11 @@ The wide bootstrap CIs (top-1: [2.6\%, 6.6\%]) are not a weakness of the model b
 \begin{figure}[t]
     \centering
     \includegraphics[width=0.68\columnwidth]{figures/topk_accuracy_curve.pdf}
-    \caption{Cumulative coverage vs.\ $k$. The ensemble covers 50\% of expert actions by $k{=}17$ (vs.\ $k{=}45$ random). Top-1 accuracy undersells a model whose real strength is concentrating probability mass on the right region of a 90-way space.}
+    \caption{Cumulative coverage vs.\ $k$. The ensemble covers 50\% of expert actions by $k{=}17$ (vs.\ $k{=}45$ random), narrowing the space from 90 to 17 actions for half-coverage.}
     \label{fig:topk}
 \end{figure}
 
-Top-1 accuracy, while meaningful, undersells the model on a multi-modal task.
+Top-1 accuracy is a limited metric for a multi-modal task.
 Figure~\ref{fig:topk} shows that the ensemble needs only 17 predictions to cover 50\% of expert actions---2.6$\times$ better than uniform.
 By $k{=}10$, coverage already reaches 36\%.
 
@@ -172,7 +172,7 @@ Bring-4 and lead-2 marginals each achieve ${\sim}$18\% top-1 and ${\sim}$43\% to
 But conditional on a correct bring-4, the model picks the right lead pair only 32\% of the time (2$\times$ the 16.7\% random baseline for a 6-way choice).
 Experts agree on \emph{what} to bring but disagree about \emph{who leads}.
 
-\subsection{The Probabilities Are Honest}
+\subsection{Calibration}
 
 \begin{figure}[t]
     \centering
@@ -187,21 +187,19 @@ Experts agree on \emph{what} to bring but disagree about \emph{who leads}.
         \caption{Risk-coverage curve (AURC $= 0.890$).}
         \label{fig:riskcov}
     \end{subfigure}
-    \caption{\textbf{(a)}~Predicted confidence closely tracks observed accuracy. For decision support, this is more valuable than raw accuracy: a player can trust that a 15\% prediction is roughly a 1-in-7 chance. \textbf{(b)}~Selective prediction: the ensemble achieves lower error at every coverage level. AURC: 0.890 (ensemble) vs.\ 0.953 (logistic).}
+    \caption{\textbf{(a)}~Predicted confidence tracks observed accuracy (adaptive ECE $= 0.012$). A caveat: only 6\% of predictions exceed 10\% confidence, so the calibrated output is typically a gently peaked distribution rather than a sharp recommendation. \textbf{(b)}~Selective prediction: the ensemble achieves lower error at every coverage level. AURC: 0.890 (ensemble) vs.\ 0.953 (logistic).}
     \label{fig:calibration}
 \end{figure}
 
-Accuracy tells a player \emph{what} to consider; calibration tells them \emph{how much} to trust it.
-For decision support---where the goal is helping a trainer weigh options, not replacing their judgment---both matter, but calibrated probabilities are the higher-value output.
-
 Figure~\ref{fig:reliability} shows the ensemble's predicted confidence closely tracks observed accuracy (adaptive ECE $= 0.012$ with equal-mass binning~\cite{nixon2019}).
 Post-hoc temperature scaling yielded $T = 1.158$ (near-identity), confirming the ensemble is already well-calibrated; it is omitted from the final system.
+A caveat: on a 90-class problem with high intrinsic uncertainty, most predictions are near-uniform (median confidence 4.5\%, only 6\% exceed 10\%), so calibration is most informative for the minority of predictions where the model concentrates mass on a few actions.
 
 Figure~\ref{fig:riskcov} shows the selective prediction tradeoff.
 The ensemble's AURC of 0.890 (E-AURC $= 0.452$) vs.\ 0.953 for logistic regression confirms that ensembling improves not just accuracy but the model's ability to rank its own predictions by reliability.
 
 
-\subsection{The Ensemble Earns Its Keep}
+\subsection{Ensemble Agreement and Distribution Shift}
 
 \begin{figure}[t]
     \centering
@@ -210,10 +208,10 @@ The ensemble's AURC of 0.890 (E-AURC $= 0.452$) vs.\ 0.953 for logistic regressi
     \label{fig:agreement}
 \end{figure}
 
-Figure~\ref{fig:agreement} shows why ensembling matters.
-When all 5 members agree on the same prediction (5.8\% of test examples), top-1 accuracy reaches 16.6\%---nearly 3$\times$ the aggregate.
-When all 5 disagree, accuracy drops to 3.1\%.
-The relationship is monotonic: member agreement is a direct, interpretable confidence signal, and the ensemble's uncertainty decomposition into predictive entropy vs.\ mutual information enables principled abstention.
+Figure~\ref{fig:agreement} shows that ensemble agreement correlates monotonically with accuracy.
+When all 5 members agree on the same prediction (5.8\% of test examples), top-1 accuracy reaches 16.6\%---nearly 3$\times$ the aggregate and 15$\times$ random on a 90-way task.
+When all 5 disagree (18.7\%), accuracy drops to 3.1\%, near random.
+The monotonic relationship makes member agreement a useful confidence signal, and the uncertainty decomposition into predictive entropy vs.\ mutual information provides a basis for selective abstention.
 
 \textbf{Distribution-shift sensitivity.}
 On Regime~B (held-out clusters), abstention jumps from 20\% to 46\%.
@@ -284,11 +282,10 @@ The training set contains genuine label contradictions: the same matchup produce
 No turn-zero model can capture this within-set adaptation, establishing a principled floor on irreducible label noise.
 Replacing the flat self-attention architecture with a hierarchical cross-attention variant (1.56M params, +34\%) produced identical accuracy ($\pm$0.3pp), consistent with this ceiling.
 
-\textbf{Convention, not strategy---and that's useful.}
+\textbf{Convention, not strategy.}
 The mirror/non-mirror gap (6.8\% vs.\ 3.8\%) and the entropy-accuracy correlation both point to the same conclusion: the model learns what experts \emph{typically} do with familiar teams, not what they \emph{should} do against specific opponents.
-For a trainer studying the metagame, this is exactly the right information---``here is what strong players usually bring against your team, and here is how confident that pattern is.''
-The ensemble agreement analysis (Figure~\ref{fig:agreement}) makes this concrete: on the 5.8\% of matchups where all members converge, the system delivers 16.6\% top-1 accuracy---nearly 3$\times$ the aggregate---giving the trainer a reliable signal about established conventions.
-On the 18.7\% where all members disagree, the system honestly communicates ``this matchup has no consensus,'' which is itself useful information.
+This is a limitation for opponent-adaptive strategy, but it is also a characterization of what 382K replays contain: convention, not strategy.
+The model surfaces the empirical distribution of expert choices---which teams have established lead conventions and which do not---rather than computing game-theoretic best responses.
 
 \textbf{Engineering matters.}
 The leakage-safe architecture (avoiding the 99.9\%$\to$79\% collapse in~\cite{elitefurretai}), Tier~1/2 observability delineation, and cluster-aware bootstrap had outsized impact on producing trustworthy results.
@@ -297,7 +294,9 @@ These methodological choices, not architecture, were the hard problems.
 \textbf{Limitations.}
 Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]).
 Calibration degrades on OOD data (ECE: $0.012 \to 0.076$).
+The model is on average \emph{worse} than a per-team mode lookup ($-6.8$pp gap across 153 archetypes); its potential value over simple frequency tables lies in calibrated probabilities across the full 90-action space, but this has not been validated with actual users.
 Training data is exclusively best-of-three tournament play; ladder games were deliberately excluded to match deployment conditions but limit data scale.
+Whether the multi-modality ceiling would shift with substantially more data or with conditioning on within-set history (game 1 outcome, prior lead choices) remains untested.
 
 \textbf{Contributions.}
 Solo project.
@@ -335,13 +334,12 @@ The worst large team is Gothitelle/Incineroar/Kyogre/Raging Bolt/Rillaboom/Screa
 \textbf{A5. Confidence in a 90-class world.}
 Mean confidence (max predicted probability) is 5.3\%, median 4.5\%, maximum 38.1\%.
 Only 6\% of predictions exceed 10\% confidence; 0.8\% exceed 20\%.
-This is correct behavior for a 90-class problem with high intrinsic uncertainty---even the model's ``most confident'' prediction assigns less than 40\% to a single action.
-A decision support system should communicate this honestly rather than pretending certainty exists.
+This is expected for a 90-class problem with high intrinsic uncertainty---even the model's ``most confident'' prediction assigns less than 40\% to a single action.
 
 \textbf{A6. The model tracks the mode, not the matchup.}
 Per-team accuracy correlates with action-mode frequency ($r = 0.55$): for the most predictable teams, the model's top-1 prediction matches the per-team mode action.
 The mean accuracy-minus-mode-frequency gap across 153 teams is $-6.8$pp---the model is on average \emph{worse} than a simple per-team mode lookup.
-Its value lies not in beating the mode but in providing calibrated probabilities across all 90 actions and flagging when no mode dominates.
+Whether calibrated probabilities across all 90 actions offer practical value over a simple mode lookup remains an open question.
 
 
 %=============================================================================

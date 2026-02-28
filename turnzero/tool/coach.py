@@ -352,7 +352,7 @@ def run_demo(
     # Pretty print
     # -----------------------------------------------------------------------
     print("\n" + "=" * 70)
-    print("  TurnZero Coach -- Turn-Zero Team Preview Advisor")
+    print("  TurnZero — Team Preview Patterns from Tournament Data")
     print("=" * 70)
     print(f"\n  Your Team (A):  {', '.join(species_a)}")
     print(f"  Opponent (B):   {', '.join(species_b)}")
@@ -367,7 +367,7 @@ def run_demo(
         print(f"  Consider reviewing similar matchups manually.")
         print(f"  {'!' * 60}")
     else:
-        print(f"\n  Top-{top_k} Recommended Plans:")
+        print(f"\n  Top-{top_k} Plans (by tournament frequency):")
         print(f"  {'─' * 60}")
         for plan in plans:
             pct = plan["probability"] * 100

@@ -109,8 +109,9 @@ Mean: 5.3% · Median: 4.5% · Max: 38.1% · >10%: 6.0% · >20%: 0.8%
 |--------|-----------|---------------|------------|----------|
 | Target | Full-game RL | Full-game + preview | Lead-2 only | 90-way joint |
 | Preview eval | Not isolated | 79% post-fix | ~5K, no metrics | Dedicated |
-| UQ | None | None | None | Full stack |
-| Position invariance | N/A | Augmented (post-fix) | N/A | By design |
+| UQ | None | None | None | Standard (ensemble, calibration, OOD) |
+| Position invariance | N/A | Augmented (post-fix) | N/A | By construction |
+| Problem characterization | No | No | No | Per-team predictability, multi-modality ceiling |
 
 ## Dataset Stats
 

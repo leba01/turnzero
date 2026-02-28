@@ -224,13 +224,13 @@ export default function Home() {
         TURNZERO
       </h1>
       <p className="font-[family-name:var(--font-label)] text-sm sm:text-base text-rock">
-        OTS Coach for Pokémon VGC Gen 9 Reg G
+        Team Preview Patterns for Pokémon VGC Gen 9 Reg G
       </p>
       <div className="mt-3 max-w-md border-2 border-jam bg-jam/10 px-3 py-2.5 text-left">
         <ol className="list-inside list-decimal space-y-1 font-[family-name:var(--font-label)] text-xs sm:text-sm leading-relaxed text-night">
           <li>Enter your team and your opponent&apos;s OTS</li>
           <li>Hit <span className="font-[family-name:var(--font-heading)]">PREDICT</span></li>
-          <li>See what to lead and bring</li>
+          <li>See what experts typically led and brought</li>
         </ol>
         <p className="mt-1.5 font-[family-name:var(--font-body)] text-[10px] sm:text-sm text-rock">
           Supports Pokepaste &amp; Showdown imports · Trained on 246K Bo3 matches

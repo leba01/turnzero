@@ -39,11 +39,11 @@ export function ResultsPanel({ result, teamA }: ResultsPanelProps) {
   return (
     <div className="flex flex-col gap-3">
       <p className="font-[family-name:var(--font-body)] text-xs sm:text-sm text-rock leading-relaxed">
-        Your recommendation is at the top. Everything below breaks down how the model got there — what it sees on their side, your individual bring odds, and past tournament games it pulled from.
+        Top plans ranked by probability, based on patterns from 246K tournament games. Everything below breaks down what the model sees — opponent cues, per-mon bring odds, and similar matchups from the training data.
       </p>
       <Separator />
 
-      <DisclosureSection title="Recommended Plans" help="Your best lead pair (front) and back pair (dimmed) ranked by probability. #1 is what the model thinks you should go with." defaultOpen>
+      <DisclosureSection title="Top Plans" help="Lead pair (front) and back pair (dimmed) ranked by how often experts chose them in similar matchups." defaultOpen>
         <TopPlans
           plans={result.top_plans}
           species={species}

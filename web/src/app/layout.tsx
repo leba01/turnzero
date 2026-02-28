@@ -10,22 +10,22 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "TurnZero — VGC Turn-Zero Coach",
+  title: "TurnZero — VGC Team Preview Patterns",
   description:
-    "AI-powered team preview advisor for Pokémon VGC. Predicts expert lead + bring decisions from Open Team Sheets using an ensemble of 5 transformers.",
+    "Team preview patterns from 246K tournament games. See what experts typically led and brought in similar matchups — 5-model ensemble running in your browser.",
   keywords: ["pokemon", "vgc", "team preview", "ots", "competitive"],
   openGraph: {
-    title: "TurnZero — VGC Turn-Zero Coach",
+    title: "TurnZero — VGC Team Preview Patterns",
     description:
-      "AI-powered team preview advisor for Pokémon VGC. 5-model ensemble · 246K matches · runs in your browser.",
+      "Team preview patterns from 246K tournament games · 5-model ensemble · runs in your browser.",
     type: "website",
     images: ["/og.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TurnZero — VGC Turn-Zero Coach",
+    title: "TurnZero — VGC Team Preview Patterns",
     description:
-      "AI-powered team preview advisor for Pokémon VGC. 5-model ensemble · 246K matches · runs in your browser.",
+      "Team preview patterns from 246K tournament games · 5-model ensemble · runs in your browser.",
     images: ["/og.png"],
   },
 };
