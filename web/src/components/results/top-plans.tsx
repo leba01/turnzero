@@ -106,7 +106,6 @@ function PlanRow({
       )}
       style={{ gridTemplateColumns: 'subgrid' }}
     >
-      {/* Rank */}
       <div
         className={cn(
           'flex shrink-0 items-center justify-center border-2 border-night font-[family-name:var(--font-heading)] text-white',
@@ -116,22 +115,18 @@ function PlanRow({
         {plan.rank}
       </div>
 
-      {/* Lead pair */}
       <div className="flex items-center justify-center gap-3">
         <MonSprite name={species[plan.lead[0]]} size={leadSize} />
         <MonSprite name={species[plan.lead[1]]} size={leadSize} />
       </div>
 
-      {/* Divider */}
       <div className="h-full w-px bg-night" />
 
-      {/* Back pair */}
       <div className="flex items-center justify-center gap-3">
         <MonSprite name={species[plan.back[0]]} size={backSize} dimmed />
         <MonSprite name={species[plan.back[1]]} size={backSize} dimmed />
       </div>
 
-      {/* Probability */}
       <div className="flex flex-col items-end gap-1">
         <span
           className={cn(
@@ -160,27 +155,21 @@ function PlanRow({
 export function TopPlans({ plans, species, abstain, confidence, ensembleAgreement }: TopPlansProps) {
   const tier = confidenceTier(ensembleAgreement, abstain);
 
-  // Hero treatment when #1 separates from the pack.
-  // In a 90-way space with low baselines, even a modest lead is real signal.
-  // Compare #1 against the average of #2 and #3 — if it pulls ahead of
-  // the cluster, it deserves emphasis.
+  // Hero treatment: #1 is emphasized when it's 30% better than avg of #2 and #3.
   const hasStrongFavorite =
     !abstain &&
     plans.length >= 3 &&
     plans[0].probability > ((plans[1].probability + plans[2].probability) / 2) * 1.3;
 
-  // Relative strength: how many times better than the 1/90 uniform baseline.
   const vsRandom = confidence / (1 / 90);
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Confidence banner */}
       <div className={cn(
         'flex items-center gap-3 border-2 p-3',
         tier.borderColor,
         tier.bgColor,
       )}>
-        {/* Agreement dots */}
         <div className="flex shrink-0 flex-col items-center gap-1">
           <div className="flex gap-1">
             {tier.dots.map((filled, i) => (
@@ -199,7 +188,6 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
           </span>
         </div>
 
-        {/* Label and explanation */}
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className={cn('font-[family-name:var(--font-heading)] text-sm sm:text-base', tier.color)}>
@@ -216,7 +204,6 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
           </span>
         </div>
 
-        {/* Relative strength pill */}
         <div className="ml-auto flex shrink-0 flex-col items-end">
           <span className={cn('font-[family-name:var(--font-label)] text-xs sm:text-sm', tier.color)}>
             {vsRandom.toFixed(0)}x
@@ -227,7 +214,6 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
         </div>
       </div>
 
-      {/* Plans — hero only when there's a clear favorite */}
       <div className="grid gap-y-3" style={{ gridTemplateColumns: 'auto auto auto auto 1fr' }}>
         {plans.map((plan, i) => (
           <PlanRow
@@ -239,7 +225,6 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
         ))}
       </div>
 
-      {/* Fine print for the nerds */}
       <span className="font-[family-name:var(--font-body)] text-[9px] sm:text-[11px] text-rock">
         {(confidence * 100).toFixed(1)}% max probability (1/{90} = {(100 / 90).toFixed(1)}% random baseline) · H={plans.length > 0 ? (
           -Math.log2(confidence).toFixed(1)

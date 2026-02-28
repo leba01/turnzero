@@ -1,0 +1,22 @@
+/** Tailwind classes for each Pokémon type badge (bg + text contrast). */
+export const TYPE_COLORS: Record<string, string> = {
+  Normal:   'bg-[#A8A878] text-white',
+  Fire:     'bg-[#F08030] text-white',
+  Water:    'bg-[#6890F0] text-white',
+  Electric: 'bg-[#F8D030] text-night',
+  Grass:    'bg-[#78C850] text-white',
+  Ice:      'bg-[#98D8D8] text-night',
+  Fighting: 'bg-[#C03028] text-white',
+  Poison:   'bg-[#A040A0] text-white',
+  Ground:   'bg-[#E0C068] text-night',
+  Flying:   'bg-[#A890F0] text-white',
+  Psychic:  'bg-[#F85888] text-white',
+  Bug:      'bg-[#A8B820] text-white',
+  Rock:     'bg-[#B8A038] text-white',
+  Ghost:    'bg-[#705898] text-white',
+  Dragon:   'bg-[#7038F8] text-white',
+  Dark:     'bg-[#705848] text-white',
+  Steel:    'bg-[#B8B8D0] text-night',
+  Fairy:    'bg-[#EE99AC] text-white',
+  Stellar:  'bg-[#7faaff] text-white',
+};

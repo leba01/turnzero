@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@pkmn/data": "^0.10.6",
+    "@pkmn/dex": "^0.10.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

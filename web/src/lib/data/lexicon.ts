@@ -30,31 +30,24 @@ export function annotateTeam(
   team: TeamSheet,
 ): OpponentCue[] {
   return team.pokemon.map((mon) => {
-    const roleSet = new Set<string>();
+    const triggers: Record<string, string[]> = {};
 
-    // Check all 4 moves.
-    for (const move of mon.moves) {
-      const roles = lexicon[move];
-      if (roles) {
-        for (const r of roles) roleSet.add(r);
+    const addTrigger = (token: string) => {
+      const roles = lexicon[token];
+      if (!roles) return;
+      for (const r of roles) {
+        (triggers[r] ??= []).push(token);
       }
-    }
+    };
 
-    // Check item.
-    const itemRoles = lexicon[mon.item];
-    if (itemRoles) {
-      for (const r of itemRoles) roleSet.add(r);
-    }
-
-    // Check ability.
-    const abilityRoles = lexicon[mon.ability];
-    if (abilityRoles) {
-      for (const r of abilityRoles) roleSet.add(r);
-    }
+    for (const move of mon.moves) addTrigger(move);
+    addTrigger(mon.item);
+    addTrigger(mon.ability);
 
     return {
       species: mon.species,
-      roles: [...roleSet].sort(),
+      roles: Object.keys(triggers).sort(),
+      triggers,
     };
   });
 }

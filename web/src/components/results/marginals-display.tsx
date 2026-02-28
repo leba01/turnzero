@@ -4,17 +4,11 @@ import Image from 'next/image';
 import { spriteUrl, displayName } from '@/lib/sprites';
 import { SpeciesName } from '@/components/ui/species-name';
 import type { Marginals } from '@/types/pokemon';
+import { LEAD_PAIRS } from '@/lib/data/action-space';
 
 interface MarginalsDisplayProps {
   marginals: Marginals;
   species: string[];
-}
-
-const LEAD_PAIRS: [number, number][] = [];
-for (let i = 0; i < 6; i++) {
-  for (let j = i + 1; j < 6; j++) {
-    LEAD_PAIRS.push([i, j]);
-  }
 }
 
 /** Horizontal strip of 6 sprites sorted by probability, top-N highlighted. */
@@ -33,13 +27,11 @@ function ProbStrip({
 }) {
   const order = [...Array(6).keys()].sort((a, b) => probs[b] - probs[a]);
 
-  // Near-miss detection: non-selected mons within σ/2 of the last selected prob
-  // get a faded highlight to show they're statistically in the same cluster.
+  // Near-miss: non-selected mons within σ/2 of last selected get faded highlight.
+  // Skip when std < 10pp — compressed distributions make cluster signal noise.
   const mean = probs.reduce((s, p) => s + p, 0) / probs.length;
   const std = Math.sqrt(probs.reduce((s, p) => s + (p - mean) ** 2, 0) / probs.length);
   const lastHighlightedProb = highlightCount > 0 ? probs[order[highlightCount - 1]] : 0;
-  // Only show near-miss fading when the distribution is spread enough to be meaningful.
-  // A compressed team (std < 10pp) means everything is ambiguous — highlighting clusters is noise.
   const diverse = std > 0.10;
   const nearMissThreshold = std * 0.5;
 
@@ -70,8 +62,8 @@ function ProbStrip({
                 <Image
                   src={spriteUrl(species[idx])}
                   alt={displayName(species[idx])}
-                  width={40}
-                  height={40}
+                  width={48}
+                  height={48}
                   className="object-contain"
                   unoptimized
                 />
@@ -118,43 +110,40 @@ function LollipopChart({
           const pct = maxProb > 0 ? (prob / maxProb) * 100 : 0;
           return (
             <div key={i} className="flex items-center gap-2">
-              {/* Sprites + stacked names as a group */}
-              <div className="flex w-40 sm:w-48 shrink-0 items-center gap-1.5">
+              <div className="flex w-52 sm:w-64 shrink-0 items-center gap-1.5">
                 <div className="flex shrink-0 -space-x-2">
                   <Image
                     src={spriteUrl(species[a])}
                     alt={displayName(species[a])}
-                    width={40}
-                    height={40}
+                    width={48}
+                    height={48}
                     className="object-contain"
                     unoptimized
                   />
                   <Image
                     src={spriteUrl(species[b])}
                     alt={displayName(species[b])}
-                    width={40}
-                    height={40}
+                    width={48}
+                    height={48}
                     className="object-contain"
                     unoptimized
                   />
                 </div>
-                <div className="min-w-0 flex-1 break-words font-[family-name:var(--font-label)] text-[10px] sm:text-sm leading-snug text-night">
-                  <SpeciesName species={species[a]} /> + <SpeciesName species={species[b]} />
+                <div className="min-w-0 flex-1 font-[family-name:var(--font-label)] text-[10px] sm:text-sm leading-snug text-night">
+                  <span className="whitespace-nowrap"><SpeciesName species={species[a]} /></span>
+                  {' + '}
+                  <span className="whitespace-nowrap"><SpeciesName species={species[b]} /></span>
                 </div>
               </div>
-              {/* Lollipop: thin line + dot */}
               <div className="relative h-4 flex-1">
-                {/* Track */}
                 <div className="absolute inset-y-0 left-0 right-0 flex items-center">
                   <div className="h-[1px] w-full bg-rock/20" />
                 </div>
-                {/* Line + dot */}
                 <div className="absolute inset-y-0 left-0 flex items-center" style={{ width: `${pct}%` }}>
                   <div className="h-[2px] flex-1 bg-moss" />
                   <div className="size-3 shrink-0 rounded-full border-2 border-moss bg-grass" />
                 </div>
               </div>
-              {/* Value */}
               <span className="w-12 shrink-0 text-right font-[family-name:var(--font-body)] text-[10px] sm:text-sm text-night">
                 {(prob * 100).toFixed(1)}%
               </span>

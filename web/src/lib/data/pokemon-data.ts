@@ -21,3 +21,14 @@ export async function loadPokemonData(): Promise<PokemonData> {
   }
   return response.json() as Promise<PokemonData>;
 }
+
+let _speciesTypes: Record<string, string[]> | null = null;
+
+/** Returns base type(s) for a species, e.g. ["Fighting", "Water"]. Cached after first fetch. */
+export async function getSpeciesTypes(): Promise<Record<string, string[]>> {
+  if (_speciesTypes) return _speciesTypes;
+  const response = await fetch("/data/species_types.json");
+  if (!response.ok) throw new Error(`Failed to load species types: ${response.status}`);
+  _speciesTypes = await response.json() as Record<string, string[]>;
+  return _speciesTypes;
+}

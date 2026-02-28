@@ -15,8 +15,6 @@ import { loadPokemonData, type PokemonData } from '@/lib/data/pokemon-data';
 import { RetrievalIndex } from '@/lib/retrieval/index';
 
 // Module-level singleton to survive React StrictMode double-mount.
-// Without this, the second mount tries to init the ONNX WASM backend
-// while the first is still running → "Session already started" error.
 type InitResult = {
   engine: InferenceEngine;
   vocab: VocabMap;
@@ -50,7 +48,6 @@ function getInitPromise(onProgress: (loaded: number, total: number) => void) {
   return initPromise;
 }
 
-/** Release ONNX sessions and reset singleton. Called on HMR dispose. */
 async function cleanup() {
   if (currentEngine) {
     await currentEngine.dispose();
@@ -59,7 +56,6 @@ async function cleanup() {
   initPromise = null;
 }
 
-// HMR cleanup — release WASM memory when module is replaced during dev.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const hmr = (import.meta as any).hot ?? (typeof module !== 'undefined' && (module as any).hot);
 if (hmr) {
@@ -82,7 +78,6 @@ export function usePrediction(onReady?: () => void) {
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
 
-  // Load models + static data on mount
   useEffect(() => {
     let cancelled = false;
 
@@ -113,7 +108,6 @@ export function usePrediction(onReady?: () => void) {
     return () => { cancelled = true; };
   }, []);
 
-  // Lazy load retrieval index (called after first prediction)
   const loadRetrieval = useCallback(async () => {
     if (retrievalRef.current || retrievalLoadingRef.current) return;
     retrievalLoadingRef.current = true;
@@ -136,10 +130,9 @@ export function usePrediction(onReady?: () => void) {
       try {
         const T = temperatureRef.current;
         const prediction = await engine.fullPredict(teamA, teamB, vocab, lexicon, T);
-        if (predictionGenRef.current !== gen) return; // superseded by newer prediction
+        if (predictionGenRef.current !== gen) return;
         setResult(prediction);
 
-        // Fire-and-forget: sensitivity
         const teamAEnc = encodeTeam(vocab, teamA);
         const teamBEnc = encodeTeam(vocab, teamB);
         engine.computeSensitivity(teamAEnc, teamBEnc, T).then((sensitivity: FeatureSensitivity) => {
@@ -147,7 +140,6 @@ export function usePrediction(onReady?: () => void) {
           setResult((prev) => (prev ? { ...prev, sensitivity } : null));
         });
 
-        // Fire-and-forget: retrieval
         loadRetrieval().then(async () => {
           if (predictionGenRef.current !== gen) return;
           const index = retrievalRef.current;

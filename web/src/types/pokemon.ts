@@ -31,6 +31,8 @@ export interface Marginals {
 export interface OpponentCue {
   species: string;
   roles: string[];
+  /** Maps role tag → triggering move/item/ability names. */
+  triggers: Record<string, string[]>;
 }
 
 export interface FeatureSensitivity {

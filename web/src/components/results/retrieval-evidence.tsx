@@ -57,16 +57,16 @@ export function RetrievalEvidenceDisplay({ evidence, loading }: RetrievalEvidenc
                       <Image
                         src={spriteUrl(spA)}
                         alt={displayName(spA)}
-                        width={36}
-                        height={36}
+                        width={48}
+                        height={48}
                         className="object-contain"
                         unoptimized
                       />
                       <Image
                         src={spriteUrl(spB)}
                         alt={displayName(spB)}
-                        width={36}
-                        height={36}
+                        width={48}
+                        height={48}
                         className="object-contain"
                         unoptimized
                       />
@@ -103,8 +103,8 @@ export function RetrievalEvidenceDisplay({ evidence, loading }: RetrievalEvidenc
                     <Image
                       src={spriteUrl(species)}
                       alt={displayName(species)}
-                      width={32}
-                      height={32}
+                      width={48}
+                      height={48}
                       className="shrink-0 object-contain"
                       unoptimized
                     />

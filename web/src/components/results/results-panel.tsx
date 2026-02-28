@@ -12,7 +12,6 @@ import type { PredictionResult, TeamSheet } from '@/types/pokemon';
 interface ResultsPanelProps {
   result: PredictionResult;
   teamA: TeamSheet;
-  teamB: TeamSheet;
 }
 
 function DisclosureSection({ title, help, defaultOpen = false, id, children }: { title: string; help?: string; defaultOpen?: boolean; id?: string; children: React.ReactNode }) {
@@ -39,6 +38,9 @@ export function ResultsPanel({ result, teamA }: ResultsPanelProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      <p className="font-[family-name:var(--font-body)] text-xs sm:text-sm text-rock leading-relaxed">
+        Your recommendation is at the top. Everything below breaks down how the model got there — what it sees on their side, your individual bring odds, and past tournament games it pulled from.
+      </p>
       <Separator />
 
       <DisclosureSection title="Recommended Plans" help="Your best lead pair (front) and back pair (dimmed) ranked by probability. #1 is what the model thinks you should go with." defaultOpen>
