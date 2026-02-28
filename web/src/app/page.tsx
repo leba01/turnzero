@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { TeamInputPanel } from '@/components/team-input/team-input-panel';
 import { ResultsPanel } from '@/components/results/results-panel';
 import { AboutDialog } from '@/components/about-dialog';
@@ -45,6 +46,7 @@ export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const dragging = useRef(false);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const leftPanelRef = useRef<HTMLElement>(null);
   const [showScrollHint, setShowScrollHint] = useState(true);
 
   useEffect(() => {
@@ -81,7 +83,12 @@ export default function Home() {
   }, [result]);
 
   useEffect(() => {
-    if (result && resultsRef.current) {
+    if (!result) return;
+    if (rightPanelRef.current) {
+      // Desktop: scroll the right panel to top so the blurb is always visible
+      rightPanelRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (resultsRef.current) {
+      // Mobile: jump the page down to the results section
       resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [result]);
@@ -98,6 +105,84 @@ export default function Home() {
     return () => root.removeEventListener('scroll', onScroll);
   }, [result]);
 
+  useEffect(() => {
+    const root = rightPanelRef.current;
+    if (!root) return;
+    const handleArrow = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const focused = document.activeElement;
+      if (!focused || focused.tagName !== 'SUMMARY') return;
+      const summaries = Array.from(root.querySelectorAll<HTMLElement>('details > summary'));
+      const idx = summaries.indexOf(focused as HTMLElement);
+      if (idx === -1) return;
+      e.preventDefault();
+      const next = e.key === 'ArrowDown' ? summaries[idx + 1] : summaries[idx - 1];
+      next?.focus();
+    };
+    root.addEventListener('keydown', handleArrow);
+    return () => root.removeEventListener('keydown', handleArrow);
+  }, [result]);
+
+  useEffect(() => {
+    const handleCtrlEnter = (e: KeyboardEvent) => {
+      if (!e.ctrlKey || e.key !== 'Enter') return;
+      const tag = (document.activeElement?.tagName ?? '').toUpperCase();
+      const blocked =
+        tag === 'TEXTAREA' || tag === 'INPUT' ||
+        document.activeElement?.getAttribute('contenteditable') === 'true' ||
+        document.activeElement?.getAttribute('role') === 'combobox' ||
+        document.activeElement?.closest('[role="dialog"]') !== null;
+      if (blocked) return;
+      if (canPredict) predict(teamA, teamB);
+    };
+    window.addEventListener('keydown', handleCtrlEnter);
+    return () => window.removeEventListener('keydown', handleCtrlEnter);
+  }, [canPredict, predict, teamA, teamB]);
+
+  useEffect(() => {
+    const handlePanelSwap = (e: KeyboardEvent) => {
+      if (!e.ctrlKey || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
+      const tag = (document.activeElement?.tagName ?? '').toUpperCase();
+      if (tag === 'TEXTAREA' || tag === 'INPUT' || document.activeElement?.getAttribute('contenteditable') === 'true') return;
+      e.preventDefault();
+      if (e.key === 'ArrowRight') {
+        const right = rightPanelRef.current;
+        if (!right) return;
+        const first = right.querySelector<HTMLElement>('details > summary') ?? right;
+        (first as HTMLElement).focus();
+      } else {
+        const left = leftPanelRef.current;
+        if (!left) return;
+        const first = left.querySelector<HTMLElement>('button, input, [role="combobox"]');
+        first?.focus();
+      }
+    };
+    window.addEventListener('keydown', handlePanelSwap);
+    return () => window.removeEventListener('keydown', handlePanelSwap);
+  }, []);
+
+  useEffect(() => {
+    const left = leftPanelRef.current;
+    if (!left) return;
+    const handleArrow = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || !left.contains(active)) return;
+      const tag = active.tagName.toUpperCase();
+      if (tag === 'TEXTAREA' || tag === 'INPUT') return;
+      const focusable = Array.from(
+        left.querySelectorAll<HTMLElement>('button:not([disabled]), [role="combobox"]:not([disabled])')
+      ).filter(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+      const idx = focusable.indexOf(active);
+      if (idx === -1) return;
+      e.preventDefault();
+      const next = e.key === 'ArrowDown' ? focusable[idx + 1] : focusable[idx - 1];
+      next?.focus();
+    };
+    left.addEventListener('keydown', handleArrow);
+    return () => left.removeEventListener('keydown', handleArrow);
+  }, []);
+
   const handleClear = () => {
     setTeamA(emptyTeam());
     setTeamB(emptyTeam());
@@ -111,7 +196,12 @@ export default function Home() {
     predict(ex.teamA, ex.teamB);
   };
 
-  /* ── Shared UI blocks ── */
+  const handleSwap = () => {
+    setTeamA(teamB);
+    setTeamB(teamA);
+    predict(teamB, teamA);
+  };
+
   const headerBlock = (
     <header className="mb-6 text-center lg:text-left">
       <h1 className="mb-2 font-[family-name:var(--font-heading)] text-xl text-night">
@@ -171,6 +261,26 @@ export default function Home() {
         onEditStart={() => setLeftWidth(LEFT_MAX)}
         pokemonData={pokemonData}
       />
+      <div className="flex justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={handleSwap}
+              disabled={!canPredict}
+              className="flex flex-col items-center gap-0.5 text-night hover:text-jam disabled:cursor-not-allowed disabled:text-rock/40"
+            >
+              <span className="flex gap-1 font-[family-name:var(--font-heading)] text-base leading-none">
+                <span>↑</span>
+                <span>↓</span>
+              </span>
+              <span className="font-[family-name:var(--font-label)] text-[9px] sm:text-[10px] uppercase tracking-wider">
+                swap
+              </span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Predict from opponent&apos;s perspective</TooltipContent>
+        </Tooltip>
+      </div>
       <TeamInputPanel
         label="Opponent"
         team={teamB}
@@ -190,7 +300,16 @@ export default function Home() {
           disabled={!canPredict}
           className="bg-jam px-8 py-3 font-[family-name:var(--font-heading)] text-base text-white hover:bg-jam/90 disabled:bg-rock"
         >
-          {predicting ? 'Predicting...' : modelState.status !== 'ready' ? 'Loading...' : 'PREDICT'}
+          <span className="flex flex-col items-center leading-tight">
+            <span>
+              {predicting ? 'Predicting...' : modelState.status !== 'ready' ? 'Loading...' : 'PREDICT'}
+            </span>
+            {modelState.status === 'ready' && !predicting && (
+              <span className="font-[family-name:var(--font-label)] text-[9px] opacity-70 tracking-widest">
+                Ctrl+↵
+              </span>
+            )}
+          </span>
         </Button>
         {showingExample && (
           <Button
@@ -230,7 +349,7 @@ export default function Home() {
 
   const resultsBlock = (
     <div ref={resultsRef}>
-      {result && <ResultsPanel result={result} teamA={teamA} teamB={teamB} />}
+      {result && <ResultsPanel result={result} teamA={teamA} />}
     </div>
   );
 
@@ -272,6 +391,7 @@ export default function Home() {
       <div className="hidden lg:flex lg:h-screen lg:overflow-hidden">
         {/* Left panel — input */}
         <aside
+          ref={leftPanelRef}
           className={`flex shrink-0 flex-col gap-4 overflow-y-auto bg-milk px-5 py-6 ${isDragging ? '' : 'transition-[width] duration-300 ease-in-out'}`}
           style={{ width: leftWidth }}
         >
@@ -300,7 +420,7 @@ export default function Home() {
         {/* Right panel — results */}
         <div className="relative flex-1 overflow-y-auto bg-milk px-6 py-6 xl:px-10" ref={rightPanelRef}>
           {result ? (
-            <div ref={resultsRef}><ResultsPanel result={result} teamA={teamA} teamB={teamB} /></div>
+            <div ref={resultsRef}><ResultsPanel result={result} teamA={teamA} /></div>
           ) : (
             <div className="flex h-full items-center justify-center">
               <p className="font-[family-name:var(--font-label)] text-sm sm:text-base text-rock">

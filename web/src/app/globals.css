@@ -213,6 +213,13 @@
     height: 3px;
   }
 
+  /* Keyboard nav focus on result section summaries */
+  details > summary:focus-visible {
+    outline: 3px solid #C5D86D;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px #C5D86D40;
+  }
+
   /* Dialog */
   [data-slot="dialog-content"] {
     border: 3px solid #3D5A80;
