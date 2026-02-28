@@ -170,7 +170,7 @@ By $k{=}10$, coverage already reaches 36\%.
 The marginal decomposition reveals where difficulty concentrates.
 Bring-4 and lead-2 marginals each achieve ${\sim}$18\% top-1 and ${\sim}$43\% top-3 over their respective 15 classes.
 But conditional on a correct bring-4, the model picks the right lead pair only 32\% of the time (2$\times$ the 16.7\% random baseline for a 6-way choice).
-Experts agree on \emph{what} to bring but disagree about \emph{who leads}.
+Experts agree on \emph{what} to bring but disagree about \emph{who leads}---bringing is constrained by role coverage (you need answers to specific threats), while leading is a tempo and read decision with more degrees of freedom.
 
 \subsection{Calibration}
 
@@ -216,7 +216,7 @@ The monotonic relationship makes member agreement a useful confidence signal, an
 \textbf{Distribution-shift sensitivity.}
 On Regime~B (held-out clusters), abstention jumps from 20\% to 46\%.
 The ensemble automatically becomes more cautious on unfamiliar teams, without any explicit OOD mechanism---mutual information from member disagreement naturally separates in-distribution from novel compositions (AUROC $= 0.80$).
-Counterintuitively, accuracy on non-abstained Regime~B examples is \emph{higher} (11.7\% vs.\ 6.4\%)---a selection effect: OOD teams that survive the confidence filter tend to be distinctive archetypes with fewer viable strategies.
+Counterintuitively, accuracy on non-abstained Regime~B examples is \emph{higher} (11.7\% vs.\ 6.4\%)---a selection effect: OOD teams that survive the confidence filter are effectively ``self-solving,'' teams whose mechanical constraints are strong enough that the model infers the correct lead from structure alone, without ever having seen a training example.
 Calibration degrades on OOD data (ECE: $0.012 \to 0.076$), a genuine limitation partially compensated by the higher abstention rate.
 
 \subsection{Per-Team Predictability}
@@ -281,6 +281,7 @@ This confirms the marginal decomposition from a behavioral angle: even the same 
 The training set contains genuine label contradictions: the same matchup produces different leads not because experts disagree, but because the \emph{same} player adapts to information revealed in prior games.
 No turn-zero model can capture this within-set adaptation, establishing a principled floor on irreducible label noise.
 Replacing the flat self-attention architecture with a hierarchical cross-attention variant (1.56M params, +34\%) produced identical accuracy ($\pm$0.3pp), consistent with this ceiling.
+Paradoxically, stronger players likely make the problem \emph{harder}: a player who always leads the same comfort pick is trivially predictable, while one who adapts to reads, metagame shifts, and mid-set information introduces exactly the kind of decision variance that no team-sheet-only model can resolve.
 
 \textbf{Convention, not strategy.}
 The mirror/non-mirror gap (6.8\% vs.\ 3.8\%) and the entropy-accuracy correlation both point to the same conclusion: the model learns what experts \emph{typically} do with familiar teams, not what they \emph{should} do against specific opponents.
