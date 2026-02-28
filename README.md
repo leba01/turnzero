@@ -1,119 +1,58 @@
-<h1 align="center">TurnZero</h1>
+# TurnZero
 
-<h3 align="center">A Turn-Zero OTS Coach for Pokemon VGC Gen 9</h3>
+**Uncertainty-Aware Team Preview Prediction for Competitive Pokemon VGC**
 
-<p align="center">
-  <em>Predicting expert team preview decisions with calibrated uncertainty</em>
-</p>
+Lucas Brennan-Almaraz · Stanford CS229 · Winter 2025--26
 
-<p align="center">
-  <a href="https://turnzero.vercel.app">
-    <img src="https://img.shields.io/badge/LIVE_DEMO_%E2%86%92-turnzero.vercel.app-b91c1c?style=for-the-badge&labelColor=1a1a2e" alt="Live Demo" height="32"/>
-  </a>
-  <br/>
-  <sub>no install · runs in your browser</sub>
-</p>
+[[Paper (PDF)]](paper/turnzero.pdf) · [[Live Demo]](https://turnzero.vercel.app) · [[Dataset (HuggingFace)]](https://huggingface.co/datasets/cameronangliss/vgc-battle-logs)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/python-3.12-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python"/>
-  <img src="https://img.shields.io/badge/pytorch-2.1+-ee4c2c?style=flat-square&logo=pytorch&logoColor=white" alt="PyTorch"/>
-  <img src="https://img.shields.io/badge/tests-179_passing-2ea043?style=flat-square" alt="Tests"/>
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
 </p>
 
 ---
 
-## What is this?
+In competitive Pokemon VGC, both players reveal their full 6-mon team sheets before battle. Each player then privately selects which 4 to bring and which 2 to lead --- a 90-way decision made before any moves are played. Experts facing the same matchup routinely choose differently, and within best-of-three sets the same player changes leads **59% of the time**.
 
-In competitive Pokemon VGC, both players reveal their full 6-mon team sheets before each game. The first decision — **which 4 to bring and which 2 to lead** — happens before any moves are played. This is the "team preview" or "turn zero" problem.
+This project characterizes *where* prediction is possible and *why* there's a ceiling, using a 5-member deep ensemble of permutation-invariant transformers trained on 382K expert replays. The model and UQ stack are standard techniques --- the contribution is problem characterization.
 
-**TurnZero** learns this decision from 212K tournament games. Given two Open Team Sheets, it predicts the expert's joint **(lead-2, back-2) plan** as one of **90 possible actions**, returns calibrated probabilities, and knows when to say "I don't know."
+## Key Findings
 
-```
-Input:  6 mons (your OTS) + 6 mons (opponent OTS) = 12 tokens
-Output: Calibrated 90-way distribution → top-k plans + abstention
-        + role annotations, sensitivity analysis, retrieval evidence
-```
+**Predictability is mechanical, not strategic.** Commander teams (Dondozo + Tatsugiri) reach 50% top-1 because the game rules force a specific lead. Flexible "goodstuffs" teams hit 0%. Speed control mode (Trick Room vs Tailwind) explains nothing: ΔH = 0.016 nats, effectively zero.
 
-## Key results
+**The ceiling is label noise, not model capacity.** Players change leads 59% of the time between games of a BO3 set, rising to 72% after a loss (χ² = 10,126). A +34% parameter hierarchical architecture produces ±0.3pp difference. The training data contains genuine contradictions from within-set adaptation that no turn-zero model can resolve.
 
-| Metric | Ensemble | Popularity baseline | Random |
-|:---|:---:|:---:|:---:|
-| **Action-90 Top-1** | 6.4% | 1.3% | 1.1% |
-| **Action-90 Top-3** | 15.5% | 3.9% | 3.3% |
-| **Lead-2 Top-1** | 19.8% | 7.1% | 6.7% |
-| **NLL** | 4.031 | 4.497 | 4.500 |
-| **ECE** | 0.011 | 0.065 | — |
+**The model learns convention, not strategy.** Mirror matchups (common archetypes with established patterns): 6.8% top-1. Novel matchups: 3.8%. Per-team accuracy correlates with action-mode frequency (r = 0.55) --- the model tracks *what experts typically do*, not what they *should* do.
 
-> Action-90 metrics on Tier 1 (32K examples with fully observed bring-4); Lead-2 on all (40K). Point estimates shown; 95% cluster-aware bootstrap CIs available in `outputs/eval/bootstrap_cis.json`.
+**UQ works, with caveats.** The ensemble is well-calibrated (ECE = 0.012) and automatically doubles its abstention rate on unseen team families (AUROC = 0.80 for OOD detection via mutual information). But median confidence is 4.5% on a 90-class problem, and calibration degrades on OOD data (ECE: 0.012 → 0.076).
 
-> **The accuracy story, reframed:** The model's top-17 predictions cover the expert's actual choice 50% of the time (random needs 45). At 90% coverage, you need 54 of 90 actions — the model concentrates probability mass where it belongs.
+**The model is worse than a lookup table.** On average, per-team mode frequency beats the model by 6.8pp. The potential value is calibrated probabilities across all 90 actions, but this hasn't been validated with actual players.
 
-- **AURC**: 0.890 (top-1), 0.761 (top-3) — selective prediction works
-- **OOD detection**: Regime B (unseen team families) shows +0.06 entropy shift; the model knows what it hasn't seen
-- **Robustness**: Moves carry the signal; hiding items/ability/tera costs ~0.5% top-3
+## Results
 
-## The model
+Regime A test set, Tier 1 only (n = 32,328). 95% CIs are cluster-aware bootstrap (B = 1000).
 
-A **permutation-equivariant set transformer** (1.16M params) over 12 Pokemon tokens:
+| Model | Top-1 | Top-3 | NLL | ECE |
+|:---|:---:|:---:|:---:|:---:|
+| Random | 1.1% | 3.3% | 4.500 | --- |
+| Popularity | 1.3% | 3.9% | 4.497 | 0.001 |
+| Logistic (~4K params) | 4.0% | 10.1% | 4.580 | 0.059 |
+| Transformer (1.16M) | 5.5% | 14.0% | 4.105 | 0.016 |
+| **Ensemble (5 × 1.16M)** | **6.4%** [2.6, 6.6] | **15.5%** [6.8, 16.0] | **4.031** [4.01, 4.43] | **0.012** |
 
-```
-Each token: E_species + E_item + E_ability + E_tera + Σ E_moves + E_side
+The ensemble's top-17 predictions cover 50% of expert actions (random needs 45). When all 5 members agree (5.8% of examples), accuracy reaches 16.6%; when all disagree, 3.1%.
 
-→ 4 layers self-attention (no positional encoding)
-→ Mean pool
-→ MLP head → 90 logits → softmax
-```
+## Method
 
-**Position invariance by design**: canonical sort + mean pooling means the model cannot memorize Pokemon order. This avoids the [positional leakage trap](https://github.com/hspokemon/EliteFurretAI) that inflated other systems' reported accuracy from ~79% to 99.9%.
+A permutation-equivariant set transformer over 12 Pokemon tokens (8 learned embeddings per token: species, item, ability, tera type, 4 moves). No positional encoding --- this avoids by construction the [positional leakage](https://github.com/hspokemon/EliteFurretAI) that inflated prior work from 79% to 99.9%.
 
-**Deep ensemble** (5 members): independent random inits, averaged probabilities. Gives predictive entropy + mutual information for free.
+Five independent members with different seeds, averaged probabilities. Predictive entropy decomposes into aleatoric (data noise) and epistemic (member disagreement) components. Selective prediction abstains when confidence is below threshold.
 
-**Temperature scaling**: T=1.158 on validation — near identity, confirming the ensemble is already well-calibrated. Dropped from the final pipeline (T~1.0 adds no benefit).
+Split design: teams clustered by species overlap (≥4/6 → union-find connected components, 7,826 clusters). Regime A holds out team variants within clusters (in-distribution). Regime B holds out entire clusters (OOD). Both directed examples from each game stay in the same split.
 
-## The data
+## Demo
 
-| | |
-|:---|:---|
-| **Source** | [cameronangliss/vgc-battle-logs](https://huggingface.co/datasets/cameronangliss/vgc-battle-logs) (HuggingFace) |
-| **Format** | Regulation G (Gen 9 VGC), BO3 tournaments + ladder |
-| **Raw battles** | 212,783 |
-| **Directed examples** | 382,393 (after dedup) |
-| **Unique teams** | 116,903 → 7,826 core clusters |
-| **OTS completeness** | 100% (via `\|showteam\|` protocol) |
-| **Bring-4 observed** | ~80% (Tier 1 subset for action-90 eval) |
-
-**Split design** — two regimes:
-- **Regime A** *(main)*: Hold out Team A variants within each core cluster, let opponents float. Matches deployment: "I know my team; I face the open field."
-- **Regime B** *(OOD)*: Hold out entire core clusters. Tests whether the model knows what it hasn't seen.
-
-## Paper figures
-
-All figures are generated by `scripts/run_final_figures.py` and live in `outputs/plots/paper/`.
-
-| Figure | What it shows |
-|:---|:---|
-| `model_comparison` | Ensemble vs baselines across all metrics |
-| `reliability_diagram` | ECE = 0.011 — well-calibrated |
-| `risk_coverage_top1` | Selective prediction: abstain when uncertain |
-| `risk_coverage_top3` | AURC = 0.761 for "expert in top-3" |
-| `uncertainty_decomposition` | Entropy + MI: mirror vs non-mirror |
-| `stress_test` | Moves dominate; hiding items/tera costs little |
-| `ood_comparison` | Regime A vs B: entropy shift on unseen families |
-| `topk_accuracy_curve` | k=17 for 50% coverage vs k=45 random |
-| `cluster_entropy_vs_accuracy` | r = -0.561: linear teams are predictable |
-| `cluster_entropy_histogram` | Distribution of team predictability |
-| `ensemble_agreement` | Top-1 accuracy vs ensemble agreement level |
-
-## Documentation
-
-| Doc | Purpose |
-|:---|:---|
-| [`SACREDTEXTS.md`](docs/SACREDTEXTS.md) | Original spec — schemas, contracts, acceptance criteria |
-| [`TECHNICAL_COMPANION.md`](docs/TECHNICAL_COMPANION.md) | Study guide — every decision in Q&A format |
-| [`PAPER_ANALYSIS.md`](docs/PAPER_ANALYSIS.md) | Paper narrative — key findings, related work, numbers |
-
-There's also a browser-based demo app ([source in `web/`](web/)) built with Next.js + ONNX Runtime, running the full ensemble client-side with no backend.
+A browser-based tool runs the full 5-member ensemble client-side via ONNX Runtime --- no backend, no data leaves your browser. Paste two team sheets, get calibrated predictions with uncertainty estimates, role annotations, feature sensitivity, and retrieval evidence from similar historical matchups.
 
 <p align="center">
   <a href="https://turnzero.vercel.app">
@@ -121,9 +60,40 @@ There's also a browser-based demo app ([source in `web/`](web/)) built with Next
   </a>
 </p>
 
+<p align="center">
+  <a href="https://turnzero.vercel.app">turnzero.vercel.app</a>
+</p>
+
+## Paper Figures
+
+All figures generated by `scripts/run_final_figures.py`.
+
+| Figure | What it shows |
+|:---|:---|
+| `model_comparison` | Ensemble vs baselines across all metrics |
+| `reliability_diagram` | ECE = 0.012 --- well-calibrated |
+| `risk_coverage_top1/top3` | Selective prediction: abstain when uncertain |
+| `uncertainty_decomposition` | Entropy + MI: mirror vs non-mirror |
+| `stress_test` | Moves carry ~70% of signal; hiding items/tera costs ~3pp |
+| `ood_comparison` | Regime A vs B: entropy shift on unseen families |
+| `topk_accuracy_curve` | k=17 for 50% coverage vs k=45 random |
+| `cluster_entropy_vs_accuracy` | r = -0.56: mechanical teams are predictable |
+| `ensemble_agreement` | Top-1 accuracy by agreement level |
+| `bo3_adaptation_rates` | Lead/bring change rates after win/loss |
+
 ## Citation
 
-This project builds on the VGC-Bench dataset:
+```bibtex
+@misc{brennan2026turnzero,
+  title={TurnZero: Uncertainty-Aware Team Preview Prediction for Competitive Pok{\'e}mon VGC},
+  author={Brennan-Almaraz, Lucas},
+  year={2026},
+  note={Stanford CS229 Final Project, Winter 2025--26},
+  url={https://github.com/leba01/turnzero}
+}
+```
+
+This project uses the VGC-Bench dataset:
 
 ```bibtex
 @inproceedings{angliss2026vgcbench,
@@ -135,6 +105,93 @@ This project builds on the VGC-Bench dataset:
 ```
 
 ---
+
+<details>
+<summary><strong>Reproducing the results</strong></summary>
+
+### Setup
+
+```bash
+git clone https://github.com/leba01/turnzero.git
+cd turnzero
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+### Pipeline
+
+Each stage reads the previous stage's output. Run in order:
+
+```bash
+# 1. Place raw battle logs in data/raw/ (from HuggingFace)
+
+# 2. Parse Showdown protocol → directed match examples
+turnzero parse --raw_path data/raw/logs-gen9vgc2025reggbo3.json \
+               --out_dir data/parsed/gen9vgc2025reggbo3
+
+# 3. Canonicalize names, sort, dedup
+turnzero canonicalize --in_path data/parsed/match_examples.jsonl \
+                      --out_dir data/canonical
+
+# 4. Cluster teams (≥4/6 species overlap, union-find)
+turnzero cluster --in_path data/canonical/match_examples.jsonl \
+                 --out_dir data/clusters
+
+# 5. Train/val/test splits (Regime A + B)
+turnzero split --in_path data/canonical/match_examples.jsonl \
+               --clusters data/clusters/cluster_assignments.json \
+               --out_dir data/splits
+
+# 6. Assemble per-split JSONL
+turnzero assemble --canonical_path data/canonical/match_examples.jsonl \
+                  --clusters data/clusters/cluster_assignments.json \
+                  --splits data/splits/splits.json \
+                  --out_dir data/assembled
+
+# 7. Validate integrity
+turnzero stats --data_dir data/assembled --validate
+```
+
+### Train
+
+```bash
+# Single model
+turnzero train --config configs/transformer_base.yaml \
+               --out_dir outputs/runs/run_001
+
+# Full ensemble (5 members)
+bash scripts/train_ensemble.sh
+
+# All ablations (4 loss modes × 5 seeds)
+bash scripts/train_ablations.sh
+```
+
+### Evaluate
+
+```bash
+turnzero eval --model_ckpt outputs/runs/run_001/best.pt \
+              --test_split data/assembled/regime_a/test.jsonl \
+              --out_dir outputs/eval/run_001
+```
+
+### Coach demo
+
+```bash
+turnzero demo \
+  --ensemble_dir outputs/runs \
+  --team_a "Rillaboom,Flutter Mane,Incineroar,Urshifu,Farigiraf,Ogerpon" \
+  --team_b "Tornadus,Rillaboom,Incineroar,Urshifu-Rapid-Strike,Flutter Mane,Landorus" \
+  --index_path outputs/retrieval/train_index
+```
+
+### Tests
+
+```bash
+pytest  # 179 tests, ~2s
+```
+
+</details>
 
 <details>
 <summary><strong>Repository structure</strong></summary>
@@ -181,134 +238,16 @@ turnzero/
 │       └── retrieval.py        #   Cosine similarity over 246K train embeddings
 │
 ├── configs/                    # Model configs (YAML)
-│   ├── transformer_base.yaml   #   d=128, L=4, H=4, 1.16M params
-│   ├── ensemble/               #   Per-member seed configs
-│   └── ablation_{a,b,c,d}/    #   4-way loss mode ablation (20 configs)
-│
-├── scripts/                    # Standalone analysis scripts
-│   ├── train_ensemble.sh       #   Train all 5 ensemble members
-│   ├── train_ablations.sh      #   Train 20 ablation models (4 loss modes × 5 seeds)
-│   ├── eval_baselines.py       #   Run both baselines, generate comparison plots
-│   ├── eval_ablations.py       #   Evaluate ablation ensembles + comparison table
-│   ├── build_retrieval_index.py#   246K embedding index for retrieval
-│   ├── run_stress_test.py      #   7-level feature masking ablation
-│   ├── run_final_figures.py    #   All 11 paper figures
-│   ├── run_cluster_analysis.py #   Per-team entropy vs accuracy
-│   ├── run_supplementary_analysis.py  # Top-k curve, decomposition, speed control
-│   ├── run_bo3_adaptation.py   #   BO3 lead/bring change analysis
-│   ├── export_onnx.py          #   Export models to ONNX for web inference
-│   ├── export_retrieval.py     #   Export retrieval index for web app
-│   ├── export_web_data.py      #   Export vocab, lexicon, action table
-│   ├── generate_test_vectors.py#   Golden test vectors for web inference
-│   └── fetch_sprites.py        #   Download Pokemon sprites from Showdown CDN
-│
+├── scripts/                    # Analysis + export scripts
 ├── tests/                      # 179 tests
-│
-├── paper/                      # LaTeX source + 11 figures
-│
+├── paper/                      # LaTeX source + compiled PDF + 11 figures
 ├── web/                        # Live demo (Next.js + ONNX, client-side inference)
-│
 ├── data/                       # Data artifacts (not in git)
-│
 ├── outputs/                    # Model outputs (not in git)
-│
 └── docs/                       # Documentation
     ├── SACREDTEXTS.md          #   Original spec (v4)
     ├── TECHNICAL_COMPANION.md  #   Study guide: every decision explained
     └── PAPER_ANALYSIS.md       #   Story arc + numbers reference for paper
-```
-
-</details>
-
-<details>
-<summary><strong>Quickstart</strong></summary>
-
-### Setup
-
-```bash
-git clone https://github.com/leba01/turnzero.git
-cd turnzero
-python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-```
-
-### Run the full pipeline
-
-Each stage reads the previous stage's output. Run them in order:
-
-```bash
-# 1. Download raw battle logs from HuggingFace
-#    (manual: place JSON files in data/raw/)
-
-# 2. Parse Showdown protocol → directed match examples
-turnzero parse --raw_path data/raw/logs-gen9vgc2025reggbo3.json \
-               --out_dir data/parsed/gen9vgc2025reggbo3
-
-# 3. Canonicalize names, sort, dedup
-turnzero canonicalize --in_path data/parsed/match_examples.jsonl \
-                      --out_dir data/canonical
-
-# 4. Core-cluster teams (≥4/6 species overlap, union-find)
-turnzero cluster --in_path data/canonical/match_examples.jsonl \
-                 --out_dir data/clusters
-
-# 5. Generate train/val/test splits (Regime A + B)
-turnzero split --in_path data/canonical/match_examples.jsonl \
-               --clusters data/clusters/cluster_assignments.json \
-               --out_dir data/splits
-
-# 6. Assemble per-split JSONL with cluster IDs
-turnzero assemble --canonical_path data/canonical/match_examples.jsonl \
-                  --clusters data/clusters/cluster_assignments.json \
-                  --splits data/splits/splits.json \
-                  --out_dir data/assembled
-
-# 7. Validate integrity
-turnzero stats --data_dir data/assembled --validate
-```
-
-### Train
-
-```bash
-# Single model
-turnzero train --config configs/transformer_base.yaml \
-               --out_dir outputs/runs/run_001
-
-# Full ensemble (5 members, different seeds)
-bash scripts/train_ensemble.sh
-```
-
-### Evaluate
-
-```bash
-# Calibrate on validation set
-turnzero calibrate --model_ckpt outputs/runs/ensemble_001/best.pt \
-                   --val_split data/assembled/regime_a/val.jsonl \
-                   --out_dir outputs/calibration/run_001
-
-# Evaluate on test set
-turnzero eval --model_ckpt outputs/runs/run_001/best.pt \
-              --test_split data/assembled/regime_a/test.jsonl \
-              --out_dir outputs/eval/run_001
-```
-
-### Coach demo
-
-```bash
-turnzero demo \
-  --ensemble_dir outputs/runs \
-  --team_a "Rillaboom,Flutter Mane,Incineroar,Urshifu,Farigiraf,Ogerpon" \
-  --team_b "Tornadus,Rillaboom,Incineroar,Urshifu-Rapid-Strike,Flutter Mane,Landorus" \
-  --index_path outputs/retrieval/train_index
-```
-
-The demo outputs top-k plans with calibrated probabilities, role annotations, feature sensitivity ("your plan depends heavily on opponent having Trick Room"), and retrieval evidence from similar historical matchups. If confidence is below threshold, it abstains and switches to scouting report mode.
-
-### Tests
-
-```bash
-pytest                # 179 tests, ~2s
 ```
 
 </details>
