@@ -44,7 +44,7 @@ export function ComboboxSearch({
           className={cn(
             'flex h-8 w-full items-center justify-between',
             'border-2 border-night bg-white px-2 py-1',
-            'font-[family-name:var(--font-body)] text-xs text-night',
+            'font-[family-name:var(--font-body)] text-xs sm:text-sm text-night',
             'hover:border-jam focus:border-jam focus:outline-none',
             'transition-colors disabled:opacity-50',
             className,
@@ -73,10 +73,10 @@ export function ComboboxSearch({
               placeholder={`Search ${placeholder.toLowerCase()}...`}
               value={search}
               onValueChange={setSearch}
-              className="text-xs"
+              className="text-xs sm:text-sm"
             />
             <CommandList className="max-h-[200px]">
-              <CommandEmpty className="py-3 text-center text-xs text-rock">
+              <CommandEmpty className="py-3 text-center text-xs sm:text-sm text-rock">
                 No match found.
               </CommandEmpty>
               <CommandGroup>
@@ -89,7 +89,7 @@ export function ComboboxSearch({
                       setOpen(false);
                       setSearch('');
                     }}
-                    className="text-xs"
+                    className="text-xs sm:text-sm"
                   >
                     <CheckIcon
                       className={cn(

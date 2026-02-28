@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PokemonSlot } from './pokemon-slot';
@@ -12,6 +13,7 @@ interface TeamInputPanelProps {
   label: string;
   team: TeamSheet;
   onChange: (team: TeamSheet) => void;
+  onEditStart?: () => void;
   pokemonData: {
     species: string[];
     items: string[];
@@ -25,7 +27,7 @@ function isTeamComplete(team: TeamSheet): boolean {
   return team.pokemon.every((m) => m.species !== 'UNK' && m.species !== '');
 }
 
-export function TeamInputPanel({ label, team, onChange, pokemonData }: TeamInputPanelProps) {
+export function TeamInputPanel({ label, team, onChange, onEditStart, pokemonData }: TeamInputPanelProps) {
   const [tab, setTab] = React.useState('builder');
   const [editing, setEditing] = React.useState(false);
   const initialized = React.useRef(false);
@@ -51,7 +53,7 @@ export function TeamInputPanel({ label, team, onChange, pokemonData }: TeamInput
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="font-[family-name:var(--font-label)] text-sm uppercase tracking-wider text-night">
+        <CardTitle className="font-[family-name:var(--font-label)] text-sm sm:text-base uppercase tracking-wider text-night">
           {label}
         </CardTitle>
       </CardHeader>
@@ -64,9 +66,9 @@ export function TeamInputPanel({ label, team, onChange, pokemonData }: TeamInput
 
           <TabsContent value="builder">
             {showCompact ? (
-              <TeamSummary team={team} onEdit={() => setEditing(true)} />
+              <TeamSummary team={team} onEdit={() => { setEditing(true); onEditStart?.(); }} />
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-3">
                 {team.pokemon.map((mon, i) => (
                   <PokemonSlot
                     key={i}
@@ -76,6 +78,16 @@ export function TeamInputPanel({ label, team, onChange, pokemonData }: TeamInput
                     pokemonData={pokemonData}
                   />
                 ))}
+                {editing && teamComplete && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditing(false)}
+                    className="self-end border-night text-night hover:bg-mist"
+                  >
+                    DONE
+                  </Button>
+                )}
               </div>
             )}
           </TabsContent>

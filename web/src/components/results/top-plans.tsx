@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { spriteUrl } from '@/lib/sprites';
+import { spriteUrl, displayName } from '@/lib/sprites';
 import { Badge } from '@/components/ui/badge';
 import type { ActionPlan } from '@/types/pokemon';
 import { cn } from '@/lib/utils';
@@ -76,13 +76,8 @@ function MonSprite({
         className="object-contain"
         unoptimized
       />
-      <span
-        className={cn(
-          'truncate text-center font-[family-name:var(--font-label)] text-night',
-          size >= 48 ? 'max-w-16 text-[9px]' : 'max-w-12 text-[8px]',
-        )}
-      >
-        {name}
+      <span className="whitespace-nowrap text-center font-[family-name:var(--font-label)] text-[9px] sm:text-[11px] text-night">
+        {displayName(name)}
       </span>
     </div>
   );
@@ -98,63 +93,50 @@ function PlanRow({
   isHero?: boolean;
 }) {
   const pct = plan.probability * 100;
-  const spriteSize = isHero ? 52 : 36;
-  const backSize = isHero ? 36 : 28;
-  const mobileSpriteSize = isHero ? 40 : 28;
-  const mobileBackSize = isHero ? 28 : 22;
+  const leadSize = isHero ? 56 : 48;
+  const backSize = isHero ? 44 : 36;
 
   return (
     <div
       className={cn(
-        'flex items-center gap-3 border-2 border-night bg-white p-2',
+        'col-span-5 grid items-center gap-x-1 sm:gap-x-3 border-2 border-night bg-white p-2',
         isHero
           ? 'shadow-[4px_4px_0px_#3D5A80] p-3'
           : 'shadow-[2px_2px_0px_#3D5A80]',
       )}
+      style={{ gridTemplateColumns: 'subgrid' }}
     >
       {/* Rank */}
       <div
         className={cn(
           'flex shrink-0 items-center justify-center border-2 border-night font-[family-name:var(--font-heading)] text-white',
-          isHero ? 'size-10 bg-jam text-sm' : 'size-7 bg-night text-[10px]',
+          isHero ? 'size-10 bg-jam text-sm sm:text-base' : 'size-7 bg-night text-[10px] sm:text-sm',
         )}
       >
         {plan.rank}
       </div>
 
       {/* Lead pair */}
-      <div className="flex items-end gap-1">
-        <span className="hidden sm:contents">
-          <MonSprite name={species[plan.lead[0]]} size={spriteSize} />
-          <MonSprite name={species[plan.lead[1]]} size={spriteSize} />
-        </span>
-        <span className="contents sm:hidden">
-          <MonSprite name={species[plan.lead[0]]} size={mobileSpriteSize} />
-          <MonSprite name={species[plan.lead[1]]} size={mobileSpriteSize} />
-        </span>
+      <div className="flex items-center justify-center gap-3">
+        <MonSprite name={species[plan.lead[0]]} size={leadSize} />
+        <MonSprite name={species[plan.lead[1]]} size={leadSize} />
       </div>
 
       {/* Divider */}
-      <div className={cn('bg-night', isHero ? 'h-12 w-px' : 'h-8 w-px')} />
+      <div className="h-full w-px bg-night" />
 
       {/* Back pair */}
-      <div className="flex items-end gap-1">
-        <span className="hidden sm:contents">
-          <MonSprite name={species[plan.back[0]]} size={backSize} dimmed />
-          <MonSprite name={species[plan.back[1]]} size={backSize} dimmed />
-        </span>
-        <span className="contents sm:hidden">
-          <MonSprite name={species[plan.back[0]]} size={mobileBackSize} dimmed />
-          <MonSprite name={species[plan.back[1]]} size={mobileBackSize} dimmed />
-        </span>
+      <div className="flex items-center justify-center gap-3">
+        <MonSprite name={species[plan.back[0]]} size={backSize} dimmed />
+        <MonSprite name={species[plan.back[1]]} size={backSize} dimmed />
       </div>
 
       {/* Probability */}
-      <div className="ml-auto flex shrink-0 flex-col items-end gap-1">
+      <div className="flex flex-col items-end gap-1">
         <span
           className={cn(
             'font-[family-name:var(--font-label)] text-night',
-            isHero ? 'text-sm' : 'text-xs',
+            isHero ? 'text-sm sm:text-base' : 'text-xs sm:text-sm',
           )}
         >
           {pct.toFixed(1)}%
@@ -162,7 +144,7 @@ function PlanRow({
         <div
           className={cn(
             'border border-night bg-muted',
-            isHero ? 'h-2.5 w-16 sm:w-24' : 'h-2 w-12 sm:w-16',
+            isHero ? 'h-2.5 w-24' : 'h-2 w-16',
           )}
         >
           <div
@@ -192,11 +174,6 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Header */}
-      <h3 className="font-[family-name:var(--font-label)] text-xs uppercase tracking-wider text-night">
-        Recommended Plans
-      </h3>
-
       {/* Confidence banner */}
       <div className={cn(
         'flex items-center gap-3 border-2 p-3',
@@ -217,7 +194,7 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
               />
             ))}
           </div>
-          <span className={cn('font-[family-name:var(--font-label)] text-[9px]', tier.color)}>
+          <span className={cn('font-[family-name:var(--font-label)] text-[9px] sm:text-[11px]', tier.color)}>
             {ensembleAgreement}/5
           </span>
         </div>
@@ -225,43 +202,45 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
         {/* Label and explanation */}
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
-            <span className={cn('font-[family-name:var(--font-heading)] text-sm', tier.color)}>
+            <span className={cn('font-[family-name:var(--font-heading)] text-sm sm:text-base', tier.color)}>
               {tier.label}
             </span>
             {abstain && (
-              <Badge className="animate-pulse bg-red-500 font-[family-name:var(--font-label)] text-[8px] text-white">
+              <Badge className="animate-pulse bg-red-500 font-[family-name:var(--font-label)] text-[8px] sm:text-[10px] text-white">
                 ABSTAIN
               </Badge>
             )}
           </div>
-          <span className="font-[family-name:var(--font-body)] text-[10px] text-rock">
+          <span className="font-[family-name:var(--font-body)] text-[10px] sm:text-sm text-rock">
             {tier.sublabel}
           </span>
         </div>
 
         {/* Relative strength pill */}
         <div className="ml-auto flex shrink-0 flex-col items-end">
-          <span className={cn('font-[family-name:var(--font-label)] text-xs', tier.color)}>
+          <span className={cn('font-[family-name:var(--font-label)] text-xs sm:text-sm', tier.color)}>
             {vsRandom.toFixed(0)}x
           </span>
-          <span className="font-[family-name:var(--font-body)] text-[8px] text-rock">
+          <span className="font-[family-name:var(--font-body)] text-[8px] sm:text-[10px] text-rock">
             vs random
           </span>
         </div>
       </div>
 
       {/* Plans — hero only when there's a clear favorite */}
-      {plans.map((plan, i) => (
-        <PlanRow
-          key={plan.action90_id}
-          plan={plan}
-          species={species}
-          isHero={i === 0 && hasStrongFavorite}
-        />
-      ))}
+      <div className="grid gap-y-3" style={{ gridTemplateColumns: 'auto auto auto auto 1fr' }}>
+        {plans.map((plan, i) => (
+          <PlanRow
+            key={plan.action90_id}
+            plan={plan}
+            species={species}
+            isHero={i === 0 && hasStrongFavorite}
+          />
+        ))}
+      </div>
 
       {/* Fine print for the nerds */}
-      <span className="font-[family-name:var(--font-body)] text-[9px] text-rock">
+      <span className="font-[family-name:var(--font-body)] text-[9px] sm:text-[11px] text-rock">
         {(confidence * 100).toFixed(1)}% max probability (1/{90} = {(100 / 90).toFixed(1)}% random baseline) · H={plans.length > 0 ? (
           -Math.log2(confidence).toFixed(1)
         ) : '—'} bits

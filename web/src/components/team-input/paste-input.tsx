@@ -117,7 +117,7 @@ export function PasteInput({ onParsed }: PasteInputProps) {
         onChange={(e) => setText(e.target.value)}
         placeholder={PLACEHOLDER}
         rows={14}
-        className="w-full border-2 border-night bg-white p-3 font-[family-name:var(--font-body)] text-xs text-night placeholder:text-rock focus:border-jam focus:outline-none"
+        className="w-full border-2 border-night bg-white p-3 font-[family-name:var(--font-body)] text-xs sm:text-sm text-night placeholder:text-rock focus:border-jam focus:outline-none"
       />
 
       {error && (

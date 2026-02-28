@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { spriteUrl } from '@/lib/sprites';
+import { spriteUrl, displayName } from '@/lib/sprites';
 import { ComboboxSearch } from './combobox-search';
 import type { Pokemon } from '@/types/pokemon';
 
@@ -59,14 +59,14 @@ export function PokemonSlot({ index, pokemon, onChange, pokemonData }: PokemonSl
               unoptimized
             />
           ) : (
-            <span className="font-[family-name:var(--font-label)] text-[10px] text-rock">
+            <span className="font-[family-name:var(--font-label)] text-[10px] sm:text-sm text-rock">
               #{index + 1}
             </span>
           )}
         </div>
         {hasSpecies && (
-          <span className="max-w-16 truncate text-center font-[family-name:var(--font-label)] text-[10px] text-night sm:max-w-24">
-            {pokemon.species}
+          <span className="max-w-20 truncate text-center font-[family-name:var(--font-label)] text-[10px] sm:text-sm text-night sm:max-w-full">
+            {displayName(pokemon.species)}
           </span>
         )}
       </div>
@@ -142,7 +142,7 @@ function FieldRow({
 }) {
   return (
     <div className={className}>
-      <label className="mb-0.5 block font-[family-name:var(--font-label)] text-[10px] uppercase tracking-wider text-rock">
+      <label className="mb-0.5 block font-[family-name:var(--font-label)] text-[10px] sm:text-sm uppercase tracking-wider text-rock">
         {label}
       </label>
       {children}
