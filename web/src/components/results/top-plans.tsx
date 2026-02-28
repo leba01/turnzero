@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import type { ActionPlan } from '@/types/pokemon';
 import { cn } from '@/lib/utils';
 
+const ENSEMBLE_SIZE = 5;
+
 interface TopPlansProps {
   plans: ActionPlan[];
   species: string[];
@@ -22,7 +24,7 @@ function confidenceTier(agreement: number, abstain: boolean): {
   borderColor: string;
   dots: boolean[];
 } {
-  const dots = Array.from({ length: 5 }, (_, i) => i < agreement);
+  const dots = Array.from({ length: ENSEMBLE_SIZE }, (_, i) => i < agreement);
   if (abstain) return {
     label: 'Uncertain',
     sublabel: 'The model is guessing — treat as scouting info',
@@ -161,7 +163,7 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
     plans.length >= 3 &&
     plans[0].probability > ((plans[1].probability + plans[2].probability) / 2) * 1.3;
 
-  const vsRandom = confidence / (1 / 90);
+  const vsRandom = confidence * 90;
 
   return (
     <div className="flex flex-col gap-3">
@@ -184,7 +186,7 @@ export function TopPlans({ plans, species, abstain, confidence, ensembleAgreemen
             ))}
           </div>
           <span className={cn('font-[family-name:var(--font-label)] text-[9px] sm:text-[11px]', tier.color)}>
-            {ensembleAgreement}/5
+            {ensembleAgreement}/{ENSEMBLE_SIZE}
           </span>
         </div>
 

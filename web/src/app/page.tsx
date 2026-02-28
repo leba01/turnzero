@@ -44,21 +44,37 @@ export default function Home() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const [leftWidth, setLeftWidth] = useState(LEFT_MAX);
   const [isDragging, setIsDragging] = useState(false);
-  const dragging = useRef(false);
+  const isDraggingRef = useRef(false); // ref for stale-closure-safe mousemove; state drives CSS class
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLElement>(null);
   const [showScrollHint, setShowScrollHint] = useState(true);
 
+  const handleDragStart = useCallback(() => {
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }, []);
+
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      if (!dragging.current) return;
+      if (!isDraggingRef.current) return;
       setLeftWidth(Math.min(LEFT_MAX, Math.max(LEFT_MIN, e.clientX)));
     };
-    const onUp = () => { dragging.current = false; setIsDragging(false); document.body.style.cursor = ''; document.body.style.userSelect = ''; };
     window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-  }, []);
+    window.addEventListener('mouseup', handleDragEnd);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [handleDragEnd]);
 
   const onReady = useCallback(() => {
     if (!autoPredictFired.current) {
@@ -406,7 +422,7 @@ export default function Home() {
         {/* Drag handle */}
         <div
           className="group relative z-10 flex w-8 shrink-0 cursor-col-resize flex-col items-center"
-          onMouseDown={() => { dragging.current = true; setIsDragging(true); document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none'; }}
+          onMouseDown={handleDragStart}
         >
           {/* Full-height night track */}
           <div className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 bg-night" />

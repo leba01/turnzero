@@ -11,75 +11,59 @@ interface OpponentCuesProps {
   cues: OpponentCue[];
 }
 
-const ROLE_COLORS: Record<string, string> = {
-  // Offensive
-  spread: 'bg-jam/20 text-jam border-jam',
-  priority: 'bg-jam/20 text-jam border-jam',
-  setup: 'bg-jam/20 text-jam border-jam',
-  // Defensive
-  protect: 'bg-sky/30 text-night border-sky',
-  recovery: 'bg-sky/30 text-night border-sky',
-  redirection: 'bg-sky/30 text-night border-sky',
-  // Control
-  speed_control: 'bg-moss/20 text-moss border-moss',
-  disruption: 'bg-moss/20 text-moss border-moss',
-  fake_out: 'bg-moss/20 text-moss border-moss',
-  // Weather/Terrain
-  weather_setter: 'bg-grass/20 text-night border-grass',
-  terrain_setter: 'bg-grass/20 text-night border-grass',
-  weather_ability: 'bg-grass/20 text-night border-grass',
-  terrain_ability: 'bg-grass/20 text-night border-grass',
-  // Items
-  choice_item: 'bg-mist/30 text-night border-mist',
-  sash: 'bg-mist/30 text-night border-mist',
-  berry: 'bg-mist/30 text-night border-mist',
-  // Abilities
-  intimidate: 'bg-secondary/50 text-night border-secondary',
-};
-
-function getRoleStyle(role: string): string {
-  return ROLE_COLORS[role] || 'bg-muted text-night border-rock';
-}
-
-const LEGEND = [
+const ROLE_CATEGORIES = [
   {
     label: 'Offensive',
     style: 'bg-jam/20 text-jam border-jam',
     blurb: 'Spread damage (Earthquake, Heat Wave), priority moves (Sucker Punch, Extreme Speed), or setup (Swords Dance, Nasty Plot).',
+    roles: ['spread', 'priority', 'setup'],
   },
   {
     label: 'Defensive',
     style: 'bg-sky/30 text-night border-sky',
     blurb: 'Protect variants (Wide Guard, Quick Guard), recovery (Recover, Drain Punch), or redirection (Follow Me, Rage Powder).',
+    roles: ['protect', 'recovery', 'redirection'],
   },
   {
     label: 'Control',
     style: 'bg-moss/20 text-moss border-moss',
     blurb: 'Speed control (Tailwind, Trick Room, Icy Wind), disruption (Taunt, Thunder Wave, sleep moves), or Fake Out.',
+    roles: ['speed_control', 'disruption', 'fake_out'],
   },
   {
     label: 'Field',
     style: 'bg-grass/20 text-night border-grass',
     blurb: 'Sets weather or terrain via move (Rain Dance, Electric Terrain) or ability (Drizzle, Drought, Sand Stream).',
+    roles: ['weather_setter', 'terrain_setter', 'weather_ability', 'terrain_ability'],
   },
   {
     label: 'Item',
     style: 'bg-mist/30 text-night border-mist',
     blurb: 'Carries a Choice item (locking moves), Focus Sash (survives a KO at full HP), or a Berry (Sitrus, Lum, etc.).',
+    roles: ['choice_item', 'sash', 'berry'],
   },
   {
     label: 'Ability',
     style: 'bg-secondary/50 text-night border-secondary',
-    blurb: 'Intimidate — drops adjacent foes\' Attack on switch-in, a major factor in lead and positioning decisions.',
+    blurb: "Intimidate — drops adjacent foes' Attack on switch-in, a major factor in lead and positioning decisions.",
+    roles: ['intimidate'],
   },
 ];
+
+const ROLE_STYLE_MAP: Record<string, string> = Object.fromEntries(
+  ROLE_CATEGORIES.flatMap(({ style, roles }) => roles.map((r) => [r, style])),
+);
+
+function getRoleStyle(role: string): string {
+  return ROLE_STYLE_MAP[role] || 'bg-muted text-night border-rock';
+}
 
 export function OpponentCues({ cues }: OpponentCuesProps) {
   return (
     <div className="flex flex-col gap-3">
       <TooltipProvider>
         <div className="flex flex-wrap gap-1.5">
-          {LEGEND.map(({ label, style, blurb }) => (
+          {ROLE_CATEGORIES.map(({ label, style, blurb }) => (
             <Tooltip key={label}>
               <TooltipTrigger asChild>
                 <Badge variant="outline" className={`cursor-default text-[9px] sm:text-[11px] ${style}`}>
