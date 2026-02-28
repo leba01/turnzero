@@ -63,7 +63,7 @@ In competitive Pokemon VGC, both players reveal their full 6-mon team sheets bef
 | **NLL** | 4.031 | 4.497 | 4.500 |
 | **ECE** | 0.011 | 0.065 | — |
 
-> Action-90 metrics on Tier 1 (32K examples with fully observed bring-4); Lead-2 on all (40K). Point estimates shown; 95% cluster-aware bootstrap CIs available in `outputs/eval/bootstrap_cis.json`. All numbers will be updated after ablation retraining.
+> Action-90 metrics on Tier 1 (32K examples with fully observed bring-4); Lead-2 on all (40K). Point estimates shown; 95% cluster-aware bootstrap CIs available in `outputs/eval/bootstrap_cis.json`.
 
 > **The accuracy story, reframed:** The model's top-17 predictions cover the expert's actual choice 50% of the time (random needs 45). At 90% coverage, you need 54 of 90 actions — the model concentrates probability mass where it belongs.
 
@@ -117,18 +117,24 @@ turnzero/
 ├── configs/                    # Model configs (YAML)
 │   ├── transformer_base.yaml   #   d=128, L=4, H=4, 1.16M params
 │   ├── ensemble/               #   Per-member seed configs
-│   └── ablation_{a,b,c}/      #   3-way loss mode ablation (15 configs)
+│   └── ablation_{a,b,c,d}/    #   4-way loss mode ablation (20 configs)
 │
 ├── scripts/                    # Standalone analysis scripts
-│   ├── eval_baselines.py       #   Run both baselines, generate comparison plots
 │   ├── train_ensemble.sh       #   Train all 5 ensemble members
-│   ├── train_ablations.sh      #   Train 15 ablation models (3 loss modes × 5 seeds)
+│   ├── train_ablations.sh      #   Train 20 ablation models (4 loss modes × 5 seeds)
+│   ├── eval_baselines.py       #   Run both baselines, generate comparison plots
 │   ├── eval_ablations.py       #   Evaluate ablation ensembles + comparison table
-│   ├── build_retrieval_index.py
+│   ├── build_retrieval_index.py#   246K embedding index for retrieval
 │   ├── run_stress_test.py      #   7-level feature masking ablation
-│   ├── run_final_figures.py    #   All 10 paper figures
+│   ├── run_final_figures.py    #   All 11 paper figures
 │   ├── run_cluster_analysis.py #   Per-team entropy vs accuracy
-│   └── run_supplementary_analysis.py  # Top-k curve, decomposition, speed control
+│   ├── run_supplementary_analysis.py  # Top-k curve, decomposition, speed control
+│   ├── run_bo3_adaptation.py   #   BO3 lead/bring change analysis
+│   ├── export_onnx.py          #   Export models to ONNX for web inference
+│   ├── export_retrieval.py     #   Export retrieval index for web app
+│   ├── export_web_data.py      #   Export vocab, lexicon, action table
+│   ├── generate_test_vectors.py#   Golden test vectors for web inference
+│   └── fetch_sprites.py        #   Download Pokemon sprites from Showdown CDN
 │
 ├── tests/                      # 179 tests
 │   ├── test_action_space.py    #   Bijection correctness
@@ -159,6 +165,8 @@ turnzero/
 │   ├── eval/                   #   All evaluation JSONs
 │   └── plots/paper/            #   11 publication-quality figures (PDF + PNG)
 │
+├── web/                        # Live demo source (Next.js 15 + ONNX)
+│
 └── docs/                       # Documentation
     ├── SACREDTEXTS.md          #   Original spec (v4)
     ├── TECHNICAL_COMPANION.md  #   Study guide: every decision explained
@@ -178,7 +186,6 @@ cd turnzero
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-pip install torch pandas scikit-learn matplotlib pyyaml
 ```
 
 ### Run the full pipeline

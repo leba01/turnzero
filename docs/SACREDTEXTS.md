@@ -89,15 +89,3 @@ MatchExample:
 
 See `docs/PAPER_ANALYSIS.md` for full numbers.
 
-## Interview Talk Track
-
-- **Pitch**: Turn-zero OTS coach that recommends lead+bring plans with calibrated confidence and evidence from similar games.
-- **Data**: `|showteam|` gives 100% OTS; bring-4 labels ~80% observable, flagged per-example. Designed a full reconstruction pipeline first, discovered it wasn't needed — architecture still supports UNK gracefully.
-- **Why UQ**: Experts genuinely disagree (59% lead change rate in BO3). A system that says "I'm 6% confident" is more useful than one that guesses wrong confidently.
-- **Split design**: "Pilot my team vs the field" — hold out Team A variants within clusters, opponents float. Matches deployment, avoids data waste.
-- **Leakage**: Dedup on `(matchup, action)` triples, not matchup pairs — different expert decisions on the same matchup is signal.
-- **Calibration**: ECE 0.012 (adaptive equal-mass). Temperature scaling barely moved (T≈1.0) — ensemble averaging is the calibration mechanism.
-- **Abstention**: Doubles on OOD data. MI-based AUROC 0.80.
-- **Per-team variation**: Entropy r=-0.56 with accuracy. Commander teams hit 50% top-1 (mechanical constraint), flexible teams 0%.
-- **Architecture negative result**: Hierarchical dual encoder (1.56M params, +34%) achieved ±0.1pp. Noise ceiling is the constraint, not model capacity.
-- **Key insight**: Teams agree on what to bring (52% stable) but disagree about who leads (59% change rate). The model captures this: bring-4 marginal at 17.8% vs lead arrangement at 32.1% given correct bring-4.
