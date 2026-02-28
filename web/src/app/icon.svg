@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <circle cx="32" cy="32" r="32" fill="#3D5A80"/>
+  <circle cx="32" cy="32" r="29" fill="#F7F7F7"/>
+  <text x="32" y="43" text-anchor="middle" font-family="monospace,sans-serif" font-weight="900" font-size="30" letter-spacing="-2" fill="#3D5A80">TZ</text>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#F4845F" stroke-width="2.5"/>
+</svg>
