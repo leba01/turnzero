@@ -8,14 +8,13 @@ interface SensitivityDisplayProps {
 }
 
 const FIELD_LABELS: { key: keyof FeatureSensitivity; label: string }[] = [
-  { key: 'species', label: 'Species' },
   { key: 'items', label: 'Items' },
   { key: 'ability', label: 'Ability' },
   { key: 'tera', label: 'Tera' },
   { key: 'moves', label: 'Moves' },
 ];
 
-const N = FIELD_LABELS.length; // 5 = pentagon
+const N = FIELD_LABELS.length; // 4 = diamond
 const PAD = 52; // padding for labels
 const INNER = 160; // inner drawing area
 const SIZE = INNER + PAD * 2; // full SVG viewBox
@@ -25,8 +24,8 @@ const R = 68; // max radius for the data polygon
 const RINGS = 3; // concentric guide rings
 const LABEL_R = R + 24; // radius for axis labels
 
-/** Get (x, y) on pentagon for axis i at fractional radius r (0..1). */
-function pentPoint(i: number, r: number): [number, number] {
+/** Get (x, y) on diamond for axis i at fractional radius r (0..1). */
+function diamondPoint(i: number, r: number): [number, number] {
   // Start from top (-π/2) and go clockwise
   const angle = (2 * Math.PI * i) / N - Math.PI / 2;
   return [CX + R * r * Math.cos(angle), CY + R * r * Math.sin(angle)];
@@ -34,29 +33,23 @@ function pentPoint(i: number, r: number): [number, number] {
 
 /** Build an SVG polygon points string for a ring at fractional radius. */
 function ringPoints(r: number): string {
-  return Array.from({ length: N }, (_, i) => pentPoint(i, r).join(',')).join(' ');
+  return Array.from({ length: N }, (_, i) => diamondPoint(i, r).join(',')).join(' ');
 }
 
-/** Pentagon radar chart — pure SVG, no dependencies. */
-function RadarPentagon({
+/** Diamond radar chart — pure SVG, no dependencies. */
+function RadarDiamond({
   entries,
   maxKl,
 }: {
   entries: { label: string; kl: number }[];
   maxKl: number;
 }) {
-  // Normalize values to 0..1
   const values = entries.map((e) => (maxKl > 0 ? e.kl / maxKl : 0));
-
-  // Data polygon points
-  const dataPoints = values.map((v, i) => pentPoint(i, v).join(',')).join(' ');
-
-  // Find the top (highest) axis index
+  const dataPoints = values.map((v, i) => diamondPoint(i, v).join(',')).join(' ');
   const topIdx = values.indexOf(Math.max(...values));
 
   return (
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="mx-auto w-full max-w-[240px]">
-      {/* Concentric guide rings */}
       {Array.from({ length: RINGS }, (_, ring) => {
         const r = (ring + 1) / RINGS;
         return (
@@ -71,9 +64,8 @@ function RadarPentagon({
         );
       })}
 
-      {/* Axis lines from center to each vertex */}
       {Array.from({ length: N }, (_, i) => {
-        const [x, y] = pentPoint(i, 1);
+        const [x, y] = diamondPoint(i, 1);
         return (
           <line
             key={i}
@@ -88,7 +80,6 @@ function RadarPentagon({
         );
       })}
 
-      {/* Filled data polygon */}
       <polygon
         points={dataPoints}
         fill="#98C1D9"
@@ -97,9 +88,8 @@ function RadarPentagon({
         strokeWidth={1.5}
       />
 
-      {/* Data points as dots */}
       {values.map((v, i) => {
-        const [x, y] = pentPoint(i, v);
+        const [x, y] = diamondPoint(i, v);
         const isTop = i === topIdx;
         return (
           <circle
@@ -114,7 +104,6 @@ function RadarPentagon({
         );
       })}
 
-      {/* Axis labels */}
       {entries.map((e, i) => {
         const angle = (2 * Math.PI * i) / N - Math.PI / 2;
         const lx = CX + LABEL_R * Math.cos(angle);
@@ -165,7 +154,6 @@ export function SensitivityDisplay({ sensitivity }: SensitivityDisplayProps) {
     );
   }
 
-  // Keep original order for pentagon axes (don't sort — fixed positions)
   const entries = FIELD_LABELS.map(({ key, label }) => ({
     label,
     kl: sensitivity[key],
@@ -176,9 +164,11 @@ export function SensitivityDisplay({ sensitivity }: SensitivityDisplayProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <RadarPentagon entries={entries} maxKl={maxKl} />
+      <p className="w-full font-[family-name:var(--font-body)] text-[10px] sm:text-xs text-rock leading-relaxed">
+        Moves tend to dominate this chart — but that&apos;s what the model learned, not a bug. Item and tera swaps usually don&apos;t move the needle much.
+      </p>
+      <RadarDiamond entries={entries} maxKl={maxKl} />
 
-      {/* Legend: compact row of values below the chart */}
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
         {entries.map((e) => {
           const isTop = e === topEntry;

@@ -1,9 +1,5 @@
-/**
- * ONNX Runtime inference engine for the TurnZero ensemble.
- *
- * Loads 5 transformer models, runs them in parallel via WASM backend,
- * and aggregates softmax probabilities for the 90-way action prediction.
- */
+// ONNX Runtime inference engine — loads 5 transformer models via WASM,
+// aggregates softmax probabilities for the 90-way action prediction.
 
 import * as ort from "onnxruntime-web";
 import type {
@@ -38,7 +34,6 @@ const MODEL_PATHS = Array.from(
  * that should be masked to UNK (0).
  */
 const SENSITIVITY_GROUPS: Record<keyof FeatureSensitivity, number[]> = {
-  species: [0],
   items: [1],
   ability: [2],
   tera: [3],
@@ -54,15 +49,10 @@ export class InferenceEngine {
     return this.sessions.length === N_MODELS;
   }
 
-  /**
-   * Load all 5 ONNX model sessions with WASM backend.
-   * Calls onProgress after each model loads.
-   */
   async load(
     onProgress: (loaded: number, total: number) => void,
   ): Promise<void> {
-    // Reduce WASM memory footprint — single thread per session keeps
-    // 5 concurrent sessions within browser WASM memory limits.
+    // Single thread per session keeps 5 sessions within WASM memory limits.
     if (!InferenceEngine._wasmConfigured) {
       ort.env.wasm.numThreads = 1;
       InferenceEngine._wasmConfigured = true;
@@ -71,8 +61,7 @@ export class InferenceEngine {
     for (let i = 0; i < N_MODELS; i++) {
       const modelPath = MODEL_PATHS[i];
       const dataFileName = modelPath.split("/").pop() + ".data";
-      // Fetch external data file as bytes — onnxruntime-web can't resolve
-      // URL strings for external data in the browser WASM backend.
+      // Fetch .data file as bytes — onnxruntime-web can't resolve URL strings for external data.
       const dataResponse = await fetch(modelPath + ".data");
       if (!dataResponse.ok) {
         throw new Error(`Failed to fetch ${modelPath}.data: ${dataResponse.status}`);
@@ -92,10 +81,6 @@ export class InferenceEngine {
     }
   }
 
-  /**
-   * Run all 5 models on encoded team tensors.
-   * Returns per-model logits (1,90) and embeddings (1,128).
-   */
   async predict(
     teamA: Int32Array,
     teamB: Int32Array,
@@ -107,14 +92,12 @@ export class InferenceEngine {
     const teamATensor = new ort.Tensor("int32", teamA, [1, 6, 8]);
     const teamBTensor = new ort.Tensor("int32", teamB, [1, 6, 8]);
 
-    // Run sessions sequentially — the WASM backend shares a single thread pool
-    // and cannot handle concurrent session.run() calls.
+    // Sequential — WASM backend can't handle concurrent session.run() calls.
     const logits: Float32Array[] = [];
     const embeddings: Float32Array[] = [];
     for (const session of this.sessions) {
       const result = await session.run({ team_a: teamATensor, team_b: teamBTensor });
-      // Copy data out before disposing — result tensors are views into WASM heap
-      // and will be overwritten by subsequent inference calls.
+      // Copy before disposing — tensors are views into WASM heap.
       logits.push(new Float32Array(result.logits.data as Float32Array));
       embeddings.push(new Float32Array(result.embedding.data as Float32Array));
       result.logits.dispose();
@@ -127,16 +110,6 @@ export class InferenceEngine {
     return { logits, embeddings };
   }
 
-  /**
-   * Full prediction pipeline: encode, infer, aggregate, compute marginals.
-   *
-   * @param teamA - player's team (the one we predict leads for)
-   * @param teamB - opponent's team
-   * @param vocab - loaded vocabulary
-   * @param lexicon - loaded reverse lexicon
-   * @param temperature - temperature scaling factor (from temperature.json)
-   * @returns PredictionResult with sensitivity and evidence initially null
-   */
   async fullPredict(
     teamA: TeamSheet,
     teamB: TeamSheet,
@@ -144,14 +117,10 @@ export class InferenceEngine {
     lexicon: ReverseLexicon,
     temperature: number,
   ): Promise<PredictionResult> {
-    // 1. Encode both teams.
     const encodedA = encodeTeam(vocab, teamA);
     const encodedB = encodeTeam(vocab, teamB);
-
-    // 2. Run all 5 models.
     const { logits } = await this.predict(encodedA, encodedB);
 
-    // 3. Softmax each model's logits / T -> member probs.
     const memberProbs = logits.map((l) => {
       const scaled = new Float32Array(l.length);
       for (let i = 0; i < l.length; i++) {
@@ -160,13 +129,10 @@ export class InferenceEngine {
       return softmax(scaled);
     });
 
-    // 4. Average probs -> p_bar (90,).
     const pBar = averageProbs(memberProbs);
-
-    // 5. Ensemble entropy.
     const entropy = shannonEntropy(pBar);
 
-    // 6. Mutual information = ensemble entropy - mean(member entropies).
+    // Mutual information = ensemble entropy - mean(member entropies).
     let memberEntropySum = 0;
     for (const mp of memberProbs) {
       memberEntropySum += shannonEntropy(mp);
@@ -174,7 +140,6 @@ export class InferenceEngine {
     const meanMemberEntropy = memberEntropySum / memberProbs.length;
     const mutualInformation = entropy - meanMemberEntropy;
 
-    // 7. Confidence = max(p_bar).
     let confidence = 0;
     let topAction = 0;
     for (let i = 0; i < pBar.length; i++) {
@@ -184,7 +149,7 @@ export class InferenceEngine {
       }
     }
 
-    // 7b. Ensemble agreement: how many members' argmax matches the ensemble's top-1.
+    // How many members' argmax matches the ensemble's top-1.
     let ensembleAgreement = 0;
     for (const mp of memberProbs) {
       let memberMax = 0;
@@ -198,15 +163,12 @@ export class InferenceEngine {
       if (memberArgmax === topAction) ensembleAgreement++;
     }
 
-    // 8. Abstention decision.
     const abstain = confidence < ABSTAIN_TAU;
 
-    // 9. Top-5 plans from ACTION_TABLE.
     const indexed = Array.from(pBar).map((p, i) => ({ p, i }));
     indexed.sort((a, b) => b.p - a.p);
     const topPlans: ActionPlan[] = indexed.slice(0, 5).map((entry, rank) => {
       const action = ACTION_TABLE[entry.i];
-      // Bench = the 2 mons not in lead or back.
       const used = new Set([
         action.lead[0],
         action.lead[1],
@@ -230,13 +192,9 @@ export class InferenceEngine {
       };
     });
 
-    // 10. Compute marginals.
     const marginals = computeMarginals(pBar);
-
-    // 11. Annotate opponent team with lexicon.
     const opponentCues = annotateTeam(lexicon, teamB);
 
-    // 12. Return PredictionResult (sensitivity and evidence filled later).
     return {
       top_plans: topPlans,
       confidence,
@@ -251,24 +209,12 @@ export class InferenceEngine {
     };
   }
 
-  /**
-   * Compute feature sensitivity via KL divergence from ablated inputs.
-   *
-   * For each field group (species, items, ability, tera, moves), masks the
-   * corresponding columns in teamB to UNK (0), runs the ensemble, and
-   * computes KL(baseline || masked).
-   *
-   * @param teamA - encoded player team (48 Int32)
-   * @param teamB - encoded opponent team (48 Int32)
-   * @param temperature - temperature scaling factor
-   * @returns FeatureSensitivity with KL divergence per field group
-   */
+  /** KL divergence per field group when opponent features are ablated to UNK. */
   async computeSensitivity(
     teamA: Int32Array,
     teamB: Int32Array,
     temperature: number,
   ): Promise<FeatureSensitivity> {
-    // Baseline ensemble probs.
     const baselineResult = await this.predict(teamA, teamB);
     const baselineProbs = averageProbs(
       baselineResult.logits.map((l) => {
@@ -281,15 +227,11 @@ export class InferenceEngine {
     const sensitivity: Record<string, number> = {};
 
     for (const [groupName, cols] of Object.entries(SENSITIVITY_GROUPS)) {
-      // Clone teamB and mask the specified columns to 0 (UNK).
       const maskedB = new Int32Array(teamB);
       for (let mon = 0; mon < 6; mon++) {
-        for (const col of cols) {
-          maskedB[mon * 8 + col] = 0;
-        }
+        for (const col of cols) maskedB[mon * 8 + col] = 0;
       }
 
-      // Run ensemble on masked input.
       const maskedResult = await this.predict(teamA, maskedB);
       const maskedProbs = averageProbs(
         maskedResult.logits.map((l) => {
@@ -299,14 +241,12 @@ export class InferenceEngine {
         }),
       );
 
-      // KL(baseline || masked).
       sensitivity[groupName] = klDivergence(baselineProbs, maskedProbs);
     }
 
     return sensitivity as unknown as FeatureSensitivity;
   }
 
-  /** Release all ONNX sessions to free WASM memory. */
   async dispose(): Promise<void> {
     for (const session of this.sessions) {
       await session.release();
@@ -314,10 +254,6 @@ export class InferenceEngine {
     this.sessions = [];
   }
 
-  /**
-   * Get the embedding from the first model for retrieval queries.
-   * Returns a Float32Array of length 128.
-   */
   async getEmbedding(
     teamA: Int32Array,
     teamB: Int32Array,

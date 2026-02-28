@@ -34,7 +34,6 @@ export interface OpponentCue {
 }
 
 export interface FeatureSensitivity {
-  species: number;
   items: number;
   ability: number;
   tera: number;

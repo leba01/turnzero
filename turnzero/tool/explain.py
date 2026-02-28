@@ -127,10 +127,9 @@ def format_marginals(
 # Feature masking sensitivity (Bible 5.5, Counterfactual 2)
 # ---------------------------------------------------------------------------
 
-# Field groups in the (B, 6, 8) team tensor:
-#   [species=0, item=1, ability=2, tera=3, move0=4, move1=5, move2=6, move3=7]
+# Field groups in the (B, 6, 8) team tensor (species=0 excluded — just a label):
+#   [item=1, ability=2, tera=3, move0=4, move1=5, move2=6, move3=7]
 _FIELD_GROUPS: dict[str, list[int]] = {
-    "species": [0],
     "items": [1],
     "ability": [2],
     "tera": [3],
@@ -148,9 +147,12 @@ def feature_sensitivity(
 ) -> dict[str, float]:
     """Mask one field group at a time on team_b, measure KL from baseline.
 
-    For each field group (species, items, ability, tera, moves), replaces
-    those columns in team_b with 0 (UNK index) and runs the ensemble
-    forward pass.  Reports KL(p_base || p_masked) for each group.
+    For each field group (items, ability, tera, moves), replaces those
+    columns in team_b with 0 (UNK index) and runs the ensemble forward
+    pass.  Reports KL(p_base || p_masked) for each group.
+
+    Species is excluded — it's just a label; game dynamics are fully
+    determined by moves, ability, item, and tera type.
 
     Higher KL = the prediction depends more on that field type.
 
@@ -164,7 +166,7 @@ def feature_sensitivity(
 
     Returns:
         Dict mapping field group name to KL divergence (float).
-        Example: ``{"species": 0.05, "items": 0.03, ...}``
+        Example: ``{"items": 0.03, "ability": 0.02, ...}``
     """
 
     def _ensemble_probs(ta: torch.Tensor, tb: torch.Tensor) -> np.ndarray:

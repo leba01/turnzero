@@ -266,7 +266,8 @@ All except species & 1.2 & 3.4 & 4.672 \\
 Table~\ref{tab:stress} shows that moves carry the dominant signal.
 Masking all four drops top-3 from 15.5\% to 3.2\%---near the popularity baseline's 3.9\%.
 Items and tera type each cost ${\sim}$3pp individually.
-Species alone still beats random (1.2\% vs.\ 1.1\%), confirming composition-level patterns exist but are far weaker than the moveset signal.
+The ``all except species'' row shows that species names alone carry almost no predictive signal beyond random (1.2\% vs.\ 1.1\%)---unsurprising because species is merely a label; the game-relevant information is fully captured by moves, ability, item, and tera type.
+We therefore exclude species from the per-matchup feature sensitivity analysis in the demo tool.
 
 The mirror/non-mirror gap reinforces this picture: top-1 is 6.8\% on mirror matchups (common archetypes with established lead patterns) but 3.8\% on novel ones---the model learns convention, and convention requires repeated observation.
 
