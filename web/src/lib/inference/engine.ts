@@ -2,6 +2,10 @@
 // aggregates softmax probabilities for the 90-way action prediction.
 
 import * as ort from "onnxruntime-web";
+
+// Suppress harmless "Unknown CPU vendor" warning in WSL2/virtualized environments.
+ort.env.logSeverityLevel = 3;
+
 import type {
   TeamSheet,
   PredictionResult,
