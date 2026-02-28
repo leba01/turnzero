@@ -136,6 +136,88 @@ class TemperatureScaler:
 # Logit collection helper
 # ---------------------------------------------------------------------------
 
+def run_calibrate(model_ckpt: str, val_split: str, out_dir: str) -> None:
+    """Fit temperature scaling on a validation set and save artifacts.
+
+    Args:
+        model_ckpt: Path to model checkpoint (best.pt).
+        val_split: Path to val.jsonl for fitting temperature.
+        out_dir: Output directory for temperature.json and calibration report.
+    """
+    from turnzero.data.dataset import VGCDataset, Vocab
+    from turnzero.models.transformer import ModelConfig, OTSTransformer
+
+    out_path = Path(out_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Device: {device}")
+
+    # --- Load checkpoint ---
+    ckpt = torch.load(model_ckpt, map_location=device, weights_only=False)
+    model_cfg = ModelConfig(**ckpt["model_config"])
+    model = OTSTransformer(ckpt["vocab_sizes"], model_cfg)
+    model.load_state_dict(ckpt["model_state_dict"])
+    model = model.to(device)
+    model.eval()
+
+    # --- Load vocab ---
+    ckpt_dir = Path(model_ckpt).parent
+    vocab_path = ckpt_dir / "vocab.json"
+    if not vocab_path.exists():
+        vocab_path = Path(ckpt["config"]["data"]["split_dir"]) / "vocab.json"
+    vocab = Vocab.load(vocab_path)
+
+    # --- Build val loader ---
+    val_ds = VGCDataset(val_split, vocab)
+    batch_size = ckpt["config"]["training"]["batch_size"]
+    num_workers = ckpt["config"]["training"]["num_workers"]
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True,
+        drop_last=False,
+    )
+    print(f"Val: {len(val_ds):,} examples, {len(val_loader)} batches")
+
+    # --- Collect logits ---
+    print("Collecting logits ...")
+    logits, labels_dict = collect_logits(model, val_loader, device)
+    print(f"Logits shape: {logits.shape}")
+
+    # --- Fit temperature on Tier 1 subset (bring4_observed) ---
+    tier1 = labels_dict["bring4_observed"].astype(bool)
+    logits_t1 = logits[tier1]
+    labels_t1 = labels_dict["action90_true"][tier1]
+    print(f"Tier 1 examples for fitting: {tier1.sum():,}")
+
+    scaler = TemperatureScaler()
+    report = scaler.fit(logits_t1, labels_t1)
+
+    # --- Save artifacts ---
+    scaler.save(out_path / "temperature.json")
+
+    report_path = out_path / "calibration_report.json"
+    with open(report_path, "w") as f:
+        json.dump(report, f, indent=2)
+
+    # --- Print summary ---
+    print(f"\n{'─' * 50}")
+    print(f"Fitted temperature:  T = {report['T']:.4f}")
+    print(f"Val NLL  before/after: {report['val_nll_before']:.4f} → {report['val_nll_after']:.4f}")
+    print(f"Val ECE  before/after: {report['val_ece_before']:.4f} → {report['val_ece_after']:.4f}")
+    print(f"{'─' * 50}")
+    print(f"Saved temperature.json to {out_path / 'temperature.json'}")
+    print(f"Saved calibration_report.json to {report_path}")
+
+
+# ---------------------------------------------------------------------------
+# Logit collection helper
+# ---------------------------------------------------------------------------
+
+
 @torch.no_grad()
 def collect_logits(
     model: nn.Module,

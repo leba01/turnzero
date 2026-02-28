@@ -122,82 +122,8 @@ def eval_cmd(model_ckpt: str, test_split: str, out_dir: str) -> None:
               help="Output directory for temperature.json and calibration report.")
 def calibrate_cmd(model_ckpt: str, val_split: str, out_dir: str) -> None:
     """Fit temperature scaling on validation set."""
-    import json as _json
-    from pathlib import Path
-
-    import numpy as np
-    import torch
-
-    from turnzero.data.dataset import VGCDataset, Vocab
-    from turnzero.models.transformer import ModelConfig, OTSTransformer
-    from turnzero.uq.temperature import TemperatureScaler, collect_logits
-
-    out_path = Path(out_dir)
-    out_path.mkdir(parents=True, exist_ok=True)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    click.echo(f"Device: {device}")
-
-    # --- Load checkpoint ---
-    ckpt = torch.load(model_ckpt, map_location=device, weights_only=False)
-    model_cfg = ModelConfig(**ckpt["model_config"])
-    model = OTSTransformer(ckpt["vocab_sizes"], model_cfg)
-    model.load_state_dict(ckpt["model_state_dict"])
-    model = model.to(device)
-    model.eval()
-
-    # --- Load vocab ---
-    ckpt_dir = Path(model_ckpt).parent
-    vocab_path = ckpt_dir / "vocab.json"
-    if not vocab_path.exists():
-        vocab_path = Path(ckpt["config"]["data"]["split_dir"]) / "vocab.json"
-    vocab = Vocab.load(vocab_path)
-
-    # --- Build val loader ---
-    from torch.utils.data import DataLoader
-
-    val_ds = VGCDataset(val_split, vocab)
-    batch_size = ckpt["config"]["training"]["batch_size"]
-    num_workers = ckpt["config"]["training"]["num_workers"]
-    val_loader = DataLoader(
-        val_ds,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=True,
-        drop_last=False,
-    )
-    click.echo(f"Val: {len(val_ds):,} examples, {len(val_loader)} batches")
-
-    # --- Collect logits ---
-    click.echo("Collecting logits ...")
-    logits, labels_dict = collect_logits(model, val_loader, device)
-    click.echo(f"Logits shape: {logits.shape}")
-
-    # --- Fit temperature on Tier 1 subset (bring4_observed) ---
-    tier1 = labels_dict["bring4_observed"].astype(bool)
-    logits_t1 = logits[tier1]
-    labels_t1 = labels_dict["action90_true"][tier1]
-    click.echo(f"Tier 1 examples for fitting: {tier1.sum():,}")
-
-    scaler = TemperatureScaler()
-    report = scaler.fit(logits_t1, labels_t1)
-
-    # --- Save artifacts ---
-    scaler.save(out_path / "temperature.json")
-
-    report_path = out_path / "calibration_report.json"
-    with open(report_path, "w") as f:
-        _json.dump(report, f, indent=2)
-
-    # --- Print summary ---
-    click.echo(f"\n{'─' * 50}")
-    click.echo(f"Fitted temperature:  T = {report['T']:.4f}")
-    click.echo(f"Val NLL  before/after: {report['val_nll_before']:.4f} → {report['val_nll_after']:.4f}")
-    click.echo(f"Val ECE  before/after: {report['val_ece_before']:.4f} → {report['val_ece_after']:.4f}")
-    click.echo(f"{'─' * 50}")
-    click.echo(f"Saved temperature.json to {out_path / 'temperature.json'}")
-    click.echo(f"Saved calibration_report.json to {report_path}")
+    from turnzero.uq.temperature import run_calibrate
+    run_calibrate(model_ckpt, val_split, out_dir)
 
 
 @cli.command("demo")
