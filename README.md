@@ -4,10 +4,14 @@
 
 Lucas Brennan-Almaraz · Stanford CS229 · Winter 2025--26
 
-[[Paper (PDF)]](paper/turnzero.pdf) · [[Live Demo]](https://turnzero.vercel.app) · [[Dataset (HuggingFace)]](https://huggingface.co/datasets/cameronangliss/vgc-battle-logs)
+[[Paper (PDF)]](paper/turnzero.pdf) · [[Dataset (HuggingFace)]](https://huggingface.co/datasets/cameronangliss/vgc-battle-logs) · <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License"/>
+  <a href="https://turnzero.vercel.app">
+    <img src="https://img.shields.io/badge/LIVE_DEMO_%E2%86%92-turnzero.vercel.app-b91c1c?style=for-the-badge&labelColor=1a1a2e" alt="Live Demo" height="32"/>
+  </a>
+  <br/>
+  <sub>no install · runs in your browser</sub>
 </p>
 
 ---
