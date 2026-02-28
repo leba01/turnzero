@@ -47,6 +47,7 @@ const SENSITIVITY_GROUPS: Record<keyof FeatureSensitivity, number[]> = {
 
 export class InferenceEngine {
   private sessions: ort.InferenceSession[] = [];
+  private static _wasmConfigured = false;
 
   /** Whether all models are loaded and ready. */
   get isReady(): boolean {
@@ -60,6 +61,12 @@ export class InferenceEngine {
   async load(
     onProgress: (loaded: number, total: number) => void,
   ): Promise<void> {
+    // Reduce WASM memory footprint — single thread per session keeps
+    // 5 concurrent sessions within browser WASM memory limits.
+    if (!InferenceEngine._wasmConfigured) {
+      ort.env.wasm.numThreads = 1;
+      InferenceEngine._wasmConfigured = true;
+    }
     this.sessions = [];
     for (let i = 0; i < N_MODELS; i++) {
       const modelPath = MODEL_PATHS[i];
@@ -106,9 +113,16 @@ export class InferenceEngine {
     const embeddings: Float32Array[] = [];
     for (const session of this.sessions) {
       const result = await session.run({ team_a: teamATensor, team_b: teamBTensor });
-      logits.push(result.logits.data as Float32Array);
-      embeddings.push(result.embedding.data as Float32Array);
+      // Copy data out before disposing — result tensors are views into WASM heap
+      // and will be overwritten by subsequent inference calls.
+      logits.push(new Float32Array(result.logits.data as Float32Array));
+      embeddings.push(new Float32Array(result.embedding.data as Float32Array));
+      result.logits.dispose();
+      result.embedding.dispose();
     }
+
+    teamATensor.dispose();
+    teamBTensor.dispose();
 
     return { logits, embeddings };
   }
@@ -292,6 +306,14 @@ export class InferenceEngine {
     return sensitivity as unknown as FeatureSensitivity;
   }
 
+  /** Release all ONNX sessions to free WASM memory. */
+  async dispose(): Promise<void> {
+    for (const session of this.sessions) {
+      await session.release();
+    }
+    this.sessions = [];
+  }
+
   /**
    * Get the embedding from the first model for retrieval queries.
    * Returns a Float32Array of length 128.
@@ -312,6 +334,11 @@ export class InferenceEngine {
       team_b: teamBTensor,
     });
 
-    return result.embedding.data as Float32Array;
+    const embedding = new Float32Array(result.embedding.data as Float32Array);
+    result.embedding.dispose();
+    teamATensor.dispose();
+    teamBTensor.dispose();
+
+    return embedding;
   }
 }

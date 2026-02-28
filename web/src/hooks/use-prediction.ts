@@ -17,13 +17,16 @@ import { RetrievalIndex } from '@/lib/retrieval/index';
 // Module-level singleton to survive React StrictMode double-mount.
 // Without this, the second mount tries to init the ONNX WASM backend
 // while the first is still running → "Session already started" error.
-let initPromise: Promise<{
+type InitResult = {
   engine: InferenceEngine;
   vocab: VocabMap;
   lexicon: ReverseLexicon;
   pokemonData: PokemonData;
   temperature: number;
-}> | null = null;
+};
+
+let initPromise: Promise<InitResult> | null = null;
+let currentEngine: InferenceEngine | null = null;
 
 function getInitPromise(onProgress: (loaded: number, total: number) => void) {
   if (!initPromise) {
@@ -40,10 +43,27 @@ function getInitPromise(onProgress: (loaded: number, total: number) => void) {
         onProgress(loaded, total);
       });
 
+      currentEngine = engine;
       return { engine, vocab, lexicon, pokemonData: pd, temperature: tempData.T };
     })();
   }
   return initPromise;
+}
+
+/** Release ONNX sessions and reset singleton. Called on HMR dispose. */
+async function cleanup() {
+  if (currentEngine) {
+    await currentEngine.dispose();
+    currentEngine = null;
+  }
+  initPromise = null;
+}
+
+// HMR cleanup — release WASM memory when module is replaced during dev.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const hmr = (import.meta as any).hot ?? (typeof module !== 'undefined' && (module as any).hot);
+if (hmr) {
+  hmr.dispose(() => { cleanup(); });
 }
 
 export function usePrediction(onReady?: () => void) {
@@ -58,6 +78,7 @@ export function usePrediction(onReady?: () => void) {
   const temperatureRef = useRef<number>(1.0);
   const retrievalRef = useRef<RetrievalIndex | null>(null);
   const retrievalLoadingRef = useRef(false);
+  const predictionGenRef = useRef(0);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
 
@@ -108,38 +129,40 @@ export function usePrediction(onReady?: () => void) {
       const lexicon = lexiconRef.current;
       if (!engine || !vocab || !lexicon) return;
 
+      const gen = ++predictionGenRef.current;
       setPredicting(true);
       setResult(null);
 
       try {
         const T = temperatureRef.current;
         const prediction = await engine.fullPredict(teamA, teamB, vocab, lexicon, T);
+        if (predictionGenRef.current !== gen) return; // superseded by newer prediction
         setResult(prediction);
 
         // Fire-and-forget: sensitivity
         const teamAEnc = encodeTeam(vocab, teamA);
         const teamBEnc = encodeTeam(vocab, teamB);
         engine.computeSensitivity(teamAEnc, teamBEnc, T).then((sensitivity: FeatureSensitivity) => {
+          if (predictionGenRef.current !== gen) return;
           setResult((prev) => (prev ? { ...prev, sensitivity } : null));
         });
 
         // Fire-and-forget: retrieval
         loadRetrieval().then(async () => {
+          if (predictionGenRef.current !== gen) return;
           const index = retrievalRef.current;
-          if (!index) {
-            setResult((prev) => prev); // No change — evidence stays null
-            return;
-          }
+          if (!index) return;
           const embedding = await engine.getEmbedding(teamAEnc, teamBEnc);
-          if (!embedding) return;
+          if (predictionGenRef.current !== gen) return;
           const neighbors = index.query(embedding, 10);
           const evidence: RetrievalEvidence = index.evidenceSummary(neighbors);
+          if (predictionGenRef.current !== gen) return;
           setResult((prev) => (prev ? { ...prev, evidence } : null));
         });
       } catch (err) {
         console.error('Prediction failed:', err);
       } finally {
-        setPredicting(false);
+        if (predictionGenRef.current === gen) setPredicting(false);
       }
     },
     [loadRetrieval],
