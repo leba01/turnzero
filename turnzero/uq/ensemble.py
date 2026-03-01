@@ -32,6 +32,9 @@ def _load_model_from_checkpoint(
     if arch == "hierarchical":
         from turnzero.models.hierarchical import HierarchicalDualEncoder
         return HierarchicalDualEncoder.load_from_checkpoint(ckpt_path, device)
+    if arch == "sequential":
+        from turnzero.models.sequential_transformer import SequentialOTSTransformer
+        return SequentialOTSTransformer.load_from_checkpoint(ckpt_path, device)
     return OTSTransformer.load_from_checkpoint(ckpt_path, device)
 
 
@@ -64,7 +67,15 @@ def _collect_probs(
         team_b = batch["team_b"].to(device, non_blocking=True)
 
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            logits = model(team_a, team_b)
+            if "prior_lead2_idx" in batch:
+                logits = model(
+                    team_a, team_b,
+                    prior_lead2_idx=batch["prior_lead2_idx"].to(device),
+                    prior_result=batch["prior_result"].to(device),
+                    game_num=batch["game_num"].to(device),
+                )
+            else:
+                logits = model(team_a, team_b)
 
         # Softmax in FP32
         probs = torch.softmax(logits.float(), dim=-1).cpu().numpy()

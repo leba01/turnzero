@@ -163,7 +163,15 @@ def train_one_epoch(
         optimizer.zero_grad(set_to_none=True)
 
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            logits = model(team_a, team_b)
+            if "prior_lead2_idx" in batch:
+                logits = model(
+                    team_a, team_b,
+                    prior_lead2_idx=batch["prior_lead2_idx"].to(device),
+                    prior_result=batch["prior_result"].to(device),
+                    game_num=batch["game_num"].to(device),
+                )
+            else:
+                logits = model(team_a, team_b)
             loss = _compute_loss(
                 logits, action90_labels, criterion, batch, device,
                 loss_mode, margin_matrix,
@@ -219,7 +227,15 @@ def validate(
         action90_labels = batch["action90_label"].to(device, non_blocking=True)
 
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            logits = model(team_a, team_b)
+            if "prior_lead2_idx" in batch:
+                logits = model(
+                    team_a, team_b,
+                    prior_lead2_idx=batch["prior_lead2_idx"].to(device),
+                    prior_result=batch["prior_result"].to(device),
+                    game_num=batch["game_num"].to(device),
+                )
+            else:
+                logits = model(team_a, team_b)
             loss = _compute_loss(
                 logits, action90_labels, criterion, batch, device,
                 loss_mode, margin_matrix,
@@ -286,13 +302,24 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
 
     # --- Data ---
     split_dir = cfg_data["split_dir"]
+    context_path = cfg_data.get("context_path")
     print(f"Loading data from {split_dir} ...")
-    train_loader, val_loader, test_loader, vocab = build_dataloaders(
-        split_dir=split_dir,
-        batch_size=cfg_train["batch_size"],
-        num_workers=cfg_train["num_workers"],
-        tier1_only=(loss_mode == "tier1_only"),
-    )
+    if context_path:
+        from turnzero.data.sequential_dataset import build_sequential_dataloaders
+        train_loader, val_loader, test_loader, vocab = build_sequential_dataloaders(
+            split_dir=split_dir,
+            batch_size=cfg_train["batch_size"],
+            num_workers=cfg_train["num_workers"],
+            tier1_only=(loss_mode == "tier1_only"),
+            context_path=context_path,
+        )
+    else:
+        train_loader, val_loader, test_loader, vocab = build_dataloaders(
+            split_dir=split_dir,
+            batch_size=cfg_train["batch_size"],
+            num_workers=cfg_train["num_workers"],
+            tier1_only=(loss_mode == "tier1_only"),
+        )
     print(f"Vocab: {vocab}")
     print(f"Train: {len(train_loader.dataset):,} examples, {len(train_loader)} batches")
     print(f"Val:   {len(val_loader.dataset):,} examples, {len(val_loader)} batches")
@@ -314,6 +341,17 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
             dropout=cfg_model["dropout"],
         )
         model = HierarchicalDualEncoder(vocab.vocab_sizes, model_cfg)
+    elif arch == "sequential":
+        from turnzero.models.sequential_transformer import SequentialConfig, SequentialOTSTransformer
+        model_cfg = SequentialConfig(
+            d_model=cfg_model["d_model"],
+            n_layers=cfg_model["n_layers"],
+            n_heads=cfg_model["n_heads"],
+            d_ff=cfg_model["d_ff"],
+            dropout=cfg_model["dropout"],
+            pool=cfg_model["pool"],
+        )
+        model = SequentialOTSTransformer(vocab.vocab_sizes, model_cfg)
     else:
         model_cfg = ModelConfig(
             d_model=cfg_model["d_model"],
@@ -336,7 +374,15 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
         _dummy_a = torch.zeros(1, 6, 8, dtype=torch.long, device=device)
         _dummy_b = torch.zeros(1, 6, 8, dtype=torch.long, device=device)
         with torch.no_grad(), torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            compiled_model(_dummy_a, _dummy_b)
+            if arch == "sequential":
+                compiled_model(
+                    _dummy_a, _dummy_b,
+                    prior_lead2_idx=torch.tensor([15], device=device),
+                    prior_result=torch.tensor([0], device=device),
+                    game_num=torch.tensor([0], device=device),
+                )
+            else:
+                compiled_model(_dummy_a, _dummy_b)
         del _dummy_a, _dummy_b
         print("torch.compile() applied")
     except Exception as e:
@@ -534,6 +580,10 @@ def evaluate_checkpoint(
         from turnzero.models.hierarchical import HierarchicalConfig, HierarchicalDualEncoder
         model_cfg = HierarchicalConfig(**model_config)
         model = HierarchicalDualEncoder(vocab_sizes, model_cfg)
+    elif arch == "sequential":
+        from turnzero.models.sequential_transformer import SequentialConfig, SequentialOTSTransformer
+        model_cfg = SequentialConfig(**model_config)
+        model = SequentialOTSTransformer(vocab_sizes, model_cfg)
     else:
         model_cfg = ModelConfig(**model_config)
         model = OTSTransformer(vocab_sizes, model_cfg)
