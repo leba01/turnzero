@@ -24,8 +24,11 @@ paper/*.pdf
 
 # Internal docs (stay on disk, not in public repo)
 CLAUDE.md
+LAPTOP_CLAUDE_MEMO.md
 docs/HISTORY.md
 docs/DECISIONS.md
+docs/FINAL_PUSH.md
+docs/COMPASS.md
 
 # Build caches
 web/tsconfig.tsbuildinfo
