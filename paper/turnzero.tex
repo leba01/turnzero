@@ -16,6 +16,7 @@ I train a 5-member deep ensemble of permutation-invariant transformers on 382K e
 The ensemble covers 50\% of expert actions by its 17th-ranked prediction (vs.\ 45th random), is well-calibrated (adaptive ECE $= 0.012$), and automatically doubles its abstention rate on unseen team archetypes (AUROC $= 0.80$).
 When all five members agree (5.8\% of examples), accuracy reaches 16.6\%---nearly 3$\times$ the aggregate; when they fully disagree, it drops to 3.1\%, indicating no historical consensus.
 Per-team analysis reveals that predictability is driven by mechanical constraints (commander teams: 50\% top-1) rather than strategic reasoning (flexible teams: 0\% top-1).
+Opponent ablation shows matchup conditioning contributes only 1.3 percentage points---the model primarily learns team-specific convention---and conditioning on best-of-three game history recovers +3.6pp on later games, primarily after wins, confirming an asymmetric adaptation ceiling.
 \end{abstract}
 
 
@@ -38,8 +39,8 @@ I present TurnZero, which treats team preview as 90-way classification with an u
 The system is built on four claims:
 \begin{enumerate}
     \item Per-team analysis reveals that the 6.4\% aggregate top-1 masks a heterogeneous landscape: mechanically constrained teams reach 50\% top-1 while flexible teams reach 0\%, driven by game-rule constraints (Commander ability), not strategic reasoning (speed control: $\Delta H = 0.016$ nats, null).
-    \item Within-set adaptation creates irreducible label noise---players change leads 59\% of the time between games, 72\% after a loss---and a +34\% parameter architecture ablation confirms the model is at the noise ceiling, not the capacity ceiling.
-    \item A permutation-invariant transformer ensemble trained on 382K replays learns matchup-specific signal above baselines: its top-17 predictions cover 50\% of expert actions (2.6$\times$ uniform). The architecture avoids by construction the positional leakage that inflated prior work from 99.9\% to 79\% after correction.
+    \item Within-set adaptation creates irreducible label noise---players change leads 59\% of the time between games, 72\% after a loss---and a +34\% parameter architecture ablation confirms the model is at the noise ceiling, not the capacity ceiling. Opponent ablation confirms only 1.3pp comes from matchup conditioning; conditioning on best-of-three game history recovers +3.6pp on later games primarily after wins, establishing an asymmetric adaptation ceiling at ${\sim}$9.4\% top-1.
+    \item A permutation-invariant transformer ensemble trained on 382K replays learns matchup-specific signal above baselines: its top-17 predictions cover 50\% of expert actions (2.6$\times$ uniform), and distributional evaluation (JSD) confirms it is a genuine mixed-strategy estimator that beats all baselines including team-specific marginals. The architecture avoids by construction the positional leakage that inflated prior work from 99.9\% to 79\% after correction.
     \item Standard UQ techniques (calibration, selective prediction, OOD detection via mutual information) are applied; the ensemble is well-calibrated (adaptive ECE $= 0.012$) though typical confidence is low (median 4.5\%) and calibration degrades on OOD data (ECE: $0.012 \to 0.076$).
 \end{enumerate}
 
@@ -118,7 +119,6 @@ Each member converges in ${\sim}$8 epochs (${\sim}$5 min on a single RTX 4080 Su
 \subsection{Selective Prediction}
 
 Given a confidence threshold $\tau$, the system abstains when $\max_a \bar{p}(a) < \tau$, trading coverage for accuracy~\cite{selectivepred}.
-The risk-coverage curve and its area (AURC) summarize this tradeoff.
 
 
 %=============================================================================
@@ -176,28 +176,14 @@ Experts agree on \emph{what} to bring but disagree about \emph{who leads}---brin
 
 \begin{figure}[t]
     \centering
-    \begin{subfigure}[t]{0.48\columnwidth}
-        \includegraphics[width=\textwidth]{figures/reliability_diagram.pdf}
-        \caption{Reliability diagram (adaptive ECE $= 0.012$).}
-        \label{fig:reliability}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[t]{0.48\columnwidth}
-        \includegraphics[width=\textwidth]{figures/risk_coverage_top1.pdf}
-        \caption{Risk-coverage curve (AURC $= 0.890$).}
-        \label{fig:riskcov}
-    \end{subfigure}
-    \caption{\textbf{(a)}~Predicted confidence tracks observed accuracy (adaptive ECE $= 0.012$). A caveat: only 6\% of predictions exceed 10\% confidence, so the calibrated output is typically a gently peaked distribution rather than a sharp recommendation. \textbf{(b)}~Selective prediction: the ensemble achieves lower error at every coverage level. AURC: 0.890 (ensemble) vs.\ 0.953 (logistic).}
-    \label{fig:calibration}
+    \includegraphics[width=0.68\columnwidth]{figures/reliability_diagram.pdf}
+    \caption{Predicted confidence tracks observed accuracy (adaptive ECE $= 0.012$). A caveat: only 6\% of predictions exceed 10\% confidence, so the calibrated output is typically a gently peaked distribution rather than a sharp recommendation.}
+    \label{fig:reliability}
 \end{figure}
 
 Figure~\ref{fig:reliability} shows the ensemble's predicted confidence closely tracks observed accuracy (adaptive ECE $= 0.012$ with equal-mass binning~\cite{nixon2019}).
 Post-hoc temperature scaling yielded $T = 1.158$ (near-identity), confirming the ensemble is already well-calibrated; it is omitted from the final system.
 A caveat: on a 90-class problem with high intrinsic uncertainty, most predictions are near-uniform (median confidence 4.5\%, only 6\% exceed 10\%), so calibration is most informative for the minority of predictions where the model concentrates mass on a few actions.
-
-Figure~\ref{fig:riskcov} shows the selective prediction tradeoff.
-The ensemble's AURC of 0.890 (E-AURC $= 0.452$) vs.\ 0.953 for logistic regression confirms that ensembling improves not just accuracy but the model's ability to rank its own predictions by reliability.
-
 
 \subsection{Ensemble Agreement and Distribution Shift}
 
@@ -265,9 +251,45 @@ Table~\ref{tab:stress} shows that moves carry the dominant signal.
 Masking all four drops top-3 from 15.5\% to 3.2\%---near the popularity baseline's 3.9\%.
 Items and tera type each cost ${\sim}$3pp individually.
 The ``all except species'' row shows that species names alone carry almost no predictive signal beyond random (1.2\% vs.\ 1.1\%)---unsurprising because species is merely a label; the game-relevant information is fully captured by moves, ability, item, and tera type.
-We therefore exclude species from the per-matchup feature sensitivity analysis in the demo tool.
 
 The mirror/non-mirror gap reinforces this picture: top-1 is 6.8\% on mirror matchups (common archetypes with established lead patterns) but 3.8\% on novel ones---the model learns convention, and convention requires repeated observation.
+
+\subsection{Opponent Ablation}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.68\columnwidth]{figures/opponent_ablation.pdf}
+    \caption{Removing the opponent's team (all features $\to$ UNK) costs only 1.3pp top-1; removing the player's own team collapses accuracy to random. Essentially all predictive signal resides in the player's own team composition.}
+    \label{fig:ablation}
+\end{figure}
+
+Figure~\ref{fig:ablation} shows that removing the opponent's team at inference time costs only 1.3pp top-1 (6.4\%~$\to$~5.1\%, NLL $4.031 \to 4.125$), while removing the player's own team collapses accuracy to 1.1\% (NLL $4.730$)---indistinguishable from uniform random.
+The model retains ${\sim}$80\% of its performance from self-team features alone, learning \emph{what this team usually does} rather than \emph{how it responds to a specific opponent}.
+This is the strongest direct evidence that the accuracy ceiling is structural: even a perfect matchup-conditional model would gain little, because the opponent signal contributes only ${\sim}$1.3pp above marginal team habits.
+
+\subsection{Distributional Evaluation}
+
+\begin{table}[t]
+\centering
+\caption{Jensen-Shannon divergence (JSD, $\downarrow$) between each method's predicted distribution and the empirical population distribution, computed on well-sampled matchups ($n \geq 10$).}
+\label{tab:jsd}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Method} & \textbf{Action-90} & \textbf{Lead-2} \\
+\midrule
+\textbf{Ensemble} & \textbf{0.328} & \textbf{0.159} \\
+Team-A marginal & 0.359 & 0.183 \\
+Popularity prior & 0.480 & 0.261 \\
+Uniform & 0.484 & 0.264 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Top-1 accuracy penalizes a model for distributional correctness in a multi-modal domain.
+Table~\ref{tab:jsd} evaluates each method as a \emph{distributional} estimator via Jensen-Shannon divergence against the empirical population distribution on well-sampled matchups.
+The ensemble beats all baselines at both granularities; the gap over the team-A marginal (0.328 vs.\ 0.359 on action-90) confirms the model learns some matchup-conditional structure, even though opponent ablation shows this contributes little to point accuracy.
+The model extracts a small but real distributional signal from matchup context that does not manifest as top-1 improvement because the action space is too entropic for distributional gains to concentrate on the mode.
 
 
 %=============================================================================
@@ -283,21 +305,29 @@ No turn-zero model can capture this within-set adaptation, establishing a princi
 Replacing the flat self-attention architecture with a hierarchical cross-attention variant (1.56M params, +34\%) produced identical accuracy ($\pm$0.3pp), consistent with this ceiling.
 Paradoxically, stronger players likely make the problem \emph{harder}: a player who always leads the same comfort pick is trivially predictable, while one who adapts to reads, metagame shifts, and mid-set information introduces exactly the kind of decision variance that no team-sheet-only model can resolve.
 
-\textbf{Convention, not strategy.}
-The mirror/non-mirror gap (6.8\% vs.\ 3.8\%) and the entropy-accuracy correlation both point to the same conclusion: the model learns what experts \emph{typically} do with familiar teams, not what they \emph{should} do against specific opponents.
-This is a limitation for opponent-adaptive strategy, but it is also a characterization of what 382K replays contain: convention, not strategy.
-The model surfaces the empirical distribution of expert choices---which teams have established lead conventions and which do not---rather than computing game-theoretic best responses.
+\textbf{Convention, not strategy---but the distribution is genuine.}
+The mirror/non-mirror gap (6.8\% vs.\ 3.8\%), the entropy-accuracy correlation, and the opponent ablation ($-$1.3pp) all point to the same conclusion: the model learns what experts \emph{typically} do with familiar teams, not what they \emph{should} do against specific opponents.
+Stratifying by population consensus sharpens this: on high-consensus matchups the ensemble reaches 14.8\% top-1 and 37.0\% top-3; on zero-consensus matchups it drops to 0\%.
+The model is not failing---it correctly reflects population-level uncertainty.
+This reframes ``6.4\% is bad'' into ``6.4\% is what distributional accuracy looks like when experts genuinely disagree.''
+Distributionally, the ensemble beats the team-A marginal (JSD 0.328 vs.\ 0.359) even though point accuracy barely changes when the opponent is removed---the model extracts real matchup-conditional signal that improves distributional fit without concentrating enough mass to move the mode.
 
 \textbf{Engineering matters.}
 The leakage-safe architecture (avoiding the 99.9\%$\to$79\% collapse in~\cite{elitefurretai}), Tier~1/2 observability delineation, and cluster-aware bootstrap had outsized impact on producing trustworthy results.
 These methodological choices, not architecture, were the hard problems.
+
+\textbf{Within-set history partially breaks the ceiling.}
+A natural question is whether conditioning on prior game context---outcome and observed leads---can recover some of the ``irreducible'' label noise.
+A sequential variant (+2,816 parameters, $<$0.3\% overhead) that embeds game number, prior result, and prior lead pair as a context token recovers +3.55pp on Games~2--3 (5.87\%~$\to$~9.42\% top-1; Figure~\ref{fig:sequential}), but with a striking asymmetry: after wins the gain is +6--8pp (winners repeat what worked), while after losses it is ${\leq}$1pp (+1.1pp on Game~2, $-$0.1pp on Game~3)---losers improvise unpredictably.
+Game~1 accuracy is unchanged (6.41\% vs.\ 6.64\%), confirming the sentinel mechanism introduces no phantom signal.
+Even with history, the sequential model reaches only 9.4\% top-1---the ceiling is lowered but not broken.
+The after-loss subset, where 72\% of lead changes occur, remains genuinely irreducible: the most adaptation-heavy games are where prediction fails, connecting the statistical observation (label noise) to a concrete behavioral mechanism (winners repeat, losers improvise).
 
 \textbf{Limitations.}
 Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]).
 Calibration degrades on OOD data (ECE: $0.012 \to 0.076$).
 The model is on average \emph{worse} than a per-team mode lookup ($-6.8$pp gap across 153 archetypes); its potential value over simple frequency tables lies in calibrated probabilities across the full 90-action space, but this has not been validated with actual users.
 Training data is exclusively best-of-three tournament play; ladder games were deliberately excluded to match deployment conditions but limit data scale.
-Whether the multi-modality ceiling would shift with substantially more data or with conditioning on within-set history (game 1 outcome, prior lead choices) remains untested.
 
 \textbf{Contributions.}
 Solo project.
@@ -317,30 +347,32 @@ Three loss modes were compared across 5-member ensembles: (a)~standard cross-ent
 Differences were $\leq$0.6pp top-1 (a:~6.4\%, b:~6.5\%, c:~5.9\%).
 Dropping 20\% of data hurts more than the noise does.
 
-\textbf{A2. Architecture does not matter (hierarchical ablation).}
-Replacing flat 12-token self-attention with a hierarchical design---shared intra-team encoder (2 layers, 6 tokens per team) followed by bidirectional cross-attention (2 layers)---yielded 1.56M parameters (+34\%) and identical performance ($\pm$0.3pp across all metrics).
-This is consistent with the multi-modality ceiling: with 59\% within-set lead changes, the binding constraint is label noise, not model expressiveness.
-
-\textbf{A3. The metagame is a small-world network.}
+\textbf{A2. The metagame is a small-world network.}
 The species-overlap clustering ($\geq$4-of-6 shared $\to$ connected components) places 91\% of test data in a single mega-cluster.
 This is not a bug: hub species (Incineroar 37\%, Urshifu-Rapid-Strike 38\%, Rillaboom 29\%) create transitive bridges through the union-find, producing one giant connected component.
 Only 1.8\% of random team pairs share $\geq$4 species directly, but the small-world structure connects nearly everything.
 This motivated the switch to exact species-6 composition for per-team analysis (153 archetypes with $\geq$20 Tier~1 examples).
 
-\textbf{A4. Per-team extremes.}
+\textbf{A3. Per-team extremes.}
 The most predictable teams are mechanically constrained: Dondozo commander variants reach 50\% top-1 ($H = 3.10$), and a Trick Room team with Lunala/Torkoal reaches 32\% ($H = 3.53$).
 At the other extreme, 22 of 153 teams (14\%) have 0\% top-1 accuracy---the model never predicts the expert's exact action.
 The worst large team is Gothitelle/Incineroar/Kyogre/Raging Bolt/Rillaboom/Scream Tail ($n{=}193$, 0.5\% top-1, $H = 4.22$).
 
-\textbf{A5. Confidence in a 90-class world.}
+\textbf{A4. Confidence in a 90-class world.}
 Mean confidence (max predicted probability) is 5.3\%, median 4.5\%, maximum 38.1\%.
 Only 6\% of predictions exceed 10\% confidence; 0.8\% exceed 20\%.
 This is expected for a 90-class problem with high intrinsic uncertainty---even the model's ``most confident'' prediction assigns less than 40\% to a single action.
 
-\textbf{A6. The model tracks the mode, not the matchup.}
-Per-team accuracy correlates with action-mode frequency ($r = 0.55$): for the most predictable teams, the model's top-1 prediction matches the per-team mode action.
-The mean accuracy-minus-mode-frequency gap across 153 teams is $-6.8$pp---the model is on average \emph{worse} than a simple per-team mode lookup.
-Whether calibrated probabilities across all 90 actions offer practical value over a simple mode lookup remains an open question.
+\textbf{A5. Sequential model by stratum.}
+Figure~\ref{fig:sequential} breaks down the base vs.\ sequential model comparison by game number and prior outcome.
+The asymmetry is stark: after wins the sequential model nearly doubles top-1 accuracy, while after losses it provides little benefit.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.68\columnwidth]{figures/sequential_bo3_comparison.pdf}
+    \caption{Base vs.\ sequential model top-1 accuracy by game number and prior outcome. The +3.55pp gain on Games~2--3 comes almost entirely from post-win games; post-loss games remain near baseline.}
+    \label{fig:sequential}
+\end{figure}
 
 
 %=============================================================================
