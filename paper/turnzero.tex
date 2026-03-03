@@ -355,8 +355,9 @@ The after-loss subset, where 72\% of lead changes occur, remains genuinely irred
 \textbf{Limitations.}
 Bootstrap CIs are wide (top-1: [2.6\%, 6.6\%]).
 Calibration degrades on OOD data (ECE: $0.012 \to 0.076$).
-The model is on average \emph{worse} than a per-team mode lookup ($-6.8$pp gap across 153 archetypes); its potential value over simple frequency tables lies in calibrated probabilities across the full 90-action space, but this has not been validated with actual users.
+The model underperforms a per-team mode lookup by 6.8pp across 153 archetypes; its potential value over simple frequency tables lies in calibrated probabilities across the full 90-action space, but this remains unvalidated in deployment.
 Training data is exclusively best-of-three tournament play; ladder games were deliberately excluded to match deployment conditions but limit data scale.
+Results are specific to Regulation~G; whether multi-modality patterns generalize to other formats is untested.
 
 \textbf{Contributions.}
 Solo project.
