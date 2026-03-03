@@ -1,12 +1,40 @@
-\documentclass[11pt]{article}
-\usepackage{cs229}
-\usepackage{subcaption}
+\documentclass{article}
 
-\title{TurnZero: Uncertainty-Aware Team Preview Prediction\\for Competitive Pok\'emon VGC}
-\author{Lucas Brennan-Almaraz}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[numbers,sort&compress]{natbib}
+
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage[accepted]{icml2018}
+
+\icmltitlerunning{Turn Zero: The Noise of Convention When Experts Disagree}
 
 \begin{document}
-\maketitle
+
+\twocolumn[
+\icmltitle{Turn Zero: The Noise of Convention\\When Experts Disagree}
+
+\begin{icmlauthorlist}
+\icmlauthor{Lucas Brennan-Almaraz}{su}
+\end{icmlauthorlist}
+
+\icmlcorrespondingauthor{Lucas Brennan-Almaraz}{leba@stanford.edu}
+
+\icmlaffiliation{su}{Department of Computer Science, Stanford University, Stanford, CA, USA}
+
+\icmlkeywords{uncertainty quantification, deep ensembles, competitive games, Pokemon}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{\emph{CS229: Machine Learning --- Stanford University, Winter 2025--26.}}
 
 \begin{abstract}
 In competitive Pok\'emon VGC, each player privately selects which 4 of 6 Pok\'emon to bring and which 2 to lead---a 90-way decision made from Open Team Sheets before any battle begins.
@@ -134,18 +162,19 @@ All results are on Regime~A test data, Tier~1 only ($n{=}$32,328), unless noted.
 \centering
 \caption{Test performance (Regime A, Tier 1). Top-$k$ accuracy (\%, $\uparrow$), NLL ($\downarrow$), adaptive ECE ($\downarrow$, equal-mass binning~\cite{nixon2019}). Bootstrap 95\% CIs are cluster-aware ($B{=}$1000).}
 \label{tab:main}
-\small
-\begin{tabular}{@{}lrcccc@{}}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrcccr@{}}
 \toprule
 \textbf{Model} & \textbf{Params} & \textbf{Top-1} & \textbf{Top-3} & \textbf{NLL} & \textbf{ECE} \\
 \midrule
 Random & --- & 1.1 & 3.3 & 4.500 & --- \\
-Popularity & 0 & 1.3 & 3.9 & 4.497 & 0.001 \\
-Logistic & $\sim$4K & 4.0 & 10.1 & 4.580 & 0.059 \\
-Transformer & 1.16M & 5.5 & 14.0 & 4.105 & 0.016 \\
-\textbf{Ensemble (5)} & \textbf{5.8M} & \textbf{6.4} & \textbf{15.5} & \textbf{4.031} & \textbf{0.012} \\
+Popularity & 0 & 1.3 & 3.9 & 4.497 & .001 \\
+Logistic & ${\sim}$4K & 4.0 & 10.1 & 4.580 & .059 \\
+Transformer & 1.16M & 5.5 & 14.0 & 4.105 & .016 \\
+\textbf{Ensemble} & \textbf{5.8M} & \textbf{6.4} & \textbf{15.5} & \textbf{4.031} & \textbf{.012} \\
 \midrule
-\multicolumn{2}{@{}l}{\footnotesize Ensemble 95\% CI} & \footnotesize [2.6, 6.6] & \footnotesize [6.8, 16.0] & \footnotesize [4.01, 4.43] & \footnotesize [0.002, 0.013] \\
+\multicolumn{2}{@{}l}{\scriptsize 95\% CI} & \scriptsize [2.6, 6.6] & \scriptsize [6.8, 16.0] & \scriptsize [4.01, 4.43] & \scriptsize [.002, .013] \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -158,7 +187,7 @@ The wide bootstrap CIs (top-1: [2.6\%, 6.6\%]) are not a weakness of the model b
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.68\columnwidth]{figures/topk_accuracy_curve.pdf}
+    \includegraphics[width=\columnwidth]{figures/topk_accuracy_curve.pdf}
     \caption{Cumulative coverage vs.\ $k$. The ensemble covers 50\% of expert actions by $k{=}17$ (vs.\ $k{=}45$ random), narrowing the space from 90 to 17 actions for half-coverage.}
     \label{fig:topk}
 \end{figure}
@@ -176,7 +205,7 @@ Experts agree on \emph{what} to bring but disagree about \emph{who leads}---brin
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.68\columnwidth]{figures/reliability_diagram.pdf}
+    \includegraphics[width=\columnwidth]{figures/reliability_diagram.pdf}
     \caption{Predicted confidence tracks observed accuracy (adaptive ECE $= 0.012$). A caveat: only 6\% of predictions exceed 10\% confidence, so the calibrated output is typically a gently peaked distribution rather than a sharp recommendation.}
     \label{fig:reliability}
 \end{figure}
@@ -189,7 +218,7 @@ A caveat: on a 90-class problem with high intrinsic uncertainty, most prediction
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.68\columnwidth]{figures/ensemble_agreement.pdf}
+    \includegraphics[width=\columnwidth]{figures/ensemble_agreement.pdf}
     \caption{When all 5 ensemble members agree on the same top-1 prediction (5.8\% of examples), accuracy reaches 16.6\% top-1 / 29.7\% top-3. When all 5 disagree, accuracy drops to 3.1\% / 9.0\%. Member agreement is a direct, interpretable confidence signal.}
     \label{fig:agreement}
 \end{figure}
@@ -208,12 +237,12 @@ Calibration degrades on OOD data (ECE: $0.012 \to 0.076$), a genuine limitation 
 \subsection{Per-Team Predictability}
 \label{sec:perteam}
 
-\begin{figure}[t]
+\begin{figure*}[t]
     \centering
-    \includegraphics[width=0.68\columnwidth]{figures/cluster_entropy_vs_accuracy.pdf}
+    \includegraphics[width=0.85\textwidth]{figures/cluster_entropy_vs_accuracy.pdf}
     \caption{Mean ensemble entropy vs.\ top-3 accuracy for 153 team archetypes ($\geq$20 Tier~1 examples). Point size $\propto n$. $r = {-}0.56$: teams with concentrated action distributions are easy to predict; those spreading across many viable plans are not.}
     \label{fig:entropy_scatter}
-\end{figure}
+\end{figure*}
 
 The 6.4\% aggregate top-1 is a misleading average.
 Figure~\ref{fig:entropy_scatter} groups the test set by species composition (153 archetypes with $\geq$20 examples) and reveals a strong correlation between ensemble entropy and accuracy ($r = {-}0.56$ for top-3).
@@ -258,7 +287,7 @@ The mirror/non-mirror gap reinforces this picture: top-1 is 6.8\% on mirror matc
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.68\columnwidth]{figures/opponent_ablation.pdf}
+    \includegraphics[width=\columnwidth]{figures/opponent_ablation.pdf}
     \caption{Removing the opponent's team (all features $\to$ UNK) costs only 1.3pp top-1; removing the player's own team collapses accuracy to random. Essentially all predictive signal resides in the player's own team composition.}
     \label{fig:ablation}
 \end{figure}
@@ -369,7 +398,7 @@ The asymmetry is stark: after wins the sequential model nearly doubles top-1 acc
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.68\columnwidth]{figures/sequential_bo3_comparison.pdf}
+    \includegraphics[width=\columnwidth]{figures/sequential_bo3_comparison.pdf}
     \caption{Base vs.\ sequential model top-1 accuracy by game number and prior outcome. The +3.55pp gain on Games~2--3 comes almost entirely from post-win games; post-loss games remain near baseline.}
     \label{fig:sequential}
 \end{figure}
