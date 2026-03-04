@@ -18,9 +18,10 @@ data/final/
 data/exploration/
 outputs/
 
-# Compiled paper (keep figures/)
+# Compiled paper (keep figures/ and final PDF)
 paper/*.pdf
 !paper/figures/*.pdf
+!paper/turnzero.pdf
 
 # Internal docs (stay on disk, not in public repo)
 CLAUDE.md
