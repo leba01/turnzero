@@ -246,6 +246,7 @@ Calibration degrades on OOD data (ECE: $0.012 \to 0.076$), a genuine limitation 
 
 The 6.4\% aggregate top-1 is a misleading average.
 Figure~\ref{fig:entropy_scatter} groups the test set by species composition (153 archetypes with $\geq$20 examples) and reveals a strong correlation between ensemble entropy and accuracy ($r = {-}0.56$ for top-3).
+The correlation strengthens when restricted to well-sampled archetypes ($\rho = {-}0.77$ for $n \geq 50$, 51 teams), confirming it is not a small-sample artifact.
 
 The extremes are domain-plausible.
 The most predictable teams are ``commander'' archetypes (e.g., Dondozo + Tatsugiri, $H = 3.10$, 50\% top-1) where the Commander ability mechanically requires both Pok\'emon to lead together---the game rules concentrate the action distribution into a single dominant play.
