@@ -1,0 +1,290 @@
+{
+  "strata": {
+    "game1_or_non_bo3": {
+      "base": {
+        "n": 28224,
+        "label": "game1_or_non_bo3",
+        "top1_action90": 0.06639739229024944,
+        "top3_action90": 0.15894274376417233,
+        "nll_action90": 4.03632535537835,
+        "top1_lead2": 0.20287698412698413
+      },
+      "opponent_context": {
+        "n": 28224,
+        "label": "game1_or_non_bo3",
+        "top1_action90": 0.06342120181405896,
+        "top3_action90": 0.15245890022675737,
+        "nll_action90": 4.053696089246551,
+        "top1_lead2": 0.19720804988662133
+      },
+      "sequential": {
+        "n": 28224,
+        "label": "game1_or_non_bo3",
+        "top1_action90": 0.06409438775510204,
+        "top3_action90": 0.15192743764172337,
+        "nll_action90": 4.05075156920205,
+        "top1_lead2": 0.19681831065759636
+      }
+    },
+    "game2": {
+      "base": {
+        "n": 8947,
+        "label": "game2",
+        "top1_action90": 0.06057896501620655,
+        "top3_action90": 0.14641779367385716,
+        "nll_action90": 4.032989534732889,
+        "top1_lead2": 0.19190790209008607
+      },
+      "opponent_context": {
+        "n": 8947,
+        "label": "game2",
+        "top1_action90": 0.09098021683245781,
+        "top3_action90": 0.22063261428411757,
+        "nll_action90": 3.854568199133059,
+        "top1_lead2": 0.2892589694869789
+      },
+      "sequential": {
+        "n": 8947,
+        "label": "game2",
+        "top1_action90": 0.0955627584665251,
+        "top3_action90": 0.22957415893595617,
+        "nll_action90": 3.828279017023946,
+        "top1_lead2": 0.3033419023136247
+      }
+    },
+    "game3": {
+      "base": {
+        "n": 2912,
+        "label": "game3",
+        "top1_action90": 0.052884615384615384,
+        "top3_action90": 0.14457417582417584,
+        "nll_action90": 4.050858276882887,
+        "top1_lead2": 0.17032967032967034
+      },
+      "opponent_context": {
+        "n": 2912,
+        "label": "game3",
+        "top1_action90": 0.09375,
+        "top3_action90": 0.2135989010989011,
+        "nll_action90": 3.849495221582629,
+        "top1_lead2": 0.3011675824175824
+      },
+      "sequential": {
+        "n": 2912,
+        "label": "game3",
+        "top1_action90": 0.08997252747252747,
+        "top3_action90": 0.23179945054945056,
+        "nll_action90": 3.816155710802675,
+        "top1_lead2": 0.31902472527472525
+      }
+    },
+    "games_2_3": {
+      "base": {
+        "n": 11859,
+        "label": "games_2_3",
+        "top1_action90": 0.05868960283329117,
+        "top3_action90": 0.14596508980521122,
+        "nll_action90": 4.037377238345402,
+        "top1_lead2": 0.1866093262501054
+      },
+      "opponent_context": {
+        "n": 11859,
+        "label": "games_2_3",
+        "top1_action90": 0.09166034235601653,
+        "top3_action90": 0.21890547263681592,
+        "nll_action90": 3.8533225198492365,
+        "top1_lead2": 0.29218315203642803
+      },
+      "sequential": {
+        "n": 11859,
+        "label": "games_2_3",
+        "top1_action90": 0.09419006661607218,
+        "top3_action90": 0.23012058352306267,
+        "nll_action90": 3.825302116128732,
+        "top1_lead2": 0.30719284931275825
+      }
+    },
+    "after_win_all": {
+      "base": {
+        "n": 5656,
+        "label": "after_win_all",
+        "top1_action90": 0.06364922206506365,
+        "top3_action90": 0.1562942008486563,
+        "nll_action90": 4.000476213602277,
+        "top1_lead2": 0.2003182461103253
+      },
+      "opponent_context": {
+        "n": 5656,
+        "label": "after_win_all",
+        "top1_action90": 0.12606082036775107,
+        "top3_action90": 0.29437765205091937,
+        "nll_action90": 3.6460037455766674,
+        "top1_lead2": 0.402050919377652
+      },
+      "sequential": {
+        "n": 5656,
+        "label": "after_win_all",
+        "top1_action90": 0.1295968882602546,
+        "top3_action90": 0.3099363507779349,
+        "nll_action90": 3.604291879638606,
+        "top1_lead2": 0.4252121640735502
+      }
+    },
+    "after_loss_all": {
+      "base": {
+        "n": 6203,
+        "label": "after_loss_all",
+        "top1_action90": 0.05416733838465259,
+        "top3_action90": 0.1365468321779784,
+        "nll_action90": 4.071024214961089,
+        "top1_lead2": 0.17410930195066904
+      },
+      "opponent_context": {
+        "n": 6203,
+        "label": "after_loss_all",
+        "top1_action90": 0.0602934064162502,
+        "top3_action90": 0.15008866677414154,
+        "nll_action90": 4.0423592742077155,
+        "top1_lead2": 0.1920038690955989
+      },
+      "sequential": {
+        "n": 6203,
+        "label": "after_loss_all",
+        "top1_action90": 0.0619055295824601,
+        "top3_action90": 0.1573432210220861,
+        "nll_action90": 4.026822976613683,
+        "top1_lead2": 0.19958084797678544
+      }
+    },
+    "game2_after_win": {
+      "base": {
+        "n": 4246,
+        "label": "game2_after_win",
+        "top1_action90": 0.06900612341026849,
+        "top3_action90": 0.16274140367404616,
+        "nll_action90": 3.977945398684552,
+        "top1_lead2": 0.21267074894017898
+      },
+      "opponent_context": {
+        "n": 4246,
+        "label": "game2_after_win",
+        "top1_action90": 0.1264719736222327,
+        "top3_action90": 0.29769194536033916,
+        "nll_action90": 3.6331237039082107,
+        "top1_lead2": 0.4027319830428639
+      },
+      "sequential": {
+        "n": 4246,
+        "label": "game2_after_win",
+        "top1_action90": 0.13094677343382008,
+        "top3_action90": 0.31205840791333017,
+        "nll_action90": 3.594604358576249,
+        "top1_lead2": 0.4246349505416863
+      }
+    },
+    "game2_after_loss": {
+      "base": {
+        "n": 4701,
+        "label": "game2_after_loss",
+        "top1_action90": 0.052967453733248245,
+        "top3_action90": 0.131674111891087,
+        "nll_action90": 4.082706063484482,
+        "top1_lead2": 0.17315464794724528
+      },
+      "opponent_context": {
+        "n": 4701,
+        "label": "game2_after_loss",
+        "top1_action90": 0.05892363326951713,
+        "top3_action90": 0.15103169538396086,
+        "nll_action90": 4.054579542831146,
+        "top1_lead2": 0.18676877260157412
+      },
+      "sequential": {
+        "n": 4701,
+        "label": "game2_after_loss",
+        "top1_action90": 0.06360348861944268,
+        "top3_action90": 0.15507338864071474,
+        "nll_action90": 4.039336791916292,
+        "top1_lead2": 0.19378855562646247
+      }
+    },
+    "game3_after_win": {
+      "base": {
+        "n": 1410,
+        "label": "game3_after_win",
+        "top1_action90": 0.0475177304964539,
+        "top3_action90": 0.13687943262411348,
+        "nll_action90": 4.068324327177215,
+        "top1_lead2": 0.16312056737588654
+      },
+      "opponent_context": {
+        "n": 1410,
+        "label": "game3_after_win",
+        "top1_action90": 0.12482269503546099,
+        "top3_action90": 0.2843971631205674,
+        "nll_action90": 3.6847900270832428,
+        "top1_lead2": 0.4
+      },
+      "sequential": {
+        "n": 1410,
+        "label": "game3_after_win",
+        "top1_action90": 0.125531914893617,
+        "top3_action90": 0.30354609929078014,
+        "nll_action90": 3.633464372142698,
+        "top1_lead2": 0.4269503546099291
+      }
+    },
+    "game3_after_loss": {
+      "base": {
+        "n": 1502,
+        "label": "game3_after_loss",
+        "top1_action90": 0.05792276964047936,
+        "top3_action90": 0.151797603195739,
+        "nll_action90": 4.03446205124041,
+        "top1_lead2": 0.17709720372836218
+      },
+      "opponent_context": {
+        "n": 1502,
+        "label": "game3_after_loss",
+        "top1_action90": 0.06458055925432757,
+        "top3_action90": 0.14713715046604528,
+        "nll_action90": 4.004111948775794,
+        "top1_lead2": 0.20838881491344874
+      },
+      "sequential": {
+        "n": 1502,
+        "label": "game3_after_loss",
+        "top1_action90": 0.05659121171770972,
+        "top3_action90": 0.1644474034620506,
+        "nll_action90": 3.987656900889604,
+        "top1_lead2": 0.21770972037283623
+      }
+    }
+  },
+  "overall": {
+    "base": {
+      "n": 40083,
+      "label": "all",
+      "top1_action90": 0.06411695731357434,
+      "top3_action90": 0.1551031609410473,
+      "nll_action90": 4.036636566617685,
+      "top1_lead2": 0.1980640171643839
+    },
+    "opponent_context": {
+      "n": 40083,
+      "label": "all",
+      "top1_action90": 0.07177606466581843,
+      "top3_action90": 0.17211785544994138,
+      "nll_action90": 3.9944133469497483,
+      "top1_lead2": 0.22530748696454855
+    },
+    "sequential": {
+      "n": 40083,
+      "label": "all",
+      "top1_action90": 0.07299852805428736,
+      "top3_action90": 0.1750617468752339,
+      "nll_action90": 3.984049848672238,
+      "top1_lead2": 0.22947384177831
+    }
+  }
+}

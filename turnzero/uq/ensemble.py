@@ -35,6 +35,9 @@ def _load_model_from_checkpoint(
     if arch == "sequential":
         from turnzero.models.sequential_transformer import SequentialOTSTransformer
         return SequentialOTSTransformer.load_from_checkpoint(ckpt_path, device)
+    if arch == "opponent_context":
+        from turnzero.models.sequential_transformer import OpponentContextTransformer
+        return OpponentContextTransformer.load_from_checkpoint(ckpt_path, device)
     return OTSTransformer.load_from_checkpoint(ckpt_path, device)
 
 

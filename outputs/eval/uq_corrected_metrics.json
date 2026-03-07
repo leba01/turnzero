@@ -1,0 +1,25 @@
+{
+  "adaptive_ece": {
+    "ece_fixed_15bin": 0.011311,
+    "ece_adaptive_15bin": 0.012316
+  },
+  "e_aurc": {
+    "top1": {
+      "aurc": 0.890222,
+      "aurc_optimal": 0.43799,
+      "e_aurc": 0.452232
+    },
+    "top3": {
+      "aurc": 0.760914,
+      "aurc_optimal": 0.357061,
+      "e_aurc": 0.403854
+    }
+  },
+  "brier_action90": 0.974138,
+  "ood_auroc": {
+    "entropy": 0.6976,
+    "mi": 0.796,
+    "n_id": 40083,
+    "n_ood": 14708
+  }
+}

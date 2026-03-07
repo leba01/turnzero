@@ -1,0 +1,2603 @@
+{
+  "Flutter Mane|Landorus|Latios|Rillaboom|Tyranitar|Zamazenta-Crowned": {
+    "n_examples": 372,
+    "n_tier1": 310,
+    "top1_action90": 0.02903225806451613,
+    "top3_action90": 0.07096774193548387,
+    "mean_entropy": 4.304687361056244,
+    "mean_mi": 0.024715171770638016,
+    "mean_confidence": 0.02751677507114026,
+    "species": [
+      "Flutter Mane",
+      "Landorus",
+      "Latios",
+      "Rillaboom",
+      "Tyranitar",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Chi-Yu|Ditto|Flutter Mane|Koraidon|Ogerpon-Cornerstone|Raging Bolt": {
+    "n_examples": 221,
+    "n_tier1": 164,
+    "top1_action90": 0.09146341463414634,
+    "top3_action90": 0.17073170731707318,
+    "mean_entropy": 4.1576212377616155,
+    "mean_mi": 0.047070363822546576,
+    "mean_confidence": 0.03879213957797464,
+    "species": [
+      "Chi-Yu",
+      "Ditto",
+      "Flutter Mane",
+      "Koraidon",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt"
+    ]
+  },
+  "Chien-Pao|Dondozo|Ogerpon-Hearthflame|Raging Bolt|Ting-Lu|Zamazenta-Crowned": {
+    "n_examples": 27,
+    "n_tier1": 23,
+    "top1_action90": 0.2608695652173913,
+    "top3_action90": 0.34782608695652173,
+    "mean_entropy": 4.224720293690556,
+    "mean_mi": 0.027161258523310673,
+    "mean_confidence": 0.05665682826353156,
+    "species": [
+      "Chien-Pao",
+      "Dondozo",
+      "Ogerpon-Hearthflame",
+      "Raging Bolt",
+      "Ting-Lu",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Chien-Pao|Kyogre|Raging Bolt|Roaring Moon|Tsareena|Urshifu-Rapid-Strike": {
+    "n_examples": 108,
+    "n_tier1": 84,
+    "top1_action90": 0.03571428571428571,
+    "top3_action90": 0.08333333333333333,
+    "mean_entropy": 4.245048973808521,
+    "mean_mi": 0.04981161202234253,
+    "mean_confidence": 0.03391416412556455,
+    "species": [
+      "Chien-Pao",
+      "Kyogre",
+      "Raging Bolt",
+      "Roaring Moon",
+      "Tsareena",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chien-Pao|Ditto|Flutter Mane|Incineroar|Koraidon|Raging Bolt": {
+    "n_examples": 46,
+    "n_tier1": 36,
+    "top1_action90": 0.1111111111111111,
+    "top3_action90": 0.2777777777777778,
+    "mean_entropy": 4.073728908479877,
+    "mean_mi": 0.04315789199299099,
+    "mean_confidence": 0.04821896720677613,
+    "species": [
+      "Chien-Pao",
+      "Ditto",
+      "Flutter Mane",
+      "Incineroar",
+      "Koraidon",
+      "Raging Bolt"
+    ]
+  },
+  "Amoonguss|Flutter Mane|Gothitelle|Incineroar|Koraidon|Scream Tail": {
+    "n_examples": 1468,
+    "n_tier1": 1244,
+    "top1_action90": 0.12540192926045016,
+    "top3_action90": 0.3135048231511254,
+    "mean_entropy": 4.081693221838799,
+    "mean_mi": 0.03554019360070931,
+    "mean_confidence": 0.06295318771812503,
+    "species": [
+      "Amoonguss",
+      "Flutter Mane",
+      "Gothitelle",
+      "Incineroar",
+      "Koraidon",
+      "Scream Tail"
+    ]
+  },
+  "Calyrex-Shadow|Incineroar|Ogerpon-Hearthflame|Raging Bolt|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 326,
+    "n_tier1": 257,
+    "top1_action90": 0.06614785992217899,
+    "top3_action90": 0.20233463035019456,
+    "mean_entropy": 4.070289905438702,
+    "mean_mi": 0.024828426665124748,
+    "mean_confidence": 0.05691186778305338,
+    "species": [
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Ogerpon-Hearthflame",
+      "Raging Bolt",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Eternatus|Farigiraf|Grimmsnarl|Incineroar|Rillaboom|Urshifu": {
+    "n_examples": 48,
+    "n_tier1": 42,
+    "top1_action90": 0.09523809523809523,
+    "top3_action90": 0.09523809523809523,
+    "mean_entropy": 4.271540110540714,
+    "mean_mi": 0.10149340944520599,
+    "mean_confidence": 0.03950506016789448,
+    "species": [
+      "Eternatus",
+      "Farigiraf",
+      "Grimmsnarl",
+      "Incineroar",
+      "Rillaboom",
+      "Urshifu"
+    ]
+  },
+  "Farigiraf|Iron Hands|Miraidon|Ogerpon-Hearthflame|Urshifu-Rapid-Strike|Whimsicott": {
+    "n_examples": 272,
+    "n_tier1": 228,
+    "top1_action90": 0.09649122807017543,
+    "top3_action90": 0.2236842105263158,
+    "mean_entropy": 3.8459318505735034,
+    "mean_mi": 0.03201001863871808,
+    "mean_confidence": 0.07990374894845381,
+    "species": [
+      "Farigiraf",
+      "Iron Hands",
+      "Miraidon",
+      "Ogerpon-Hearthflame",
+      "Urshifu-Rapid-Strike",
+      "Whimsicott"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Grimmsnarl|Iron Hands|Terapagos|Urshifu-Rapid-Strike": {
+    "n_examples": 245,
+    "n_tier1": 208,
+    "top1_action90": 0.04326923076923077,
+    "top3_action90": 0.12980769230769232,
+    "mean_entropy": 4.1325493484229625,
+    "mean_mi": 0.03598090935635613,
+    "mean_confidence": 0.04686856607799061,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Grimmsnarl",
+      "Iron Hands",
+      "Terapagos",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Farigiraf|Iron Hands|Miraidon|Ogerpon-Hearthflame|Urshifu|Whimsicott": {
+    "n_examples": 194,
+    "n_tier1": 163,
+    "top1_action90": 0.07975460122699386,
+    "top3_action90": 0.18404907975460122,
+    "mean_entropy": 3.925128534494644,
+    "mean_mi": 0.027888982251638744,
+    "mean_confidence": 0.06837336762002641,
+    "species": [
+      "Farigiraf",
+      "Iron Hands",
+      "Miraidon",
+      "Ogerpon-Hearthflame",
+      "Urshifu",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Incineroar|Kyogre|Rillaboom|Roaring Moon|Urshifu-Rapid-Strike": {
+    "n_examples": 475,
+    "n_tier1": 396,
+    "top1_action90": 0.045454545454545456,
+    "top3_action90": 0.14898989898989898,
+    "mean_entropy": 4.017195351603786,
+    "mean_mi": 0.05401370700044432,
+    "mean_confidence": 0.06211177152487439,
+    "species": [
+      "Amoonguss",
+      "Incineroar",
+      "Kyogre",
+      "Rillaboom",
+      "Roaring Moon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Farigiraf|Incineroar|Iron Hands|Iron Treads|Miraidon|Urshifu": {
+    "n_examples": 62,
+    "n_tier1": 52,
+    "top1_action90": 0.11538461538461539,
+    "top3_action90": 0.25,
+    "mean_entropy": 4.086198727590477,
+    "mean_mi": 0.042351777870841725,
+    "mean_confidence": 0.04506668047263073,
+    "species": [
+      "Farigiraf",
+      "Incineroar",
+      "Iron Hands",
+      "Iron Treads",
+      "Miraidon",
+      "Urshifu"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Incineroar|Landorus|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 103,
+    "n_tier1": 87,
+    "top1_action90": 0.09195402298850575,
+    "top3_action90": 0.14942528735632185,
+    "mean_entropy": 4.043337350434155,
+    "mean_mi": 0.0334410765114075,
+    "mean_confidence": 0.05745771545274504,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Incineroar",
+      "Landorus",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Chien-Pao|Pelipper|Raging Bolt|Urshifu-Rapid-Strike|Zamazenta-Crowned": {
+    "n_examples": 35,
+    "n_tier1": 26,
+    "top1_action90": 0.07692307692307693,
+    "top3_action90": 0.15384615384615385,
+    "mean_entropy": 4.145800395306491,
+    "mean_mi": 0.03659066121653797,
+    "mean_confidence": 0.047507329127536364,
+    "species": [
+      "Amoonguss",
+      "Chien-Pao",
+      "Pelipper",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Calyrex-Shadow|Incineroar|Landorus|Rillaboom|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 150,
+    "n_tier1": 120,
+    "top1_action90": 0.041666666666666664,
+    "top3_action90": 0.1,
+    "mean_entropy": 4.086045867892067,
+    "mean_mi": 0.0511060497806383,
+    "mean_confidence": 0.05635829780561229,
+    "species": [
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Landorus",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Ice|Indeedee-F|Raging Bolt|Smeargle|Torkoal|Urshifu": {
+    "n_examples": 36,
+    "n_tier1": 20,
+    "top1_action90": 0.05,
+    "top3_action90": 0.35,
+    "mean_entropy": 3.4649349975049453,
+    "mean_mi": 0.036929159276180415,
+    "mean_confidence": 0.13475469432771206,
+    "species": [
+      "Calyrex-Ice",
+      "Indeedee-F",
+      "Raging Bolt",
+      "Smeargle",
+      "Torkoal",
+      "Urshifu"
+    ]
+  },
+  "Calyrex-Ice|Gallade|Hatterene|Indeedee-F|Smeargle|Torkoal": {
+    "n_examples": 28,
+    "n_tier1": 21,
+    "top1_action90": 0.0,
+    "top3_action90": 0.19047619047619047,
+    "mean_entropy": 3.317322268111876,
+    "mean_mi": 0.05968686836044778,
+    "mean_confidence": 0.20424000010603954,
+    "species": [
+      "Calyrex-Ice",
+      "Gallade",
+      "Hatterene",
+      "Indeedee-F",
+      "Smeargle",
+      "Torkoal"
+    ]
+  },
+  "Chien-Pao|Kyogre|Rillaboom|Tornadus|Tsareena|Urshifu-Rapid-Strike": {
+    "n_examples": 102,
+    "n_tier1": 90,
+    "top1_action90": 0.07777777777777778,
+    "top3_action90": 0.16666666666666666,
+    "mean_entropy": 4.089039108027446,
+    "mean_mi": 0.06109674769778419,
+    "mean_confidence": 0.05058940428826543,
+    "species": [
+      "Chien-Pao",
+      "Kyogre",
+      "Rillaboom",
+      "Tornadus",
+      "Tsareena",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chien-Pao|Gouging Fire|Groudon|Iron Valiant|Raging Bolt|Volcarona": {
+    "n_examples": 36,
+    "n_tier1": 29,
+    "top1_action90": 0.034482758620689655,
+    "top3_action90": 0.06896551724137931,
+    "mean_entropy": 4.079390087968674,
+    "mean_mi": 0.04845429001906136,
+    "mean_confidence": 0.05149977372895027,
+    "species": [
+      "Chien-Pao",
+      "Gouging Fire",
+      "Groudon",
+      "Iron Valiant",
+      "Raging Bolt",
+      "Volcarona"
+    ]
+  },
+  "Chien-Pao|Entei|Flutter Mane|Rillaboom|Urshifu-Rapid-Strike|Zamazenta-Crowned": {
+    "n_examples": 351,
+    "n_tier1": 278,
+    "top1_action90": 0.08992805755395683,
+    "top3_action90": 0.16546762589928057,
+    "mean_entropy": 4.023520418957193,
+    "mean_mi": 0.034050707494382625,
+    "mean_confidence": 0.062454828112084665,
+    "species": [
+      "Chien-Pao",
+      "Entei",
+      "Flutter Mane",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Rillaboom|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 202,
+    "n_tier1": 168,
+    "top1_action90": 0.07738095238095238,
+    "top3_action90": 0.18452380952380953,
+    "mean_entropy": 3.9307455476197637,
+    "mean_mi": 0.04834315496861913,
+    "mean_confidence": 0.08009640746528193,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Chien-Pao|Dragonite|Iron Hands|Urshifu-Rapid-Strike|Weezing-Galar": {
+    "n_examples": 712,
+    "n_tier1": 542,
+    "top1_action90": 0.07011070110701106,
+    "top3_action90": 0.13837638376383765,
+    "mean_entropy": 4.16506294024641,
+    "mean_mi": 0.0383064834643565,
+    "mean_confidence": 0.05630274854284261,
+    "species": [
+      "Calyrex-Shadow",
+      "Chien-Pao",
+      "Dragonite",
+      "Iron Hands",
+      "Urshifu-Rapid-Strike",
+      "Weezing-Galar"
+    ]
+  },
+  "Chien-Pao|Gholdengo|Incineroar|Pelipper|Raichu|Zamazenta-Crowned": {
+    "n_examples": 121,
+    "n_tier1": 95,
+    "top1_action90": 0.031578947368421054,
+    "top3_action90": 0.10526315789473684,
+    "mean_entropy": 4.249858747595207,
+    "mean_mi": 0.0284984374888369,
+    "mean_confidence": 0.03125846911221743,
+    "species": [
+      "Chien-Pao",
+      "Gholdengo",
+      "Incineroar",
+      "Pelipper",
+      "Raichu",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Calyrex-Shadow|Farigiraf|Incineroar|Raging Bolt|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 124,
+    "n_tier1": 101,
+    "top1_action90": 0.039603960396039604,
+    "top3_action90": 0.13861386138613863,
+    "mean_entropy": 3.95468442690247,
+    "mean_mi": 0.029682631939879436,
+    "mean_confidence": 0.08134303426019626,
+    "species": [
+      "Calyrex-Shadow",
+      "Farigiraf",
+      "Incineroar",
+      "Raging Bolt",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chi-Yu|Farigiraf|Iron Hands|Miraidon|Urshifu-Rapid-Strike|Whimsicott": {
+    "n_examples": 195,
+    "n_tier1": 159,
+    "top1_action90": 0.0880503144654088,
+    "top3_action90": 0.16352201257861634,
+    "mean_entropy": 3.8548069068802695,
+    "mean_mi": 0.050420693849403675,
+    "mean_confidence": 0.08440405035028294,
+    "species": [
+      "Chi-Yu",
+      "Farigiraf",
+      "Iron Hands",
+      "Miraidon",
+      "Urshifu-Rapid-Strike",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Calyrex-Shadow|Incineroar|Raging Bolt|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 277,
+    "n_tier1": 195,
+    "top1_action90": 0.05128205128205128,
+    "top3_action90": 0.14871794871794872,
+    "mean_entropy": 4.014283189139691,
+    "mean_mi": 0.046258206557873376,
+    "mean_confidence": 0.0671814541107951,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Raging Bolt",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Ice|Farigiraf|Landorus|Ogerpon-Cornerstone|Regieleki|Urshifu-Rapid-Strike": {
+    "n_examples": 75,
+    "n_tier1": 51,
+    "top1_action90": 0.0784313725490196,
+    "top3_action90": 0.17647058823529413,
+    "mean_entropy": 4.062434696457216,
+    "mean_mi": 0.04889498877622188,
+    "mean_confidence": 0.05930237233930942,
+    "species": [
+      "Calyrex-Ice",
+      "Farigiraf",
+      "Landorus",
+      "Ogerpon-Cornerstone",
+      "Regieleki",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Gallade|Indeedee-F|Lilligant-Hisui|Necrozma-Dawn-Wings|Torkoal|Ursaluna": {
+    "n_examples": 105,
+    "n_tier1": 68,
+    "top1_action90": 0.23529411764705882,
+    "top3_action90": 0.39705882352941174,
+    "mean_entropy": 3.6510688247738114,
+    "mean_mi": 0.057474991459679645,
+    "mean_confidence": 0.1369562076404691,
+    "species": [
+      "Gallade",
+      "Indeedee-F",
+      "Lilligant-Hisui",
+      "Necrozma-Dawn-Wings",
+      "Torkoal",
+      "Ursaluna"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Pelipper|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 69,
+    "n_tier1": 51,
+    "top1_action90": 0.19607843137254902,
+    "top3_action90": 0.2549019607843137,
+    "mean_entropy": 3.9367360903894153,
+    "mean_mi": 0.03479395467718039,
+    "mean_confidence": 0.07564600065496623,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Pelipper",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Heatran|Incineroar|Ogerpon-Cornerstone|Rillaboom|Scream Tail|Terapagos": {
+    "n_examples": 242,
+    "n_tier1": 196,
+    "top1_action90": 0.1989795918367347,
+    "top3_action90": 0.33163265306122447,
+    "mean_entropy": 3.7877726980230815,
+    "mean_mi": 0.057354298724197866,
+    "mean_confidence": 0.10885901906698638,
+    "species": [
+      "Heatran",
+      "Incineroar",
+      "Ogerpon-Cornerstone",
+      "Rillaboom",
+      "Scream Tail",
+      "Terapagos"
+    ]
+  },
+  "Chi-Yu|Farigiraf|Iron Hands|Miraidon|Urshifu|Whimsicott": {
+    "n_examples": 39,
+    "n_tier1": 33,
+    "top1_action90": 0.09090909090909091,
+    "top3_action90": 0.18181818181818182,
+    "mean_entropy": 3.901072232593127,
+    "mean_mi": 0.0487054027605508,
+    "mean_confidence": 0.08319105984586657,
+    "species": [
+      "Chi-Yu",
+      "Farigiraf",
+      "Iron Hands",
+      "Miraidon",
+      "Urshifu",
+      "Whimsicott"
+    ]
+  },
+  "Farigiraf|Landorus|Ogerpon-Hearthflame|Terapagos|Urshifu-Rapid-Strike|Whimsicott": {
+    "n_examples": 183,
+    "n_tier1": 141,
+    "top1_action90": 0.06382978723404255,
+    "top3_action90": 0.2127659574468085,
+    "mean_entropy": 3.979709096364981,
+    "mean_mi": 0.055496769952268515,
+    "mean_confidence": 0.07646679214551938,
+    "species": [
+      "Farigiraf",
+      "Landorus",
+      "Ogerpon-Hearthflame",
+      "Terapagos",
+      "Urshifu-Rapid-Strike",
+      "Whimsicott"
+    ]
+  },
+  "Entei|Flutter Mane|Koraidon|Ogerpon-Cornerstone|Raging Bolt|Umbreon": {
+    "n_examples": 48,
+    "n_tier1": 38,
+    "top1_action90": 0.10526315789473684,
+    "top3_action90": 0.23684210526315788,
+    "mean_entropy": 4.006509901134031,
+    "mean_mi": 0.04630489898973179,
+    "mean_confidence": 0.0583236541893137,
+    "species": [
+      "Entei",
+      "Flutter Mane",
+      "Koraidon",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt",
+      "Umbreon"
+    ]
+  },
+  "Flutter Mane|Pelipper|Rillaboom|Terapagos|Urshifu-Rapid-Strike|Volcarona": {
+    "n_examples": 120,
+    "n_tier1": 91,
+    "top1_action90": 0.01098901098901099,
+    "top3_action90": 0.02197802197802198,
+    "mean_entropy": 4.31980121224549,
+    "mean_mi": 0.048537684397307164,
+    "mean_confidence": 0.025734563427721412,
+    "species": [
+      "Flutter Mane",
+      "Pelipper",
+      "Rillaboom",
+      "Terapagos",
+      "Urshifu-Rapid-Strike",
+      "Volcarona"
+    ]
+  },
+  "Indeedee-F|Lunala|Ogerpon-Wellspring|Torkoal|Ursaluna|Urshifu": {
+    "n_examples": 105,
+    "n_tier1": 76,
+    "top1_action90": 0.3157894736842105,
+    "top3_action90": 0.4473684210526316,
+    "mean_entropy": 3.5268408846250505,
+    "mean_mi": 0.03547503736824905,
+    "mean_confidence": 0.15325684397432365,
+    "species": [
+      "Indeedee-F",
+      "Lunala",
+      "Ogerpon-Wellspring",
+      "Torkoal",
+      "Ursaluna",
+      "Urshifu"
+    ]
+  },
+  "Calyrex-Ice|Landorus|Ogerpon-Cornerstone|Pelipper|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 37,
+    "n_tier1": 25,
+    "top1_action90": 0.0,
+    "top3_action90": 0.04,
+    "mean_entropy": 4.198208632277551,
+    "mean_mi": 0.03183556753334701,
+    "mean_confidence": 0.03450396652519703,
+    "species": [
+      "Calyrex-Ice",
+      "Landorus",
+      "Ogerpon-Cornerstone",
+      "Pelipper",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Incineroar|Pelipper|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 100,
+    "n_tier1": 78,
+    "top1_action90": 0.05128205128205128,
+    "top3_action90": 0.14102564102564102,
+    "mean_entropy": 4.098599767499042,
+    "mean_mi": 0.030428139107256336,
+    "mean_confidence": 0.04503595742086569,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Incineroar",
+      "Pelipper",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Landorus|Ogerpon-Hearthflame|Roaring Moon|Urshifu-Rapid-Strike": {
+    "n_examples": 88,
+    "n_tier1": 63,
+    "top1_action90": 0.09523809523809523,
+    "top3_action90": 0.20634920634920634,
+    "mean_entropy": 3.989162209910155,
+    "mean_mi": 0.031963033489465165,
+    "mean_confidence": 0.08224423916212148,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Landorus",
+      "Ogerpon-Hearthflame",
+      "Roaring Moon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Chien-Pao|Iron Hands|Kyogre|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 39,
+    "n_tier1": 29,
+    "top1_action90": 0.10344827586206896,
+    "top3_action90": 0.20689655172413793,
+    "mean_entropy": 4.02697436310349,
+    "mean_mi": 0.04870519923259593,
+    "mean_confidence": 0.07134046094684765,
+    "species": [
+      "Amoonguss",
+      "Chien-Pao",
+      "Iron Hands",
+      "Kyogre",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Mienshao|Rillaboom|Thundurus": {
+    "n_examples": 75,
+    "n_tier1": 57,
+    "top1_action90": 0.12280701754385964,
+    "top3_action90": 0.2807017543859649,
+    "mean_entropy": 3.665613449754369,
+    "mean_mi": 0.06891568296673008,
+    "mean_confidence": 0.11218104659203897,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Mienshao",
+      "Rillaboom",
+      "Thundurus"
+    ]
+  },
+  "Amoonguss|Archaludon|Basculegion|Kyogre|Rillaboom|Roaring Moon": {
+    "n_examples": 25,
+    "n_tier1": 25,
+    "top1_action90": 0.08,
+    "top3_action90": 0.16,
+    "mean_entropy": 4.0750763076860075,
+    "mean_mi": 0.04944616598612935,
+    "mean_confidence": 0.06290868942439555,
+    "species": [
+      "Amoonguss",
+      "Archaludon",
+      "Basculegion",
+      "Kyogre",
+      "Rillaboom",
+      "Roaring Moon"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Indeedee-F|Landorus|Regieleki|Urshifu": {
+    "n_examples": 30,
+    "n_tier1": 25,
+    "top1_action90": 0.12,
+    "top3_action90": 0.2,
+    "mean_entropy": 3.7514079252064034,
+    "mean_mi": 0.0630410287360684,
+    "mean_confidence": 0.09628402253985406,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Indeedee-F",
+      "Landorus",
+      "Regieleki",
+      "Urshifu"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Koraidon|Pyroar|Rillaboom|Whimsicott": {
+    "n_examples": 36,
+    "n_tier1": 29,
+    "top1_action90": 0.06896551724137931,
+    "top3_action90": 0.1724137931034483,
+    "mean_entropy": 4.141925548409875,
+    "mean_mi": 0.09964010795097102,
+    "mean_confidence": 0.05167306273661811,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Koraidon",
+      "Pyroar",
+      "Rillaboom",
+      "Whimsicott"
+    ]
+  },
+  "Calyrex-Shadow|Dondozo|Ogerpon-Cornerstone|Roaring Moon|Tatsugiri-Droopy|Weezing-Galar": {
+    "n_examples": 84,
+    "n_tier1": 74,
+    "top1_action90": 0.5,
+    "top3_action90": 0.6756756756756757,
+    "mean_entropy": 3.0988354401505616,
+    "mean_mi": 0.028324945878269725,
+    "mean_confidence": 0.29762652524419736,
+    "species": [
+      "Calyrex-Shadow",
+      "Dondozo",
+      "Ogerpon-Cornerstone",
+      "Roaring Moon",
+      "Tatsugiri-Droopy",
+      "Weezing-Galar"
+    ]
+  },
+  "Amoonguss|Chien-Pao|Kyogre|Tornadus|Tsareena|Urshifu-Rapid-Strike": {
+    "n_examples": 41,
+    "n_tier1": 32,
+    "top1_action90": 0.09375,
+    "top3_action90": 0.1875,
+    "mean_entropy": 3.9535125211297277,
+    "mean_mi": 0.09561673813966759,
+    "mean_confidence": 0.06952472937991842,
+    "species": [
+      "Amoonguss",
+      "Chien-Pao",
+      "Kyogre",
+      "Tornadus",
+      "Tsareena",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Brute Bonnet|Chi-Yu|Flutter Mane|Koraidon|Ogerpon-Cornerstone|Raging Bolt": {
+    "n_examples": 40,
+    "n_tier1": 30,
+    "top1_action90": 0.03333333333333333,
+    "top3_action90": 0.13333333333333333,
+    "mean_entropy": 4.096743227170103,
+    "mean_mi": 0.046189798010609275,
+    "mean_confidence": 0.03688909194121759,
+    "species": [
+      "Brute Bonnet",
+      "Chi-Yu",
+      "Flutter Mane",
+      "Koraidon",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt"
+    ]
+  },
+  "Calyrex-Shadow|Incineroar|Raging Bolt|Rillaboom|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 29,
+    "n_tier1": 23,
+    "top1_action90": 0.13043478260869565,
+    "top3_action90": 0.17391304347826086,
+    "mean_entropy": 4.100803520080751,
+    "mean_mi": 0.04596641503583371,
+    "mean_confidence": 0.057582190616623216,
+    "species": [
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Raging Bolt",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Iron Hands|Rillaboom|Tornadus": {
+    "n_examples": 28,
+    "n_tier1": 26,
+    "top1_action90": 0.038461538461538464,
+    "top3_action90": 0.11538461538461539,
+    "mean_entropy": 4.073918165617354,
+    "mean_mi": 0.03763011065592255,
+    "mean_confidence": 0.040503763457616936,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Iron Hands",
+      "Rillaboom",
+      "Tornadus"
+    ]
+  },
+  "Calyrex-Shadow|Dondozo|Indeedee-F|Tatsugiri-Droopy|Urshifu-Rapid-Strike|Weezing-Galar": {
+    "n_examples": 69,
+    "n_tier1": 60,
+    "top1_action90": 0.26666666666666666,
+    "top3_action90": 0.5,
+    "mean_entropy": 3.2074962062976637,
+    "mean_mi": 0.03917828861678859,
+    "mean_confidence": 0.23279753610491755,
+    "species": [
+      "Calyrex-Shadow",
+      "Dondozo",
+      "Indeedee-F",
+      "Tatsugiri-Droopy",
+      "Urshifu-Rapid-Strike",
+      "Weezing-Galar"
+    ]
+  },
+  "Calyrex-Ice|Grimmsnarl|Landorus|Ogerpon-Cornerstone|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 30,
+    "n_tier1": 22,
+    "top1_action90": 0.045454545454545456,
+    "top3_action90": 0.13636363636363635,
+    "mean_entropy": 3.958785048989212,
+    "mean_mi": 0.03356002989430387,
+    "mean_confidence": 0.06869642915712161,
+    "species": [
+      "Calyrex-Ice",
+      "Grimmsnarl",
+      "Landorus",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Raging Bolt|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 240,
+    "n_tier1": 183,
+    "top1_action90": 0.13114754098360656,
+    "top3_action90": 0.20765027322404372,
+    "mean_entropy": 3.8893432307670057,
+    "mean_mi": 0.030772232507929417,
+    "mean_confidence": 0.07948681025720032,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Raging Bolt",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Ice|Incineroar|Pelipper|Raging Bolt|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 27,
+    "n_tier1": 23,
+    "top1_action90": 0.13043478260869565,
+    "top3_action90": 0.21739130434782608,
+    "mean_entropy": 4.100214302826124,
+    "mean_mi": 0.024716139614846495,
+    "mean_confidence": 0.04892061300899671,
+    "species": [
+      "Calyrex-Ice",
+      "Incineroar",
+      "Pelipper",
+      "Raging Bolt",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Grimmsnarl|Incineroar|Kyogre|Landorus|Urshifu-Rapid-Strike|Wo-Chien": {
+    "n_examples": 27,
+    "n_tier1": 25,
+    "top1_action90": 0.16,
+    "top3_action90": 0.28,
+    "mean_entropy": 3.9668515160087305,
+    "mean_mi": 0.07503090926252867,
+    "mean_confidence": 0.11631361956894398,
+    "species": [
+      "Grimmsnarl",
+      "Incineroar",
+      "Kyogre",
+      "Landorus",
+      "Urshifu-Rapid-Strike",
+      "Wo-Chien"
+    ]
+  },
+  "Farigiraf|Incineroar|Iron Bundle|Iron Hands|Miraidon|Urshifu-Rapid-Strike": {
+    "n_examples": 45,
+    "n_tier1": 35,
+    "top1_action90": 0.05714285714285714,
+    "top3_action90": 0.11428571428571428,
+    "mean_entropy": 3.9871830643025654,
+    "mean_mi": 0.035981776200863,
+    "mean_confidence": 0.05096204817295074,
+    "species": [
+      "Farigiraf",
+      "Incineroar",
+      "Iron Bundle",
+      "Iron Hands",
+      "Miraidon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Indeedee-F|Kingambit|Kyogre|Landorus|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 31,
+    "n_tier1": 25,
+    "top1_action90": 0.0,
+    "top3_action90": 0.16,
+    "mean_entropy": 4.120527887314081,
+    "mean_mi": 0.05625476289605226,
+    "mean_confidence": 0.05800941764563322,
+    "species": [
+      "Indeedee-F",
+      "Kingambit",
+      "Kyogre",
+      "Landorus",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Farigiraf|Incineroar|Iron Hands|Miraidon|Ogerpon-Wellspring|Tornadus": {
+    "n_examples": 24,
+    "n_tier1": 21,
+    "top1_action90": 0.0,
+    "top3_action90": 0.0,
+    "mean_entropy": 4.116540161472752,
+    "mean_mi": 0.07375260511519566,
+    "mean_confidence": 0.048248263652480784,
+    "species": [
+      "Farigiraf",
+      "Incineroar",
+      "Iron Hands",
+      "Miraidon",
+      "Ogerpon-Wellspring",
+      "Tornadus"
+    ]
+  },
+  "Amoonguss|Chi-Yu|Flutter Mane|Rillaboom|Urshifu-Rapid-Strike|Zamazenta-Crowned": {
+    "n_examples": 28,
+    "n_tier1": 26,
+    "top1_action90": 0.07692307692307693,
+    "top3_action90": 0.11538461538461539,
+    "mean_entropy": 4.1943712307326795,
+    "mean_mi": 0.03947772550820421,
+    "mean_confidence": 0.03630350199169838,
+    "species": [
+      "Amoonguss",
+      "Chi-Yu",
+      "Flutter Mane",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Chi-Yu|Flutter Mane|Ogerpon-Cornerstone|Urshifu-Rapid-Strike": {
+    "n_examples": 33,
+    "n_tier1": 28,
+    "top1_action90": 0.07142857142857142,
+    "top3_action90": 0.39285714285714285,
+    "mean_entropy": 4.007564701506079,
+    "mean_mi": 0.03497816594409046,
+    "mean_confidence": 0.07832785687808481,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Chi-Yu",
+      "Flutter Mane",
+      "Ogerpon-Cornerstone",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Mienshao|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 74,
+    "n_tier1": 55,
+    "top1_action90": 0.09090909090909091,
+    "top3_action90": 0.2727272727272727,
+    "mean_entropy": 3.685275675864766,
+    "mean_mi": 0.04706531726035701,
+    "mean_confidence": 0.10771596137772908,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Mienshao",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Araquanid|Chien-Pao|Kyogre|Rhydon|Sneasler|Tornadus": {
+    "n_examples": 78,
+    "n_tier1": 60,
+    "top1_action90": 0.06666666666666667,
+    "top3_action90": 0.4666666666666667,
+    "mean_entropy": 3.661911961998858,
+    "mean_mi": 0.1908663183496271,
+    "mean_confidence": 0.09573484417827179,
+    "species": [
+      "Araquanid",
+      "Chien-Pao",
+      "Kyogre",
+      "Rhydon",
+      "Sneasler",
+      "Tornadus"
+    ]
+  },
+  "Amoonguss|Chi-Yu|Chien-Pao|Flutter Mane|Rillaboom|Zamazenta-Crowned": {
+    "n_examples": 223,
+    "n_tier1": 190,
+    "top1_action90": 0.1,
+    "top3_action90": 0.18947368421052632,
+    "mean_entropy": 4.038527136549835,
+    "mean_mi": 0.034842627159975895,
+    "mean_confidence": 0.06731290492572281,
+    "species": [
+      "Amoonguss",
+      "Chi-Yu",
+      "Chien-Pao",
+      "Flutter Mane",
+      "Rillaboom",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Flutter Mane|Gholdengo|Incineroar|Koraidon|Ogerpon-Cornerstone|Raging Bolt": {
+    "n_examples": 38,
+    "n_tier1": 28,
+    "top1_action90": 0.03571428571428571,
+    "top3_action90": 0.07142857142857142,
+    "mean_entropy": 4.242274488040371,
+    "mean_mi": 0.030955314195746597,
+    "mean_confidence": 0.02848301845203553,
+    "species": [
+      "Flutter Mane",
+      "Gholdengo",
+      "Incineroar",
+      "Koraidon",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt"
+    ]
+  },
+  "Chien-Pao|Farigiraf|Incineroar|Iron Hands|Miraidon|Urshifu-Rapid-Strike": {
+    "n_examples": 23,
+    "n_tier1": 21,
+    "top1_action90": 0.09523809523809523,
+    "top3_action90": 0.3333333333333333,
+    "mean_entropy": 4.078798306179321,
+    "mean_mi": 0.0336109849549915,
+    "mean_confidence": 0.04350461995317823,
+    "species": [
+      "Chien-Pao",
+      "Farigiraf",
+      "Incineroar",
+      "Iron Hands",
+      "Miraidon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Groudon|Ogerpon-Hearthflame|Raging Bolt|Urshifu|Weezing-Galar|Whimsicott": {
+    "n_examples": 52,
+    "n_tier1": 41,
+    "top1_action90": 0.04878048780487805,
+    "top3_action90": 0.0975609756097561,
+    "mean_entropy": 4.208485958876052,
+    "mean_mi": 0.037381761920162036,
+    "mean_confidence": 0.03845360202760231,
+    "species": [
+      "Groudon",
+      "Ogerpon-Hearthflame",
+      "Raging Bolt",
+      "Urshifu",
+      "Weezing-Galar",
+      "Whimsicott"
+    ]
+  },
+  "Enamorus-Therian|Farigiraf|Incineroar|Iron Hands|Miraidon|Urshifu-Rapid-Strike": {
+    "n_examples": 30,
+    "n_tier1": 26,
+    "top1_action90": 0.0,
+    "top3_action90": 0.038461538461538464,
+    "mean_entropy": 4.114390193249549,
+    "mean_mi": 0.048828400757364734,
+    "mean_confidence": 0.0438046200774037,
+    "species": [
+      "Enamorus-Therian",
+      "Farigiraf",
+      "Incineroar",
+      "Iron Hands",
+      "Miraidon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Chien-Pao|Entei|Flutter Mane|Urshifu-Rapid-Strike|Zamazenta-Crowned": {
+    "n_examples": 53,
+    "n_tier1": 41,
+    "top1_action90": 0.024390243902439025,
+    "top3_action90": 0.07317073170731707,
+    "mean_entropy": 4.050766685404634,
+    "mean_mi": 0.027853375821864375,
+    "mean_confidence": 0.06181206874004225,
+    "species": [
+      "Amoonguss",
+      "Chien-Pao",
+      "Entei",
+      "Flutter Mane",
+      "Urshifu-Rapid-Strike",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Archaludon|Flutter Mane|Indeedee-F|Kyogre|Tornadus|Urshifu": {
+    "n_examples": 51,
+    "n_tier1": 35,
+    "top1_action90": 0.11428571428571428,
+    "top3_action90": 0.42857142857142855,
+    "mean_entropy": 4.132603417248071,
+    "mean_mi": 0.044115727879232236,
+    "mean_confidence": 0.04270371803747756,
+    "species": [
+      "Archaludon",
+      "Flutter Mane",
+      "Indeedee-F",
+      "Kyogre",
+      "Tornadus",
+      "Urshifu"
+    ]
+  },
+  "Amoonguss|Calyrex-Shadow|Chien-Pao|Incineroar|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 36,
+    "n_tier1": 28,
+    "top1_action90": 0.32142857142857145,
+    "top3_action90": 0.42857142857142855,
+    "mean_entropy": 4.044386742653542,
+    "mean_mi": 0.04506738068458801,
+    "mean_confidence": 0.059609677496233145,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Shadow",
+      "Chien-Pao",
+      "Incineroar",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Farigiraf|Iron Hands|Miraidon|Ogerpon-Hearthflame|Ursaluna-Bloodmoon|Whimsicott": {
+    "n_examples": 28,
+    "n_tier1": 25,
+    "top1_action90": 0.16,
+    "top3_action90": 0.44,
+    "mean_entropy": 3.9319214213599296,
+    "mean_mi": 0.028693196010168107,
+    "mean_confidence": 0.07118178275227546,
+    "species": [
+      "Farigiraf",
+      "Iron Hands",
+      "Miraidon",
+      "Ogerpon-Hearthflame",
+      "Ursaluna-Bloodmoon",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Chi-Yu|Chien-Pao|Flutter Mane|Urshifu-Rapid-Strike|Zamazenta-Crowned": {
+    "n_examples": 46,
+    "n_tier1": 36,
+    "top1_action90": 0.0,
+    "top3_action90": 0.1111111111111111,
+    "mean_entropy": 3.998128564553729,
+    "mean_mi": 0.03665562496306681,
+    "mean_confidence": 0.06746142664924265,
+    "species": [
+      "Amoonguss",
+      "Chi-Yu",
+      "Chien-Pao",
+      "Flutter Mane",
+      "Urshifu-Rapid-Strike",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Bronzong|Flutter Mane|Groudon|Ogerpon-Hearthflame|Raging Bolt|Roaring Moon": {
+    "n_examples": 33,
+    "n_tier1": 22,
+    "top1_action90": 0.0,
+    "top3_action90": 0.045454545454545456,
+    "mean_entropy": 4.089418096462716,
+    "mean_mi": 0.13168775874255767,
+    "mean_confidence": 0.04480788687413389,
+    "species": [
+      "Bronzong",
+      "Flutter Mane",
+      "Groudon",
+      "Ogerpon-Hearthflame",
+      "Raging Bolt",
+      "Roaring Moon"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Rillaboom|Roaring Moon|Urshifu-Rapid-Strike": {
+    "n_examples": 38,
+    "n_tier1": 23,
+    "top1_action90": 0.043478260869565216,
+    "top3_action90": 0.17391304347826086,
+    "mean_entropy": 4.030413308484475,
+    "mean_mi": 0.046347342010313784,
+    "mean_confidence": 0.05371286101315332,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Rillaboom",
+      "Roaring Moon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Groudon|Iron Hands|Ogerpon-Hearthflame|Roaring Moon": {
+    "n_examples": 46,
+    "n_tier1": 34,
+    "top1_action90": 0.058823529411764705,
+    "top3_action90": 0.11764705882352941,
+    "mean_entropy": 4.176458658360503,
+    "mean_mi": 0.05191325713565648,
+    "mean_confidence": 0.04412605654010001,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Groudon",
+      "Iron Hands",
+      "Ogerpon-Hearthflame",
+      "Roaring Moon"
+    ]
+  },
+  "Flutter Mane|Incineroar|Ogerpon-Hearthflame|Rillaboom|Terapagos|Urshifu-Rapid-Strike": {
+    "n_examples": 335,
+    "n_tier1": 280,
+    "top1_action90": 0.11785714285714285,
+    "top3_action90": 0.2571428571428571,
+    "mean_entropy": 3.976150639270634,
+    "mean_mi": 0.036651582341262624,
+    "mean_confidence": 0.060220553007509024,
+    "species": [
+      "Flutter Mane",
+      "Incineroar",
+      "Ogerpon-Hearthflame",
+      "Rillaboom",
+      "Terapagos",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Annihilape|Calyrex-Ice|Incineroar|Ogerpon-Cornerstone|Raging Bolt": {
+    "n_examples": 81,
+    "n_tier1": 56,
+    "top1_action90": 0.10714285714285714,
+    "top3_action90": 0.16071428571428573,
+    "mean_entropy": 4.238683791065795,
+    "mean_mi": 0.08412041894779643,
+    "mean_confidence": 0.0453306753720556,
+    "species": [
+      "Amoonguss",
+      "Annihilape",
+      "Calyrex-Ice",
+      "Incineroar",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt"
+    ]
+  },
+  "Amoonguss|Chi-Yu|Chien-Pao|Flutter Mane|Raging Bolt|Zamazenta-Crowned": {
+    "n_examples": 74,
+    "n_tier1": 61,
+    "top1_action90": 0.09836065573770492,
+    "top3_action90": 0.26229508196721313,
+    "mean_entropy": 4.057062815697598,
+    "mean_mi": 0.02875415542425999,
+    "mean_confidence": 0.0681825003540907,
+    "species": [
+      "Amoonguss",
+      "Chi-Yu",
+      "Chien-Pao",
+      "Flutter Mane",
+      "Raging Bolt",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Calyrex-Shadow|Incineroar|Ogerpon-Hearthflame|Rillaboom|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 61,
+    "n_tier1": 46,
+    "top1_action90": 0.06521739130434782,
+    "top3_action90": 0.1956521739130435,
+    "mean_entropy": 4.11528247121416,
+    "mean_mi": 0.0376056328628004,
+    "mean_confidence": 0.04780037160152973,
+    "species": [
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Ogerpon-Hearthflame",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Chien-Pao|Entei|Flutter Mane|Urshifu|Zamazenta-Crowned": {
+    "n_examples": 45,
+    "n_tier1": 34,
+    "top1_action90": 0.058823529411764705,
+    "top3_action90": 0.20588235294117646,
+    "mean_entropy": 4.059233008419566,
+    "mean_mi": 0.02575730360529061,
+    "mean_confidence": 0.06244428770287949,
+    "species": [
+      "Amoonguss",
+      "Chien-Pao",
+      "Entei",
+      "Flutter Mane",
+      "Urshifu",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Farigiraf|Ogerpon-Hearthflame|Regidrago|Tornadus|Urshifu-Rapid-Strike|Zacian-Crowned": {
+    "n_examples": 87,
+    "n_tier1": 70,
+    "top1_action90": 0.07142857142857142,
+    "top3_action90": 0.17142857142857143,
+    "mean_entropy": 4.018260651488449,
+    "mean_mi": 0.025258063699194644,
+    "mean_confidence": 0.07635294122887509,
+    "species": [
+      "Farigiraf",
+      "Ogerpon-Hearthflame",
+      "Regidrago",
+      "Tornadus",
+      "Urshifu-Rapid-Strike",
+      "Zacian-Crowned"
+    ]
+  },
+  "Bruxish|Indeedee-F|Kyogre|Landorus|Roaring Moon|Scizor": {
+    "n_examples": 39,
+    "n_tier1": 26,
+    "top1_action90": 0.11538461538461539,
+    "top3_action90": 0.11538461538461539,
+    "mean_entropy": 4.07138733839893,
+    "mean_mi": 0.12484573033148931,
+    "mean_confidence": 0.09204864319270618,
+    "species": [
+      "Bruxish",
+      "Indeedee-F",
+      "Kyogre",
+      "Landorus",
+      "Roaring Moon",
+      "Scizor"
+    ]
+  },
+  "Annihilape|Calyrex-Ice|Gastrodon|Indeedee-F|Smeargle|Ting-Lu": {
+    "n_examples": 48,
+    "n_tier1": 31,
+    "top1_action90": 0.0,
+    "top3_action90": 0.0967741935483871,
+    "mean_entropy": 4.155324727351757,
+    "mean_mi": 0.2280712475679988,
+    "mean_confidence": 0.05957192610348424,
+    "species": [
+      "Annihilape",
+      "Calyrex-Ice",
+      "Gastrodon",
+      "Indeedee-F",
+      "Smeargle",
+      "Ting-Lu"
+    ]
+  },
+  "Groudon|Incineroar|Jumpluff|Ogerpon-Hearthflame|Raging Bolt|Urshifu": {
+    "n_examples": 157,
+    "n_tier1": 125,
+    "top1_action90": 0.184,
+    "top3_action90": 0.32,
+    "mean_entropy": 3.997224407108187,
+    "mean_mi": 0.04119069153955601,
+    "mean_confidence": 0.0837855013996363,
+    "species": [
+      "Groudon",
+      "Incineroar",
+      "Jumpluff",
+      "Ogerpon-Hearthflame",
+      "Raging Bolt",
+      "Urshifu"
+    ]
+  },
+  "Basculegion|Hatterene|Indeedee-F|Kyogre|Smeargle|Weezing-Galar": {
+    "n_examples": 44,
+    "n_tier1": 31,
+    "top1_action90": 0.0,
+    "top3_action90": 0.0,
+    "mean_entropy": 4.181810437916683,
+    "mean_mi": 0.12655751085552952,
+    "mean_confidence": 0.04674816788925278,
+    "species": [
+      "Basculegion",
+      "Hatterene",
+      "Indeedee-F",
+      "Kyogre",
+      "Smeargle",
+      "Weezing-Galar"
+    ]
+  },
+  "Calyrex-Ice|Corviknight|Hippowdon|Incineroar|Iron Valiant|Kleavor": {
+    "n_examples": 26,
+    "n_tier1": 20,
+    "top1_action90": 0.75,
+    "top3_action90": 0.75,
+    "mean_entropy": 4.386308342927385,
+    "mean_mi": 0.06087660624982658,
+    "mean_confidence": 0.03885546032339335,
+    "species": [
+      "Calyrex-Ice",
+      "Corviknight",
+      "Hippowdon",
+      "Incineroar",
+      "Iron Valiant",
+      "Kleavor"
+    ]
+  },
+  "Amoonguss|Chien-Pao|Kyogre|Rillaboom|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 24,
+    "n_tier1": 21,
+    "top1_action90": 0.14285714285714285,
+    "top3_action90": 0.3333333333333333,
+    "mean_entropy": 4.016673806380762,
+    "mean_mi": 0.12710761397784348,
+    "mean_confidence": 0.07416317586210514,
+    "species": [
+      "Amoonguss",
+      "Chien-Pao",
+      "Kyogre",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Chien-Pao|Dragonite|Rillaboom|Urshifu|Volcarona": {
+    "n_examples": 40,
+    "n_tier1": 34,
+    "top1_action90": 0.14705882352941177,
+    "top3_action90": 0.23529411764705882,
+    "mean_entropy": 4.313136198780801,
+    "mean_mi": 0.05142990968085578,
+    "mean_confidence": 0.026036592600319316,
+    "species": [
+      "Calyrex-Shadow",
+      "Chien-Pao",
+      "Dragonite",
+      "Rillaboom",
+      "Urshifu",
+      "Volcarona"
+    ]
+  },
+  "Brute Bonnet|Charizard|Ditto|Groudon|Ursaluna|Whimsicott": {
+    "n_examples": 30,
+    "n_tier1": 28,
+    "top1_action90": 0.03571428571428571,
+    "top3_action90": 0.5,
+    "mean_entropy": 3.605884089737838,
+    "mean_mi": 0.15742608560646731,
+    "mean_confidence": 0.14376810259584868,
+    "species": [
+      "Brute Bonnet",
+      "Charizard",
+      "Ditto",
+      "Groudon",
+      "Ursaluna",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Chien-Pao|Farigiraf|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 30,
+    "n_tier1": 22,
+    "top1_action90": 0.045454545454545456,
+    "top3_action90": 0.09090909090909091,
+    "mean_entropy": 4.192276743505506,
+    "mean_mi": 0.03155237575313316,
+    "mean_confidence": 0.04366875697265971,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Chien-Pao",
+      "Farigiraf",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Archaludon|Farigiraf|Kyogre|Landorus|Rillaboom|Tornadus": {
+    "n_examples": 26,
+    "n_tier1": 23,
+    "top1_action90": 0.0,
+    "top3_action90": 0.0,
+    "mean_entropy": 4.030144581758759,
+    "mean_mi": 0.07632233868921527,
+    "mean_confidence": 0.06665429330390432,
+    "species": [
+      "Archaludon",
+      "Farigiraf",
+      "Kyogre",
+      "Landorus",
+      "Rillaboom",
+      "Tornadus"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Incineroar|Mienshao|Rillaboom|Tornadus": {
+    "n_examples": 42,
+    "n_tier1": 35,
+    "top1_action90": 0.17142857142857143,
+    "top3_action90": 0.3142857142857143,
+    "mean_entropy": 3.761487102585801,
+    "mean_mi": 0.06500288336827732,
+    "mean_confidence": 0.09176848454134805,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Incineroar",
+      "Mienshao",
+      "Rillaboom",
+      "Tornadus"
+    ]
+  },
+  "Frosmoth|Gastrodon|Indeedee-F|Necrozma-Dusk-Mane|Ogerpon-Hearthflame|Tyranitar": {
+    "n_examples": 23,
+    "n_tier1": 20,
+    "top1_action90": 0.15,
+    "top3_action90": 0.2,
+    "mean_entropy": 4.192251238315973,
+    "mean_mi": 0.07411802732331654,
+    "mean_confidence": 0.038823137246072295,
+    "species": [
+      "Frosmoth",
+      "Gastrodon",
+      "Indeedee-F",
+      "Necrozma-Dusk-Mane",
+      "Ogerpon-Hearthflame",
+      "Tyranitar"
+    ]
+  },
+  "Calyrex-Shadow|Incineroar|Ogerpon-Cornerstone|Rillaboom|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 93,
+    "n_tier1": 73,
+    "top1_action90": 0.0410958904109589,
+    "top3_action90": 0.136986301369863,
+    "mean_entropy": 4.059124219579628,
+    "mean_mi": 0.044454461598706495,
+    "mean_confidence": 0.05777027012958919,
+    "species": [
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Ogerpon-Cornerstone",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Ice|Grimmsnarl|Landorus|Ogerpon-Hearthflame|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 54,
+    "n_tier1": 39,
+    "top1_action90": 0.02564102564102564,
+    "top3_action90": 0.10256410256410256,
+    "mean_entropy": 4.075392475364276,
+    "mean_mi": 0.03703470743272083,
+    "mean_confidence": 0.06035676782902998,
+    "species": [
+      "Calyrex-Ice",
+      "Grimmsnarl",
+      "Landorus",
+      "Ogerpon-Hearthflame",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Flutter Mane|Incineroar|Koraidon|Ogerpon-Cornerstone|Raging Bolt": {
+    "n_examples": 45,
+    "n_tier1": 35,
+    "top1_action90": 0.11428571428571428,
+    "top3_action90": 0.22857142857142856,
+    "mean_entropy": 4.037838849258444,
+    "mean_mi": 0.032479828632581344,
+    "mean_confidence": 0.04935662020530019,
+    "species": [
+      "Amoonguss",
+      "Flutter Mane",
+      "Incineroar",
+      "Koraidon",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt"
+    ]
+  },
+  "Calyrex-Shadow|Incineroar|Ogerpon-Wellspring|Raging Bolt|Rillaboom|Urshifu": {
+    "n_examples": 75,
+    "n_tier1": 66,
+    "top1_action90": 0.015151515151515152,
+    "top3_action90": 0.06060606060606061,
+    "mean_entropy": 4.066181797387087,
+    "mean_mi": 0.022763386355231733,
+    "mean_confidence": 0.05576775221887863,
+    "species": [
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Ogerpon-Wellspring",
+      "Raging Bolt",
+      "Rillaboom",
+      "Urshifu"
+    ]
+  },
+  "Farigiraf|Incineroar|Iron Hands|Miraidon|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 31,
+    "n_tier1": 26,
+    "top1_action90": 0.038461538461538464,
+    "top3_action90": 0.15384615384615385,
+    "mean_entropy": 4.055380899140796,
+    "mean_mi": 0.055462017604908216,
+    "mean_confidence": 0.049584453739225855,
+    "species": [
+      "Farigiraf",
+      "Incineroar",
+      "Iron Hands",
+      "Miraidon",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chi-Yu|Groudon|Landorus|Ogerpon-Hearthflame|Walking Wake|Whimsicott": {
+    "n_examples": 23,
+    "n_tier1": 21,
+    "top1_action90": 0.09523809523809523,
+    "top3_action90": 0.23809523809523808,
+    "mean_entropy": 4.219005901429005,
+    "mean_mi": 0.03920054336210832,
+    "mean_confidence": 0.042850514590030614,
+    "species": [
+      "Chi-Yu",
+      "Groudon",
+      "Landorus",
+      "Ogerpon-Hearthflame",
+      "Walking Wake",
+      "Whimsicott"
+    ]
+  },
+  "Chi-Yu|Dondozo|Dragonite|Gholdengo|Miraidon|Tatsugiri": {
+    "n_examples": 57,
+    "n_tier1": 44,
+    "top1_action90": 0.18181818181818182,
+    "top3_action90": 0.3409090909090909,
+    "mean_entropy": 3.3892406373391277,
+    "mean_mi": 0.05004958194997782,
+    "mean_confidence": 0.17035561874508856,
+    "species": [
+      "Chi-Yu",
+      "Dondozo",
+      "Dragonite",
+      "Gholdengo",
+      "Miraidon",
+      "Tatsugiri"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Glastrier|Koraidon|Raging Bolt|Rillaboom": {
+    "n_examples": 116,
+    "n_tier1": 100,
+    "top1_action90": 0.06,
+    "top3_action90": 0.14,
+    "mean_entropy": 4.168544579362131,
+    "mean_mi": 0.09086168788499069,
+    "mean_confidence": 0.038126241581514474,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Glastrier",
+      "Koraidon",
+      "Raging Bolt",
+      "Rillaboom"
+    ]
+  },
+  "Calyrex-Shadow|Farigiraf|Incineroar|Mienshao|Ogerpon-Wellspring|Whimsicott": {
+    "n_examples": 31,
+    "n_tier1": 22,
+    "top1_action90": 0.18181818181818182,
+    "top3_action90": 0.2727272727272727,
+    "mean_entropy": 4.09943561300551,
+    "mean_mi": 0.06217595242404132,
+    "mean_confidence": 0.04331565746529537,
+    "species": [
+      "Calyrex-Shadow",
+      "Farigiraf",
+      "Incineroar",
+      "Mienshao",
+      "Ogerpon-Wellspring",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Calyrex-Shadow|Incineroar|Rillaboom|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 26,
+    "n_tier1": 23,
+    "top1_action90": 0.08695652173913043,
+    "top3_action90": 0.21739130434782608,
+    "mean_entropy": 4.076743900267753,
+    "mean_mi": 0.051149427075345866,
+    "mean_confidence": 0.060073382245457704,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Ice|Chi-Yu|Flutter Mane|Ogerpon-Cornerstone|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 162,
+    "n_tier1": 125,
+    "top1_action90": 0.112,
+    "top3_action90": 0.248,
+    "mean_entropy": 4.008730358650624,
+    "mean_mi": 0.03171786193602959,
+    "mean_confidence": 0.06729370702803135,
+    "species": [
+      "Calyrex-Ice",
+      "Chi-Yu",
+      "Flutter Mane",
+      "Ogerpon-Cornerstone",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Ceruledge|Garchomp|Samurott-Hisui|Staraptor|Torterra|Zamazenta-Crowned": {
+    "n_examples": 28,
+    "n_tier1": 21,
+    "top1_action90": 0.0,
+    "top3_action90": 0.09523809523809523,
+    "mean_entropy": 4.40590872766676,
+    "mean_mi": 0.042675160147054365,
+    "mean_confidence": 0.026196281975578693,
+    "species": [
+      "Ceruledge",
+      "Garchomp",
+      "Samurott-Hisui",
+      "Staraptor",
+      "Torterra",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Farigiraf|Iron Hands|Miraidon|Ogerpon-Hearthflame|Sneasler|Tornadus": {
+    "n_examples": 34,
+    "n_tier1": 26,
+    "top1_action90": 0.07692307692307693,
+    "top3_action90": 0.15384615384615385,
+    "mean_entropy": 4.0535300506809255,
+    "mean_mi": 0.06288569253882573,
+    "mean_confidence": 0.04785779665869016,
+    "species": [
+      "Farigiraf",
+      "Iron Hands",
+      "Miraidon",
+      "Ogerpon-Hearthflame",
+      "Sneasler",
+      "Tornadus"
+    ]
+  },
+  "Calyrex-Shadow|Dondozo|Maushold-Four|Tatsugiri|Urshifu-Rapid-Strike|Weezing-Galar": {
+    "n_examples": 41,
+    "n_tier1": 33,
+    "top1_action90": 0.45454545454545453,
+    "top3_action90": 0.8181818181818182,
+    "mean_entropy": 3.407047926811234,
+    "mean_mi": 0.07136128463902103,
+    "mean_confidence": 0.2166989197785204,
+    "species": [
+      "Calyrex-Shadow",
+      "Dondozo",
+      "Maushold-Four",
+      "Tatsugiri",
+      "Urshifu-Rapid-Strike",
+      "Weezing-Galar"
+    ]
+  },
+  "Calyrex-Ice|Hatterene|Incineroar|Indeedee-F|Lilligant-Hisui|Torkoal": {
+    "n_examples": 22,
+    "n_tier1": 20,
+    "top1_action90": 0.05,
+    "top3_action90": 0.1,
+    "mean_entropy": 4.028438795123909,
+    "mean_mi": 0.06466720439894487,
+    "mean_confidence": 0.06640004599466919,
+    "species": [
+      "Calyrex-Ice",
+      "Hatterene",
+      "Incineroar",
+      "Indeedee-F",
+      "Lilligant-Hisui",
+      "Torkoal"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Koraidon|Ogerpon-Cornerstone|Raichu|Whimsicott": {
+    "n_examples": 32,
+    "n_tier1": 28,
+    "top1_action90": 0.0,
+    "top3_action90": 0.10714285714285714,
+    "mean_entropy": 4.049192862535812,
+    "mean_mi": 0.0827216841931142,
+    "mean_confidence": 0.053020550749663796,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Koraidon",
+      "Ogerpon-Cornerstone",
+      "Raichu",
+      "Whimsicott"
+    ]
+  },
+  "Farigiraf|Iron Hands|Iron Moth|Landorus|Miraidon|Whimsicott": {
+    "n_examples": 29,
+    "n_tier1": 23,
+    "top1_action90": 0.2608695652173913,
+    "top3_action90": 0.391304347826087,
+    "mean_entropy": 4.116906924677124,
+    "mean_mi": 0.03424060221966586,
+    "mean_confidence": 0.043586094580266785,
+    "species": [
+      "Farigiraf",
+      "Iron Hands",
+      "Iron Moth",
+      "Landorus",
+      "Miraidon",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Comfey|Grimmsnarl|Incineroar|Ogerpon-Wellspring|Terapagos": {
+    "n_examples": 28,
+    "n_tier1": 27,
+    "top1_action90": 0.037037037037037035,
+    "top3_action90": 0.07407407407407407,
+    "mean_entropy": 4.121139943505965,
+    "mean_mi": 0.036334801261823924,
+    "mean_confidence": 0.044072326714241945,
+    "species": [
+      "Amoonguss",
+      "Comfey",
+      "Grimmsnarl",
+      "Incineroar",
+      "Ogerpon-Wellspring",
+      "Terapagos"
+    ]
+  },
+  "Incineroar|Iron Hands|Landorus|Miraidon|Urshifu-Rapid-Strike|Whimsicott": {
+    "n_examples": 25,
+    "n_tier1": 20,
+    "top1_action90": 0.0,
+    "top3_action90": 0.05,
+    "mean_entropy": 4.051572079200128,
+    "mean_mi": 0.050157685448647474,
+    "mean_confidence": 0.054731729961931694,
+    "species": [
+      "Incineroar",
+      "Iron Hands",
+      "Landorus",
+      "Miraidon",
+      "Urshifu-Rapid-Strike",
+      "Whimsicott"
+    ]
+  },
+  "Farigiraf|Miraidon|Ogerpon-Hearthflame|Rotom-Wash|Urshifu|Whimsicott": {
+    "n_examples": 24,
+    "n_tier1": 23,
+    "top1_action90": 0.0,
+    "top3_action90": 0.21739130434782608,
+    "mean_entropy": 4.071417078247899,
+    "mean_mi": 0.08419406245249857,
+    "mean_confidence": 0.05744218186515829,
+    "species": [
+      "Farigiraf",
+      "Miraidon",
+      "Ogerpon-Hearthflame",
+      "Rotom-Wash",
+      "Urshifu",
+      "Whimsicott"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Rillaboom|Terapagos|Terrakion|Whimsicott": {
+    "n_examples": 29,
+    "n_tier1": 24,
+    "top1_action90": 0.20833333333333334,
+    "top3_action90": 0.20833333333333334,
+    "mean_entropy": 4.139386486260324,
+    "mean_mi": 0.10895026121310701,
+    "mean_confidence": 0.07637621349034208,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Rillaboom",
+      "Terapagos",
+      "Terrakion",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Calyrex-Shadow|Incineroar|Pelipper|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 24,
+    "n_tier1": 22,
+    "top1_action90": 0.045454545454545456,
+    "top3_action90": 0.13636363636363635,
+    "mean_entropy": 4.1480948166030025,
+    "mean_mi": 0.0262820545140348,
+    "mean_confidence": 0.03905301017856055,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Shadow",
+      "Incineroar",
+      "Pelipper",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Chi-Yu|Chien-Pao|Flutter Mane|Ogerpon-Cornerstone|Zamazenta-Crowned": {
+    "n_examples": 85,
+    "n_tier1": 61,
+    "top1_action90": 0.03278688524590164,
+    "top3_action90": 0.09836065573770492,
+    "mean_entropy": 4.014335194058198,
+    "mean_mi": 0.03145718475000543,
+    "mean_confidence": 0.06114276810625538,
+    "species": [
+      "Amoonguss",
+      "Chi-Yu",
+      "Chien-Pao",
+      "Flutter Mane",
+      "Ogerpon-Cornerstone",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Alcremie|Chi-Yu|Iron Hands|Miraidon|Murkrow|Vikavolt": {
+    "n_examples": 87,
+    "n_tier1": 67,
+    "top1_action90": 0.07462686567164178,
+    "top3_action90": 0.31343283582089554,
+    "mean_entropy": 3.97094803592116,
+    "mean_mi": 0.05684969254583795,
+    "mean_confidence": 0.05390012436615887,
+    "species": [
+      "Alcremie",
+      "Chi-Yu",
+      "Iron Hands",
+      "Miraidon",
+      "Murkrow",
+      "Vikavolt"
+    ]
+  },
+  "Basculegion|Kyogre|Landorus|Tornadus|Tsareena|Urshifu-Rapid-Strike": {
+    "n_examples": 63,
+    "n_tier1": 50,
+    "top1_action90": 0.16,
+    "top3_action90": 0.42,
+    "mean_entropy": 3.7767043938187648,
+    "mean_mi": 0.06887405071973812,
+    "mean_confidence": 0.08546069721877575,
+    "species": [
+      "Basculegion",
+      "Kyogre",
+      "Landorus",
+      "Tornadus",
+      "Tsareena",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Landorus|Ogerpon-Hearthflame|Rillaboom|Roaring Moon|Urshifu-Rapid-Strike": {
+    "n_examples": 46,
+    "n_tier1": 36,
+    "top1_action90": 0.027777777777777776,
+    "top3_action90": 0.16666666666666666,
+    "mean_entropy": 4.207934712102658,
+    "mean_mi": 0.02749694002900734,
+    "mean_confidence": 0.03646831307560205,
+    "species": [
+      "Calyrex-Shadow",
+      "Landorus",
+      "Ogerpon-Hearthflame",
+      "Rillaboom",
+      "Roaring Moon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chien-Pao|Groudon|Iron Valiant|Ogerpon-Hearthflame|Raging Bolt|Sableye": {
+    "n_examples": 26,
+    "n_tier1": 21,
+    "top1_action90": 0.09523809523809523,
+    "top3_action90": 0.14285714285714285,
+    "mean_entropy": 4.222429125251605,
+    "mean_mi": 0.06688271136212401,
+    "mean_confidence": 0.04218429430787053,
+    "species": [
+      "Chien-Pao",
+      "Groudon",
+      "Iron Valiant",
+      "Ogerpon-Hearthflame",
+      "Raging Bolt",
+      "Sableye"
+    ]
+  },
+  "Amoonguss|Chi-Yu|Flutter Mane|Iron Hands|Terapagos|Urshifu-Rapid-Strike": {
+    "n_examples": 36,
+    "n_tier1": 30,
+    "top1_action90": 0.0,
+    "top3_action90": 0.06666666666666667,
+    "mean_entropy": 4.239653600235775,
+    "mean_mi": 0.03341004487031031,
+    "mean_confidence": 0.032312793085972465,
+    "species": [
+      "Amoonguss",
+      "Chi-Yu",
+      "Flutter Mane",
+      "Iron Hands",
+      "Terapagos",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Amoonguss|Flutter Mane|Incineroar|Koraidon|Raging Bolt|Ursaluna": {
+    "n_examples": 28,
+    "n_tier1": 25,
+    "top1_action90": 0.04,
+    "top3_action90": 0.12,
+    "mean_entropy": 4.0334491557909065,
+    "mean_mi": 0.05239656362483389,
+    "mean_confidence": 0.04524116303026677,
+    "species": [
+      "Amoonguss",
+      "Flutter Mane",
+      "Incineroar",
+      "Koraidon",
+      "Raging Bolt",
+      "Ursaluna"
+    ]
+  },
+  "Gothitelle|Incineroar|Kyogre|Raging Bolt|Rillaboom|Scream Tail": {
+    "n_examples": 257,
+    "n_tier1": 193,
+    "top1_action90": 0.0051813471502590676,
+    "top3_action90": 0.02072538860103627,
+    "mean_entropy": 4.215330175515318,
+    "mean_mi": 0.09476004801096963,
+    "mean_confidence": 0.03266343136988773,
+    "species": [
+      "Gothitelle",
+      "Incineroar",
+      "Kyogre",
+      "Raging Bolt",
+      "Rillaboom",
+      "Scream Tail"
+    ]
+  },
+  "Iron Hands|Kyogre|Landorus|Tornadus|Tsareena|Urshifu-Rapid-Strike": {
+    "n_examples": 24,
+    "n_tier1": 21,
+    "top1_action90": 0.0,
+    "top3_action90": 0.2857142857142857,
+    "mean_entropy": 4.065086241876266,
+    "mean_mi": 0.06950469196949442,
+    "mean_confidence": 0.05258105913443225,
+    "species": [
+      "Iron Hands",
+      "Kyogre",
+      "Landorus",
+      "Tornadus",
+      "Tsareena",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Calyrex-Shadow|Clefairy|Flutter Mane|Incineroar|Raging Bolt|Urshifu-Rapid-Strike": {
+    "n_examples": 25,
+    "n_tier1": 20,
+    "top1_action90": 0.25,
+    "top3_action90": 0.35,
+    "mean_entropy": 3.980659237371163,
+    "mean_mi": 0.06417967869304131,
+    "mean_confidence": 0.08298758238554,
+    "species": [
+      "Calyrex-Shadow",
+      "Clefairy",
+      "Flutter Mane",
+      "Incineroar",
+      "Raging Bolt",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Farigiraf|Iron Bundle|Iron Hands|Miraidon|Ogerpon-Cornerstone|Ursaluna-Bloodmoon": {
+    "n_examples": 22,
+    "n_tier1": 20,
+    "top1_action90": 0.2,
+    "top3_action90": 0.35,
+    "mean_entropy": 3.9887927081368546,
+    "mean_mi": 0.044147460424965757,
+    "mean_confidence": 0.055772921778261667,
+    "species": [
+      "Farigiraf",
+      "Iron Bundle",
+      "Iron Hands",
+      "Miraidon",
+      "Ogerpon-Cornerstone",
+      "Ursaluna-Bloodmoon"
+    ]
+  },
+  "Flutter Mane|Groudon|Jumpluff|Rillaboom|Typhlosion-Hisui|Weezing-Galar": {
+    "n_examples": 36,
+    "n_tier1": 29,
+    "top1_action90": 0.0,
+    "top3_action90": 0.06896551724137931,
+    "mean_entropy": 4.303264944908839,
+    "mean_mi": 0.05444994216895414,
+    "mean_confidence": 0.03481808053008441,
+    "species": [
+      "Flutter Mane",
+      "Groudon",
+      "Jumpluff",
+      "Rillaboom",
+      "Typhlosion-Hisui",
+      "Weezing-Galar"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Flutter Mane|Incineroar|Torkoal|Walking Wake": {
+    "n_examples": 34,
+    "n_tier1": 26,
+    "top1_action90": 0.038461538461538464,
+    "top3_action90": 0.11538461538461539,
+    "mean_entropy": 4.292708683574033,
+    "mean_mi": 0.04529708542365677,
+    "mean_confidence": 0.033667342293147856,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Flutter Mane",
+      "Incineroar",
+      "Torkoal",
+      "Walking Wake"
+    ]
+  },
+  "Calyrex-Shadow|Dondozo|Ogerpon-Hearthflame|Ting-Lu|Urshifu|Whimsicott": {
+    "n_examples": 22,
+    "n_tier1": 21,
+    "top1_action90": 0.09523809523809523,
+    "top3_action90": 0.2857142857142857,
+    "mean_entropy": 3.7596701666520325,
+    "mean_mi": 0.03861301687498938,
+    "mean_confidence": 0.1156613623102506,
+    "species": [
+      "Calyrex-Shadow",
+      "Dondozo",
+      "Ogerpon-Hearthflame",
+      "Ting-Lu",
+      "Urshifu",
+      "Whimsicott"
+    ]
+  },
+  "Amoonguss|Calyrex-Shadow|Indeedee-F|Ogerpon-Cornerstone|Tornadus|Urshifu-Rapid-Strike": {
+    "n_examples": 43,
+    "n_tier1": 28,
+    "top1_action90": 0.07142857142857142,
+    "top3_action90": 0.21428571428571427,
+    "mean_entropy": 4.047554897359929,
+    "mean_mi": 0.06544370577207001,
+    "mean_confidence": 0.06065385857863085,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Shadow",
+      "Indeedee-F",
+      "Ogerpon-Cornerstone",
+      "Tornadus",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Archaludon|Electabuzz|Grimmsnarl|Kyogre|Tornadus|Tsareena": {
+    "n_examples": 28,
+    "n_tier1": 24,
+    "top1_action90": 0.041666666666666664,
+    "top3_action90": 0.16666666666666666,
+    "mean_entropy": 4.182598895355501,
+    "mean_mi": 0.04329634206455657,
+    "mean_confidence": 0.03637849258569379,
+    "species": [
+      "Archaludon",
+      "Electabuzz",
+      "Grimmsnarl",
+      "Kyogre",
+      "Tornadus",
+      "Tsareena"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Iron Valiant|Landorus|Pelipper|Urshifu-Rapid-Strike": {
+    "n_examples": 71,
+    "n_tier1": 51,
+    "top1_action90": 0.13725490196078433,
+    "top3_action90": 0.27450980392156865,
+    "mean_entropy": 3.9485882801868333,
+    "mean_mi": 0.029034816133030855,
+    "mean_confidence": 0.06562340279274126,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Iron Valiant",
+      "Landorus",
+      "Pelipper",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Armarouge|Bronzong|Groudon|Mienshao|Rillaboom|Roaring Moon": {
+    "n_examples": 46,
+    "n_tier1": 34,
+    "top1_action90": 0.23529411764705882,
+    "top3_action90": 0.29411764705882354,
+    "mean_entropy": 4.058430316035876,
+    "mean_mi": 0.11500416449095675,
+    "mean_confidence": 0.09931841878330006,
+    "species": [
+      "Armarouge",
+      "Bronzong",
+      "Groudon",
+      "Mienshao",
+      "Rillaboom",
+      "Roaring Moon"
+    ]
+  },
+  "Chien-Pao|Flutter Mane|Ogerpon-Hearthflame|Pelipper|Rillaboom|Zamazenta-Crowned": {
+    "n_examples": 46,
+    "n_tier1": 34,
+    "top1_action90": 0.08823529411764706,
+    "top3_action90": 0.23529411764705882,
+    "mean_entropy": 4.2216765432039995,
+    "mean_mi": 0.03135915244319525,
+    "mean_confidence": 0.029829776396646218,
+    "species": [
+      "Chien-Pao",
+      "Flutter Mane",
+      "Ogerpon-Hearthflame",
+      "Pelipper",
+      "Rillaboom",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Amoonguss|Chien-Pao|Entei|Kyogre|Rillaboom|Tornadus": {
+    "n_examples": 23,
+    "n_tier1": 20,
+    "top1_action90": 0.0,
+    "top3_action90": 0.05,
+    "mean_entropy": 4.107528508939685,
+    "mean_mi": 0.11502153784433297,
+    "mean_confidence": 0.048654336943291125,
+    "species": [
+      "Amoonguss",
+      "Chien-Pao",
+      "Entei",
+      "Kyogre",
+      "Rillaboom",
+      "Tornadus"
+    ]
+  },
+  "Chi-Yu|Chien-Pao|Rillaboom|Tornadus|Urshifu-Rapid-Strike|Zamazenta-Crowned": {
+    "n_examples": 32,
+    "n_tier1": 25,
+    "top1_action90": 0.08,
+    "top3_action90": 0.24,
+    "mean_entropy": 4.079653719888409,
+    "mean_mi": 0.04995907002024765,
+    "mean_confidence": 0.05124596749991178,
+    "species": [
+      "Chi-Yu",
+      "Chien-Pao",
+      "Rillaboom",
+      "Tornadus",
+      "Urshifu-Rapid-Strike",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Farigiraf|Incineroar|Lunala|Rillaboom|Roaring Moon|Urshifu-Rapid-Strike": {
+    "n_examples": 35,
+    "n_tier1": 25,
+    "top1_action90": 0.2,
+    "top3_action90": 0.28,
+    "mean_entropy": 4.148185235729596,
+    "mean_mi": 0.054693859569413805,
+    "mean_confidence": 0.036655748717486863,
+    "species": [
+      "Farigiraf",
+      "Incineroar",
+      "Lunala",
+      "Rillaboom",
+      "Roaring Moon",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chien-Pao|Flutter Mane|Landorus|Ogerpon-Hearthflame|Rillaboom|Zamazenta-Crowned": {
+    "n_examples": 114,
+    "n_tier1": 89,
+    "top1_action90": 0.07865168539325842,
+    "top3_action90": 0.1348314606741573,
+    "mean_entropy": 4.245926844350814,
+    "mean_mi": 0.022641135195890522,
+    "mean_confidence": 0.026648924763450457,
+    "species": [
+      "Chien-Pao",
+      "Flutter Mane",
+      "Landorus",
+      "Ogerpon-Hearthflame",
+      "Rillaboom",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Calyrex-Ice|Incineroar|Landorus|Pelipper|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 42,
+    "n_tier1": 31,
+    "top1_action90": 0.12903225806451613,
+    "top3_action90": 0.16129032258064516,
+    "mean_entropy": 4.195077472890989,
+    "mean_mi": 0.030489010127012415,
+    "mean_confidence": 0.04049520172899769,
+    "species": [
+      "Calyrex-Ice",
+      "Incineroar",
+      "Landorus",
+      "Pelipper",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Chien-Pao|Entei|Flutter Mane|Grimmsnarl|Rillaboom|Zamazenta-Crowned": {
+    "n_examples": 34,
+    "n_tier1": 29,
+    "top1_action90": 0.0,
+    "top3_action90": 0.0,
+    "mean_entropy": 4.147812083321319,
+    "mean_mi": 0.04124791959778926,
+    "mean_confidence": 0.04634889804212183,
+    "species": [
+      "Chien-Pao",
+      "Entei",
+      "Flutter Mane",
+      "Grimmsnarl",
+      "Rillaboom",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Farigiraf|Iron Crown|Miraidon|Ogerpon-Hearthflame|Urshifu-Rapid-Strike|Whimsicott": {
+    "n_examples": 40,
+    "n_tier1": 34,
+    "top1_action90": 0.08823529411764706,
+    "top3_action90": 0.08823529411764706,
+    "mean_entropy": 3.8864996227051773,
+    "mean_mi": 0.033182526638251233,
+    "mean_confidence": 0.08009680086637244,
+    "species": [
+      "Farigiraf",
+      "Iron Crown",
+      "Miraidon",
+      "Ogerpon-Hearthflame",
+      "Urshifu-Rapid-Strike",
+      "Whimsicott"
+    ]
+  },
+  "Farigiraf|Iron Jugulis|Landorus|Lunala|Rillaboom|Urshifu-Rapid-Strike": {
+    "n_examples": 26,
+    "n_tier1": 21,
+    "top1_action90": 0.0,
+    "top3_action90": 0.047619047619047616,
+    "mean_entropy": 4.266075627387821,
+    "mean_mi": 0.07889592614954333,
+    "mean_confidence": 0.030739625197436133,
+    "species": [
+      "Farigiraf",
+      "Iron Jugulis",
+      "Landorus",
+      "Lunala",
+      "Rillaboom",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Annihilape|Calyrex-Shadow|Dondozo|Ogerpon-Hearthflame|Tatsugiri|Whimsicott": {
+    "n_examples": 33,
+    "n_tier1": 28,
+    "top1_action90": 0.21428571428571427,
+    "top3_action90": 0.42857142857142855,
+    "mean_entropy": 3.6869823832448794,
+    "mean_mi": 0.08932156160913116,
+    "mean_confidence": 0.1255616601024355,
+    "species": [
+      "Annihilape",
+      "Calyrex-Shadow",
+      "Dondozo",
+      "Ogerpon-Hearthflame",
+      "Tatsugiri",
+      "Whimsicott"
+    ]
+  },
+  "Chi-Yu|Chien-Pao|Dondozo|Dragonite|Ogerpon-Cornerstone|Zacian-Crowned": {
+    "n_examples": 37,
+    "n_tier1": 27,
+    "top1_action90": 0.037037037037037035,
+    "top3_action90": 0.037037037037037035,
+    "mean_entropy": 4.32034499341425,
+    "mean_mi": 0.03907644649824298,
+    "mean_confidence": 0.02637747079133987,
+    "species": [
+      "Chi-Yu",
+      "Chien-Pao",
+      "Dondozo",
+      "Dragonite",
+      "Ogerpon-Cornerstone",
+      "Zacian-Crowned"
+    ]
+  },
+  "Amoonguss|Chi-Yu|Chien-Pao|Regidrago|Whimsicott|Zacian-Crowned": {
+    "n_examples": 32,
+    "n_tier1": 20,
+    "top1_action90": 0.2,
+    "top3_action90": 0.3,
+    "mean_entropy": 3.8944206974045414,
+    "mean_mi": 0.046713221340823875,
+    "mean_confidence": 0.10004952535033225,
+    "species": [
+      "Amoonguss",
+      "Chi-Yu",
+      "Chien-Pao",
+      "Regidrago",
+      "Whimsicott",
+      "Zacian-Crowned"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Iron Hands|Landorus|Terapagos|Urshifu-Rapid-Strike": {
+    "n_examples": 32,
+    "n_tier1": 21,
+    "top1_action90": 0.0,
+    "top3_action90": 0.14285714285714285,
+    "mean_entropy": 4.174850534989655,
+    "mean_mi": 0.04707675390102907,
+    "mean_confidence": 0.040073104326923695,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Iron Hands",
+      "Landorus",
+      "Terapagos",
+      "Urshifu-Rapid-Strike"
+    ]
+  },
+  "Flutter Mane|Iron Moth|Landorus|Ogerpon-Wellspring|Roaring Moon|Zamazenta-Crowned": {
+    "n_examples": 28,
+    "n_tier1": 21,
+    "top1_action90": 0.047619047619047616,
+    "top3_action90": 0.23809523809523808,
+    "mean_entropy": 4.236934981802265,
+    "mean_mi": 0.016144666380922983,
+    "mean_confidence": 0.02611423489593324,
+    "species": [
+      "Flutter Mane",
+      "Iron Moth",
+      "Landorus",
+      "Ogerpon-Wellspring",
+      "Roaring Moon",
+      "Zamazenta-Crowned"
+    ]
+  },
+  "Chi-Yu|Farigiraf|Ogerpon|Regidrago|Tornadus|Zacian-Crowned": {
+    "n_examples": 34,
+    "n_tier1": 26,
+    "top1_action90": 0.0,
+    "top3_action90": 0.038461538461538464,
+    "mean_entropy": 3.9815970593412118,
+    "mean_mi": 0.07106844271129804,
+    "mean_confidence": 0.09144540562366063,
+    "species": [
+      "Chi-Yu",
+      "Farigiraf",
+      "Ogerpon",
+      "Regidrago",
+      "Tornadus",
+      "Zacian-Crowned"
+    ]
+  },
+  "Chi-Yu|Flutter Mane|Gothitelle|Koraidon|Raging Bolt|Whimsicott": {
+    "n_examples": 30,
+    "n_tier1": 29,
+    "top1_action90": 0.034482758620689655,
+    "top3_action90": 0.13793103448275862,
+    "mean_entropy": 4.182619552478396,
+    "mean_mi": 0.05320382320465667,
+    "mean_confidence": 0.036921968837750375,
+    "species": [
+      "Chi-Yu",
+      "Flutter Mane",
+      "Gothitelle",
+      "Koraidon",
+      "Raging Bolt",
+      "Whimsicott"
+    ]
+  },
+  "Chi-Yu|Farigiraf|Iron Hands|Miraidon|Ogerpon-Wellspring|Pelipper": {
+    "n_examples": 26,
+    "n_tier1": 20,
+    "top1_action90": 0.15,
+    "top3_action90": 0.3,
+    "mean_entropy": 4.159162110028977,
+    "mean_mi": 0.0457886027706047,
+    "mean_confidence": 0.04130476258695126,
+    "species": [
+      "Chi-Yu",
+      "Farigiraf",
+      "Iron Hands",
+      "Miraidon",
+      "Ogerpon-Wellspring",
+      "Pelipper"
+    ]
+  },
+  "Armarouge|Dewgong|Gloom|Indeedee-F|Lunala|Ting-Lu": {
+    "n_examples": 28,
+    "n_tier1": 22,
+    "top1_action90": 0.045454545454545456,
+    "top3_action90": 0.13636363636363635,
+    "mean_entropy": 4.012929574656571,
+    "mean_mi": 0.08788083222833487,
+    "mean_confidence": 0.08939262289892543,
+    "species": [
+      "Armarouge",
+      "Dewgong",
+      "Gloom",
+      "Indeedee-F",
+      "Lunala",
+      "Ting-Lu"
+    ]
+  },
+  "Amoonguss|Calyrex-Ice|Dusclops|Incineroar|Ogerpon-Wellspring|Ting-Lu": {
+    "n_examples": 26,
+    "n_tier1": 22,
+    "top1_action90": 0.09090909090909091,
+    "top3_action90": 0.09090909090909091,
+    "mean_entropy": 3.993096021492666,
+    "mean_mi": 0.0464106978869466,
+    "mean_confidence": 0.08275706104256887,
+    "species": [
+      "Amoonguss",
+      "Calyrex-Ice",
+      "Dusclops",
+      "Incineroar",
+      "Ogerpon-Wellspring",
+      "Ting-Lu"
+    ]
+  },
+  "Amoonguss|Flutter Mane|Groudon|Incineroar|Raging Bolt|Suicune": {
+    "n_examples": 36,
+    "n_tier1": 31,
+    "top1_action90": 0.03225806451612903,
+    "top3_action90": 0.0967741935483871,
+    "mean_entropy": 4.258709284861841,
+    "mean_mi": 0.08586898916611009,
+    "mean_confidence": 0.036101045621739276,
+    "species": [
+      "Amoonguss",
+      "Flutter Mane",
+      "Groudon",
+      "Incineroar",
+      "Raging Bolt",
+      "Suicune"
+    ]
+  },
+  "Calyrex-Shadow|Chien-Pao|Clefairy|Dragonite|Landorus|Tornadus": {
+    "n_examples": 23,
+    "n_tier1": 22,
+    "top1_action90": 0.045454545454545456,
+    "top3_action90": 0.22727272727272727,
+    "mean_entropy": 4.206088006101212,
+    "mean_mi": 0.046549804625786576,
+    "mean_confidence": 0.06469471078704704,
+    "species": [
+      "Calyrex-Shadow",
+      "Chien-Pao",
+      "Clefairy",
+      "Dragonite",
+      "Landorus",
+      "Tornadus"
+    ]
+  }
+}

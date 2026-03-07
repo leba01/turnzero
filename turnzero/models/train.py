@@ -164,12 +164,14 @@ def train_one_epoch(
 
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             if "prior_lead2_idx" in batch:
-                logits = model(
-                    team_a, team_b,
-                    prior_lead2_idx=batch["prior_lead2_idx"].to(device),
-                    prior_result=batch["prior_result"].to(device),
-                    game_num=batch["game_num"].to(device),
-                )
+                ctx_kwargs: dict[str, torch.Tensor] = {
+                    "prior_lead2_idx": batch["prior_lead2_idx"].to(device),
+                    "prior_result": batch["prior_result"].to(device),
+                    "game_num": batch["game_num"].to(device),
+                }
+                if "opp_revealed" in batch:
+                    ctx_kwargs["opp_revealed"] = batch["opp_revealed"].to(device)
+                logits = model(team_a, team_b, **ctx_kwargs)
             else:
                 logits = model(team_a, team_b)
             loss = _compute_loss(
@@ -228,12 +230,14 @@ def validate(
 
         with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             if "prior_lead2_idx" in batch:
-                logits = model(
-                    team_a, team_b,
-                    prior_lead2_idx=batch["prior_lead2_idx"].to(device),
-                    prior_result=batch["prior_result"].to(device),
-                    game_num=batch["game_num"].to(device),
-                )
+                ctx_kwargs_v: dict[str, torch.Tensor] = {
+                    "prior_lead2_idx": batch["prior_lead2_idx"].to(device),
+                    "prior_result": batch["prior_result"].to(device),
+                    "game_num": batch["game_num"].to(device),
+                }
+                if "opp_revealed" in batch:
+                    ctx_kwargs_v["opp_revealed"] = batch["opp_revealed"].to(device)
+                logits = model(team_a, team_b, **ctx_kwargs_v)
             else:
                 logits = model(team_a, team_b)
             loss = _compute_loss(
@@ -301,10 +305,22 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
     print(f"Loss mode: {loss_mode}")
 
     # --- Data ---
+    arch = cfg_model.get("arch", "flat")
     split_dir = cfg_data["split_dir"]
     context_path = cfg_data.get("context_path")
     print(f"Loading data from {split_dir} ...")
-    if context_path:
+    filter_prior_result = cfg_data.get("filter_prior_result")
+    if context_path and arch == "opponent_context":
+        from turnzero.data.sequential_dataset import build_opponent_context_dataloaders
+        train_loader, val_loader, test_loader, vocab = build_opponent_context_dataloaders(
+            split_dir=split_dir,
+            batch_size=cfg_train["batch_size"],
+            num_workers=cfg_train["num_workers"],
+            tier1_only=(loss_mode == "tier1_only"),
+            context_path=context_path,
+            n_opp_slots=cfg_model.get("n_opp_slots", 4),
+        )
+    elif context_path:
         from turnzero.data.sequential_dataset import build_sequential_dataloaders
         train_loader, val_loader, test_loader, vocab = build_sequential_dataloaders(
             split_dir=split_dir,
@@ -312,6 +328,7 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
             num_workers=cfg_train["num_workers"],
             tier1_only=(loss_mode == "tier1_only"),
             context_path=context_path,
+            filter_prior_result=filter_prior_result,
         )
     else:
         train_loader, val_loader, test_loader, vocab = build_dataloaders(
@@ -329,7 +346,6 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
     vocab.save(out_dir / "vocab.json")
 
     # --- Model ---
-    arch = cfg_model.get("arch", "flat")
     if arch == "hierarchical":
         from turnzero.models.hierarchical import HierarchicalConfig, HierarchicalDualEncoder
         model_cfg = HierarchicalConfig(
@@ -341,6 +357,18 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
             dropout=cfg_model["dropout"],
         )
         model = HierarchicalDualEncoder(vocab.vocab_sizes, model_cfg)
+    elif arch == "opponent_context":
+        from turnzero.models.sequential_transformer import OpponentContextConfig, OpponentContextTransformer
+        model_cfg = OpponentContextConfig(
+            d_model=cfg_model["d_model"],
+            n_layers=cfg_model["n_layers"],
+            n_heads=cfg_model["n_heads"],
+            d_ff=cfg_model["d_ff"],
+            dropout=cfg_model["dropout"],
+            pool=cfg_model["pool"],
+            n_opp_slots=cfg_model.get("n_opp_slots", 4),
+        )
+        model = OpponentContextTransformer(vocab.vocab_sizes, model_cfg)
     elif arch == "sequential":
         from turnzero.models.sequential_transformer import SequentialConfig, SequentialOTSTransformer
         model_cfg = SequentialConfig(
@@ -374,13 +402,18 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
         _dummy_a = torch.zeros(1, 6, 8, dtype=torch.long, device=device)
         _dummy_b = torch.zeros(1, 6, 8, dtype=torch.long, device=device)
         with torch.no_grad(), torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            if arch == "sequential":
-                compiled_model(
-                    _dummy_a, _dummy_b,
+            if arch in ("sequential", "opponent_context"):
+                _ctx_args = dict(
                     prior_lead2_idx=torch.tensor([15], device=device),
                     prior_result=torch.tensor([0], device=device),
                     game_num=torch.tensor([0], device=device),
                 )
+                if arch == "opponent_context":
+                    _ctx_args["opp_revealed"] = torch.zeros(
+                        1, cfg_model.get("n_opp_slots", 4),
+                        dtype=torch.long, device=device,
+                    )
+                compiled_model(_dummy_a, _dummy_b, **_ctx_args)
             else:
                 compiled_model(_dummy_a, _dummy_b)
         del _dummy_a, _dummy_b
@@ -469,6 +502,16 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
                     "n_heads": model_cfg.n_heads,
                     "d_ff": model_cfg.d_ff,
                     "dropout": model_cfg.dropout,
+                }
+            elif arch == "opponent_context":
+                model_config_dict = {
+                    "d_model": model_cfg.d_model,
+                    "n_layers": model_cfg.n_layers,
+                    "n_heads": model_cfg.n_heads,
+                    "d_ff": model_cfg.d_ff,
+                    "dropout": model_cfg.dropout,
+                    "pool": model_cfg.pool,
+                    "n_opp_slots": model_cfg.n_opp_slots,
                 }
             else:
                 model_config_dict = {
@@ -580,6 +623,10 @@ def evaluate_checkpoint(
         from turnzero.models.hierarchical import HierarchicalConfig, HierarchicalDualEncoder
         model_cfg = HierarchicalConfig(**model_config)
         model = HierarchicalDualEncoder(vocab_sizes, model_cfg)
+    elif arch == "opponent_context":
+        from turnzero.models.sequential_transformer import OpponentContextConfig, OpponentContextTransformer
+        model_cfg = OpponentContextConfig(**model_config)
+        model = OpponentContextTransformer(vocab_sizes, model_cfg)
     elif arch == "sequential":
         from turnzero.models.sequential_transformer import SequentialConfig, SequentialOTSTransformer
         model_cfg = SequentialConfig(**model_config)

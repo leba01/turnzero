@@ -131,9 +131,11 @@ def build_context_lookup(
                 else:
                     pr = 2
 
+                opp_side = "p2" if side == "p1" else "p1"
                 sides_ctx[side] = {
                     "prior_leads": sorted(prior_gi.leads[side]),
                     "prior_result": pr,
+                    "opp_revealed": sorted(prior_gi.revealed[opp_side]),
                 }
 
             context[curr_bid] = {
