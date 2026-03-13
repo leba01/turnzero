@@ -15,8 +15,6 @@ data/canonical/
 data/clusters/
 data/splits/
 data/assembled/
-data/final/
-data/exploration/
 outputs/
 uv.lock
 
@@ -48,9 +46,4 @@ rewrite_plan.md
 web/tsconfig.tsbuildinfo
 
 # Internal/one-off scripts (stay on disk)
-scripts/generate_week2_plots.py
-scripts/run_wave3a.py
-scripts/run_wave3b.py
-scripts/parse_sample_stats.py
-scripts/recompute_uq_metrics.py
 scripts/regen_heatmaps.py

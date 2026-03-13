@@ -257,9 +257,6 @@ turnzero/
 ├── data/                       # Data artifacts (not in git)
 ├── outputs/                    # Model outputs (not in git)
 └── docs/                       # Documentation
-    ├── SACREDTEXTS.md          #   Original spec (v4)
-    ├── TECHNICAL_COMPANION.md  #   Study guide: every decision explained
-    ├── PAPER_ANALYSIS.md       #   Story arc + numbers reference for paper
     └── demo.png                #   Web demo screenshot
 ```
 

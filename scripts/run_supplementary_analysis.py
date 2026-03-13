@@ -7,7 +7,7 @@ All three use existing ensemble predictions — no GPU, no new inference.
 Outputs:
     outputs/plots/paper/topk_accuracy_curve.{png,pdf}
     outputs/eval/supplementary_analysis.json
-    (+ printed tables for PAPER_ANALYSIS.md)
+    (+ printed tables for paper)
 
 Usage:
     cd /home/walter/CS229/turnzero

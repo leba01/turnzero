@@ -1,6 +1,6 @@
 """Hierarchical Dual Encoder for 90-way OTS prediction.
 
-Architecture (PAPER_ANALYSIS Stretch 4, sacredtexts Option A2):
+Architecture:
   Level 1: Per-mon embedding (same as OTSTransformer)
   Level 2: Shared intra-team TransformerEncoder (6 tokens per team)
   Level 3: Bidirectional cross-attention (A attends to B, B attends to A)
