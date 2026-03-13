@@ -1,11 +1,11 @@
 model:
-  arch: sequential
+  arch: hierarchical
   d_model: 128
-  n_layers: 4
+  n_intra_layers: 2
+  n_cross_layers: 2
   n_heads: 4
   d_ff: 512
   dropout: 0.1
-  pool: mean
 
 training:
   batch_size: 512
@@ -14,11 +14,11 @@ training:
   label_smoothing: 0.03
   max_epochs: 100
   patience: 15
-  seed: 137
+  seed: 42
+  seeds: [42, 137, 256, 512, 777]
   num_workers: 4
+  loss_mode: action90_all
 
 data:
   regime: a
   split_dir: data/assembled/regime_a
-  context_path: data/assembled/regime_a/bo3_context.json
-  filter_prior_result: 1

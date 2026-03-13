@@ -715,9 +715,11 @@ def evaluate_checkpoint(
 # CLI entry points
 # ---------------------------------------------------------------------------
 
-def run_train(config_path: str, out_dir: str) -> None:
+def run_train(config_path: str, out_dir: str, seed_override: int | None = None) -> None:
     """CLI entry point for training."""
     config = load_config(config_path)
+    if seed_override is not None:
+        config = {**config, "training": {**config["training"], "seed": seed_override}}
     train(config, out_dir)
 
 

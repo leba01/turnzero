@@ -13,7 +13,8 @@ training:
   label_smoothing: 0.03
   max_epochs: 100
   patience: 15
-  seed: 137
+  seed: 42
+  seeds: [42, 137, 256, 512, 777]
   num_workers: 4
   loss_mode: tier1_only
 

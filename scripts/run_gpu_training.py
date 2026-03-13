@@ -64,19 +64,16 @@ NUM_WORKERS = 4
 # Model families to train
 FAMILIES = {
     "opponent_context": {
-        "configs_dir": ROOT / "configs" / "opponent_context",
+        "config_path": ROOT / "configs" / "opponent_context.yaml",
         "runs_prefix": "opp_ctx",
-        "n_members": 5,
     },
     "post_win": {
-        "configs_dir": ROOT / "configs" / "post_win",
+        "config_path": ROOT / "configs" / "post_win.yaml",
         "runs_prefix": "post_win",
-        "n_members": 5,
     },
     "post_loss": {
-        "configs_dir": ROOT / "configs" / "post_loss",
+        "config_path": ROOT / "configs" / "post_loss.yaml",
         "runs_prefix": "post_loss",
-        "n_members": 5,
     },
 }
 
@@ -85,12 +82,12 @@ FAMILIES = {
 
 def train_family(name: str, info: dict) -> list[Path]:
     """Train all members of a model family. Returns checkpoint paths."""
-    configs_dir = info["configs_dir"]
     prefix = info["runs_prefix"]
+    config = load_config(info["config_path"])
+    seeds = config["training"]["seeds"]
     ckpt_paths = []
 
-    for i in range(1, info["n_members"] + 1):
-        cfg_path = configs_dir / f"member_{i:03d}.yaml"
+    for i, seed in enumerate(seeds, 1):
         out_dir = RUNS_DIR / f"{prefix}_{i:03d}"
         ckpt_path = out_dir / "best.pt"
 
@@ -100,11 +97,11 @@ def train_family(name: str, info: dict) -> list[Path]:
             continue
 
         print(f"\n{'='*60}")
-        print(f"  Training {name} member {i}/{info['n_members']}")
+        print(f"  Training {name} member {i}/{len(seeds)} (seed={seed})")
         print(f"{'='*60}")
 
-        config = load_config(cfg_path)
-        best = train(config, out_dir)
+        member_config = {**config, "training": {**config["training"], "seed": seed}}
+        best = train(member_config, out_dir)
         ckpt_paths.append(best)
 
     return ckpt_paths

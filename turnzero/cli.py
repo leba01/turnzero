@@ -94,10 +94,12 @@ def stats(data_dir: str, validate: bool) -> None:
               help="Path to YAML config file.")
 @click.option("--out_dir", required=True, type=click.Path(),
               help="Output directory for checkpoints, curves, and metadata.")
-def train(config: str, out_dir: str) -> None:
+@click.option("--seed", default=None, type=int,
+              help="Override training seed for single-member run.")
+def train(config: str, out_dir: str, seed: int | None) -> None:
     """Train OTSTransformer model."""
     from turnzero.models.train import run_train
-    run_train(config, out_dir)
+    run_train(config, out_dir, seed_override=seed)
 
 
 @cli.command("eval")

@@ -1,10 +1,12 @@
 model:
+  arch: opponent_context
   d_model: 128
   n_layers: 4
   n_heads: 4
   d_ff: 512
   dropout: 0.1
   pool: mean
+  n_opp_slots: 4
 
 training:
   batch_size: 512
@@ -13,10 +15,11 @@ training:
   label_smoothing: 0.03
   max_epochs: 100
   patience: 15
-  seed: 512
+  seed: 42
+  seeds: [42, 137, 256, 512, 777]
   num_workers: 4
-  loss_mode: tier1_only
 
 data:
   regime: a
   split_dir: data/assembled/regime_a
+  context_path: data/assembled/regime_a/bo3_context.json

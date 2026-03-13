@@ -13,9 +13,9 @@ training:
   label_smoothing: 0.03
   max_epochs: 100
   patience: 15
-  seed: 512
+  seed: 42
+  seeds: [42, 137, 256, 512, 777]
   num_workers: 4
-  loss_mode: action90_all
 
 data:
   regime: a
