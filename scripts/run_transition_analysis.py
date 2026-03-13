@@ -27,7 +27,7 @@ import numpy as np
 
 matplotlib.use("Agg")
 
-from scripts.run_bo3_adaptation import (
+from turnzero.analysis.bo3 import (
     RAW_PATH,
     OUT_EVAL,
     OUT_PLOTS,
