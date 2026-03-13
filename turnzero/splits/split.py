@@ -376,6 +376,55 @@ def split_regime_b(
 # Integrity validators
 # ---------------------------------------------------------------------------
 
+def _check_no_cross_split_triples(
+    ex_by_id: dict[str, dict],
+    id_to_split: dict[str, str],
+) -> list[str]:
+    """Check that no (team_a, team_b, action90) triples or match_groups cross splits."""
+    violations: list[str] = []
+
+    triple_splits: dict[tuple, set[str]] = defaultdict(set)
+    mg_splits: dict[str, set[str]] = defaultdict(set)
+    for eid, split in id_to_split.items():
+        if eid not in ex_by_id:
+            continue
+        ex = ex_by_id[eid]
+        triple = (
+            ex["team_a"]["team_id"],
+            ex["team_b"]["team_id"],
+            ex["label"]["action90_id"],
+        )
+        triple_splits[triple].add(split)
+        mg_splits[ex["match_group_id"]].add(split)
+
+    cross_triples = sum(1 for s in triple_splits.values() if len(s) > 1)
+    if cross_triples:
+        violations.append(
+            f"{cross_triples} (team_a, team_b, action90) triples cross splits"
+        )
+
+    cross_mg = sum(1 for s in mg_splits.values() if len(s) > 1)
+    if cross_mg:
+        violations.append(
+            f"{cross_mg} match_group_ids cross splits"
+        )
+
+    return violations
+
+
+def _build_split_lookups(
+    examples: list[dict[str, Any]],
+    split_ids: dict[str, list[str]],
+) -> tuple[dict[str, dict], dict[str, str]]:
+    """Build example-by-id lookup and id-to-split mapping."""
+    ex_by_id = {ex["example_id"]: ex for ex in examples}
+    id_to_split: dict[str, str] = {}
+    for split, ids in split_ids.items():
+        for eid in ids:
+            id_to_split[eid] = split
+    return ex_by_id, id_to_split
+
+
 def validate_regime_a(
     examples: list[dict[str, Any]],
     split_ids: dict[str, list[str]],
@@ -383,15 +432,9 @@ def validate_regime_a(
 ) -> list[str]:
     """Validate Regime A split integrity. Returns list of violations."""
     violations: list[str] = []
+    ex_by_id, id_to_split = _build_split_lookups(examples, split_ids)
 
-    # Build example lookup
-    ex_by_id: dict[str, dict] = {ex["example_id"]: ex for ex in examples}
-    id_to_split: dict[str, str] = {}
-    for split, ids in split_ids.items():
-        for eid in ids:
-            id_to_split[eid] = split
-
-    # 1. No test team_a_id appears as team_a in train
+    # 1. No test/val team_a_id appears as team_a in train
     train_team_a: set[str] = set()
     test_team_a: set[str] = set()
     val_team_a: set[str] = set()
@@ -417,39 +460,8 @@ def validate_regime_a(
             f"team_a_id leak: {len(leak_val)} val team_a_ids appear in train"
         )
 
-    # 2. No (team_a_id, team_b_id, action90_id) triples cross splits
-    triple_splits: dict[tuple, set[str]] = defaultdict(set)
-    for eid, split in id_to_split.items():
-        if eid not in ex_by_id:
-            continue
-        ex = ex_by_id[eid]
-        triple = (
-            ex["team_a"]["team_id"],
-            ex["team_b"]["team_id"],
-            ex["label"]["action90_id"],
-        )
-        triple_splits[triple].add(split)
-
-    cross_triples = sum(1 for s in triple_splits.values() if len(s) > 1)
-    if cross_triples:
-        violations.append(
-            f"{cross_triples} (team_a, team_b, action90) triples cross splits"
-        )
-
-    # 3. No match_group_id crosses splits
-    mg_splits: dict[str, set[str]] = defaultdict(set)
-    for eid, split in id_to_split.items():
-        if eid not in ex_by_id:
-            continue
-        mg = ex_by_id[eid]["match_group_id"]
-        mg_splits[mg].add(split)
-
-    cross_mg = sum(1 for s in mg_splits.values() if len(s) > 1)
-    if cross_mg:
-        violations.append(
-            f"{cross_mg} match_group_ids cross splits"
-        )
-
+    # 2-3. No triples or match_groups cross splits
+    violations.extend(_check_no_cross_split_triples(ex_by_id, id_to_split))
     return violations
 
 
@@ -460,12 +472,7 @@ def validate_regime_b(
 ) -> list[str]:
     """Validate Regime B split integrity. Returns list of violations."""
     violations: list[str] = []
-
-    ex_by_id: dict[str, dict] = {ex["example_id"]: ex for ex in examples}
-    id_to_split: dict[str, str] = {}
-    for split, ids in split_ids.items():
-        for eid in ids:
-            id_to_split[eid] = split
+    ex_by_id, id_to_split = _build_split_lookups(examples, split_ids)
 
     # 1. No OOD cluster_a appears in train
     train_clusters: set[str] = set()
@@ -486,39 +493,8 @@ def validate_regime_b(
             f"cluster leak: {len(leak)} test clusters appear in train"
         )
 
-    # 2. No triples cross splits
-    triple_splits: dict[tuple, set[str]] = defaultdict(set)
-    for eid, split in id_to_split.items():
-        if eid not in ex_by_id:
-            continue
-        ex = ex_by_id[eid]
-        triple = (
-            ex["team_a"]["team_id"],
-            ex["team_b"]["team_id"],
-            ex["label"]["action90_id"],
-        )
-        triple_splits[triple].add(split)
-
-    cross_triples = sum(1 for s in triple_splits.values() if len(s) > 1)
-    if cross_triples:
-        violations.append(
-            f"{cross_triples} (team_a, team_b, action90) triples cross splits"
-        )
-
-    # 3. No match_group_id crosses splits
-    mg_splits: dict[str, set[str]] = defaultdict(set)
-    for eid, split in id_to_split.items():
-        if eid not in ex_by_id:
-            continue
-        mg = ex_by_id[eid]["match_group_id"]
-        mg_splits[mg].add(split)
-
-    cross_mg = sum(1 for s in mg_splits.values() if len(s) > 1)
-    if cross_mg:
-        violations.append(
-            f"{cross_mg} match_group_ids cross splits"
-        )
-
+    # 2-3. No triples or match_groups cross splits
+    violations.extend(_check_no_cross_split_triples(ex_by_id, id_to_split))
     return violations
 
 
