@@ -31,10 +31,10 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 
-from turnzero.constants import LOG_EPS
 from turnzero.data.dataset import Vocab, build_dataloaders
 from turnzero.eval.metrics import _MARGIN_MATRIX, compute_metrics
-from turnzero.models.transformer import ModelConfig, OTSTransformer
+from turnzero.models.factory import build_model, build_model_from_checkpoint, model_config_to_dict
+from turnzero.models.loss import compute_loss as _compute_loss
 
 
 # ---------------------------------------------------------------------------
@@ -78,52 +78,6 @@ def _git_hash() -> str:
         ).strip()
     except Exception:
         return "unknown"
-
-
-# ---------------------------------------------------------------------------
-# Shared loss computation
-# ---------------------------------------------------------------------------
-
-def _compute_loss(
-    logits: torch.Tensor,
-    action90_labels: torch.Tensor,
-    criterion: nn.Module,
-    batch: dict[str, torch.Tensor],
-    device: torch.device,
-    loss_mode: str,
-    margin_matrix: torch.Tensor | None,
-) -> torch.Tensor:
-    """Compute loss for a single batch, supporting all three loss modes.
-
-    Parameters
-    ----------
-    loss_mode : str
-        ``"action90_all"`` or ``"tier1_only"`` — standard CE on action90.
-        ``"multitask"`` — Tier 1: action90 CE, Tier 2: lead-2 CE via marginalization.
-    """
-    if loss_mode in ("action90_all", "tier1_only"):
-        return criterion(logits, action90_labels)
-
-    # multitask: split Tier 1 (action90 CE) and Tier 2 (lead-2 CE)
-    bring4 = batch["bring4_observed"].to(device).bool()
-    lead2_labels = batch["lead2_label"].to(device, non_blocking=True)
-    n = logits.size(0)
-    loss = torch.tensor(0.0, device=device)
-
-    if bring4.any():
-        loss_t1 = criterion(logits[bring4], action90_labels[bring4])
-        loss = loss + loss_t1 * (bring4.sum() / n)
-
-    tier2 = ~bring4
-    if tier2.any():
-        # Marginalize in probability space (FP32 for numerical stability)
-        probs_90 = torch.softmax(logits[tier2].float(), dim=-1)
-        lead2_probs = probs_90 @ margin_matrix  # (n_t2, 15)
-        log_lead2 = torch.log(lead2_probs.clamp(min=LOG_EPS))
-        loss_t2 = nn.functional.nll_loss(log_lead2, lead2_labels[tier2])
-        loss = loss + loss_t2 * (tier2.sum() / n)
-
-    return loss
 
 
 # ---------------------------------------------------------------------------
@@ -346,50 +300,7 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
     vocab.save(out_dir / "vocab.json")
 
     # --- Model ---
-    if arch == "hierarchical":
-        from turnzero.models.hierarchical import HierarchicalConfig, HierarchicalDualEncoder
-        model_cfg = HierarchicalConfig(
-            d_model=cfg_model["d_model"],
-            n_intra_layers=cfg_model["n_intra_layers"],
-            n_cross_layers=cfg_model["n_cross_layers"],
-            n_heads=cfg_model["n_heads"],
-            d_ff=cfg_model["d_ff"],
-            dropout=cfg_model["dropout"],
-        )
-        model = HierarchicalDualEncoder(vocab.vocab_sizes, model_cfg)
-    elif arch == "opponent_context":
-        from turnzero.models.sequential_transformer import OpponentContextConfig, OpponentContextTransformer
-        model_cfg = OpponentContextConfig(
-            d_model=cfg_model["d_model"],
-            n_layers=cfg_model["n_layers"],
-            n_heads=cfg_model["n_heads"],
-            d_ff=cfg_model["d_ff"],
-            dropout=cfg_model["dropout"],
-            pool=cfg_model["pool"],
-            n_opp_slots=cfg_model.get("n_opp_slots", 4),
-        )
-        model = OpponentContextTransformer(vocab.vocab_sizes, model_cfg)
-    elif arch == "sequential":
-        from turnzero.models.sequential_transformer import SequentialConfig, SequentialOTSTransformer
-        model_cfg = SequentialConfig(
-            d_model=cfg_model["d_model"],
-            n_layers=cfg_model["n_layers"],
-            n_heads=cfg_model["n_heads"],
-            d_ff=cfg_model["d_ff"],
-            dropout=cfg_model["dropout"],
-            pool=cfg_model["pool"],
-        )
-        model = SequentialOTSTransformer(vocab.vocab_sizes, model_cfg)
-    else:
-        model_cfg = ModelConfig(
-            d_model=cfg_model["d_model"],
-            n_layers=cfg_model["n_layers"],
-            n_heads=cfg_model["n_heads"],
-            d_ff=cfg_model["d_ff"],
-            dropout=cfg_model["dropout"],
-            pool=cfg_model["pool"],
-        )
-        model = OTSTransformer(vocab.vocab_sizes, model_cfg)
+    model, model_cfg = build_model(arch, vocab.vocab_sizes, cfg_model)
     model = model.to(device)
 
     n_params = sum(p.numel() for p in model.parameters())
@@ -494,34 +405,7 @@ def train(config: dict[str, Any], out_dir: str | Path) -> Path:
             epochs_no_improve = 0
 
             # Save best checkpoint (unwrap compiled model)
-            if arch == "hierarchical":
-                model_config_dict = {
-                    "d_model": model_cfg.d_model,
-                    "n_intra_layers": model_cfg.n_intra_layers,
-                    "n_cross_layers": model_cfg.n_cross_layers,
-                    "n_heads": model_cfg.n_heads,
-                    "d_ff": model_cfg.d_ff,
-                    "dropout": model_cfg.dropout,
-                }
-            elif arch == "opponent_context":
-                model_config_dict = {
-                    "d_model": model_cfg.d_model,
-                    "n_layers": model_cfg.n_layers,
-                    "n_heads": model_cfg.n_heads,
-                    "d_ff": model_cfg.d_ff,
-                    "dropout": model_cfg.dropout,
-                    "pool": model_cfg.pool,
-                    "n_opp_slots": model_cfg.n_opp_slots,
-                }
-            else:
-                model_config_dict = {
-                    "d_model": model_cfg.d_model,
-                    "n_layers": model_cfg.n_layers,
-                    "n_heads": model_cfg.n_heads,
-                    "d_ff": model_cfg.d_ff,
-                    "dropout": model_cfg.dropout,
-                    "pool": model_cfg.pool,
-                }
+            model_config_dict = model_config_to_dict(arch, model_cfg)
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
@@ -619,21 +503,7 @@ def evaluate_checkpoint(
     config = ckpt["config"]
 
     arch = ckpt.get("arch", "flat")
-    if arch == "hierarchical":
-        from turnzero.models.hierarchical import HierarchicalConfig, HierarchicalDualEncoder
-        model_cfg = HierarchicalConfig(**model_config)
-        model = HierarchicalDualEncoder(vocab_sizes, model_cfg)
-    elif arch == "opponent_context":
-        from turnzero.models.sequential_transformer import OpponentContextConfig, OpponentContextTransformer
-        model_cfg = OpponentContextConfig(**model_config)
-        model = OpponentContextTransformer(vocab_sizes, model_cfg)
-    elif arch == "sequential":
-        from turnzero.models.sequential_transformer import SequentialConfig, SequentialOTSTransformer
-        model_cfg = SequentialConfig(**model_config)
-        model = SequentialOTSTransformer(vocab_sizes, model_cfg)
-    else:
-        model_cfg = ModelConfig(**model_config)
-        model = OTSTransformer(vocab_sizes, model_cfg)
+    model, _ = build_model_from_checkpoint(arch, vocab_sizes, model_config)
     model.load_state_dict(ckpt["model_state_dict"])
     model = model.to(device)
     model.eval()
