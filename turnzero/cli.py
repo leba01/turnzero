@@ -84,7 +84,7 @@ def assemble(canonical_path: str, clusters: str, splits: str, out_dir: str) -> N
 @click.option("--validate/--no-validate", default=True,
               help="Run integrity validation assertions.")
 def stats(data_dir: str, validate: bool) -> None:
-    """Comprehensive dataset stats + integrity validation."""
+    """Dataset stats + integrity validation."""
     from turnzero.data.stats import run_stats
     run_stats(data_dir, validate=validate)
 

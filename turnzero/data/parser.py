@@ -8,7 +8,6 @@ Reference: docs/PROJECT_BIBLE.md Section 2.2
 
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 
@@ -17,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from turnzero.action_space import lead_back_to_action90
+from turnzero.data.hashing import compute_hash, species_key
 from turnzero.data.io_utils import write_manifest
 from turnzero.schemas import (
     Label,
@@ -137,11 +137,6 @@ def _match_to_showteam(switch_species: str, showteam_species: list[str],
     return None
 
 
-def _compute_hash(text: str) -> str:
-    """Truncated sha256 hex digest (16 chars = 64 bits)."""
-    return hashlib.sha256(text.encode()).hexdigest()[:16]
-
-
 def _team_id(pokemon: list[Pokemon]) -> str:
     """Order-invariant team hash from full build."""
     keys = []
@@ -149,12 +144,7 @@ def _team_id(pokemon: list[Pokemon]) -> str:
         ms = ",".join(sorted(p.moves))
         keys.append(f"{p.species}|{p.item}|{p.ability}|{p.tera_type}|{ms}")
     keys.sort()
-    return _compute_hash("|".join(keys))
-
-
-def _species_key(pokemon: list[Pokemon]) -> str:
-    """Order-invariant hash of species set."""
-    return _compute_hash("|".join(sorted(p.species for p in pokemon)))
+    return compute_hash("|".join(keys))
 
 
 def _fields_known(pokemon: list[Pokemon]) -> int:
@@ -340,7 +330,7 @@ def produce_directed_examples(
 
         team_a = TeamSheet(
             team_id=_team_id(a_mons),
-            species_key=_species_key(a_mons),
+            species_key=species_key(a_mons),
             format_id=format_id,
             pokemon=a_mons,
             reconstruction_quality=ReconstructionQuality(
@@ -349,7 +339,7 @@ def produce_directed_examples(
         )
         team_b = TeamSheet(
             team_id=_team_id(b_mons),
-            species_key=_species_key(b_mons),
+            species_key=species_key(b_mons),
             format_id=format_id,
             pokemon=b_mons,
             reconstruction_quality=ReconstructionQuality(
@@ -362,7 +352,7 @@ def produce_directed_examples(
         )
 
         examples.append(MatchExample(
-            example_id=_compute_hash(f"{battle_id}|{persp}"),
+            example_id=compute_hash(f"{battle_id}|{persp}"),
             match_group_id=battle_id,
             battle_id=battle_id,
             team_a=team_a,

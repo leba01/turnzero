@@ -11,15 +11,11 @@ analysis script.
 from __future__ import annotations
 
 import json
-from itertools import combinations
 from pathlib import Path
 from typing import Any
 
-# Lead-pair index lookup — same ordering as dataset.py / action_space.py
-LEAD_PAIRS: list[tuple[int, int]] = list(combinations(range(6), 2))
-LEAD_PAIR_TO_IDX: dict[tuple[int, int], int] = {
-    pair: idx for idx, pair in enumerate(LEAD_PAIRS)
-}
+from turnzero.action_space import LEAD_PAIR_TO_IDX
+
 SENTINEL_LEAD = 15  # no prior info
 
 

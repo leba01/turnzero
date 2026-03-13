@@ -8,20 +8,13 @@ Reference: docs/PROJECT_BIBLE.md Sections 4.3-4.4
 
 from __future__ import annotations
 
-from itertools import combinations
-
 import numpy as np
 
-from turnzero.action_space import ACTION_TABLE
+from turnzero.action_space import ACTION_TABLE, LEAD_PAIR_TO_IDX
 
 # ---------------------------------------------------------------------------
 # Lead-pair marginalization: 90-way action probs → 15-way lead-2 probs
 # ---------------------------------------------------------------------------
-
-LEAD_PAIRS: list[tuple[int, int]] = list(combinations(range(6), 2))
-LEAD_PAIR_TO_IDX: dict[tuple[int, int], int] = {
-    pair: idx for idx, pair in enumerate(LEAD_PAIRS)
-}
 
 # ACTION90_TO_LEAD2[i] = lead-pair index for action i
 ACTION90_TO_LEAD2: np.ndarray = np.array(

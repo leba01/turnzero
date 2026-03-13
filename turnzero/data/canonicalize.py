@@ -9,7 +9,6 @@ Reference: docs/PROJECT_BIBLE.md Section 2.3
 
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 import time
@@ -17,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from turnzero.action_space import lead_back_to_action90
+from turnzero.data.hashing import compute_hash, species_key
 from turnzero.data.io_utils import read_jsonl, write_manifest
 from turnzero.schemas import (
     Label,
@@ -81,11 +81,6 @@ def camel_to_display(name: str) -> str:
 # Hashing helpers (canonical-name versions of parser helpers)
 # ---------------------------------------------------------------------------
 
-def _compute_hash(text: str) -> str:
-    """Truncated sha256 hex digest (16 chars = 64 bits)."""
-    return hashlib.sha256(text.encode()).hexdigest()[:16]
-
-
 def _canonical_key(p: Pokemon) -> str:
     """Canonical sort key for a single Pokemon.
 
@@ -98,12 +93,7 @@ def _canonical_key(p: Pokemon) -> str:
 def _team_id(pokemon: list[Pokemon]) -> str:
     """Order-invariant team hash from canonical builds."""
     keys = sorted(_canonical_key(p) for p in pokemon)
-    return _compute_hash("|".join(keys))
-
-
-def _species_key(pokemon: list[Pokemon]) -> str:
-    """Order-invariant hash of species set."""
-    return _compute_hash("|".join(sorted(p.species for p in pokemon)))
+    return compute_hash("|".join(keys))
 
 
 # ---------------------------------------------------------------------------
@@ -152,14 +142,14 @@ def canonicalize_example(ex: MatchExample) -> MatchExample:
     # --- Build TeamSheets with recomputed hashes ---
     team_a = TeamSheet(
         team_id=_team_id(sorted_mons_a),
-        species_key=_species_key(sorted_mons_a),
+        species_key=species_key(sorted_mons_a),
         format_id=ex.team_a.format_id,
         pokemon=sorted_mons_a,
         reconstruction_quality=ex.team_a.reconstruction_quality,
     )
     team_b = TeamSheet(
         team_id=_team_id(canon_b),
-        species_key=_species_key(canon_b),
+        species_key=species_key(canon_b),
         format_id=ex.team_b.format_id,
         pokemon=canon_b,
         reconstruction_quality=ex.team_b.reconstruction_quality,

@@ -14,8 +14,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from turnzero.action_space import ACTION_TABLE
-from turnzero.eval.metrics import LEAD_PAIRS as _LEAD_PAIRS
+from turnzero.action_space import ACTION_TABLE, LEAD_PAIRS as _LEAD_PAIRS
 from turnzero.eval.metrics import _MARGIN_MATRIX as _LEAD_MARGIN_MATRIX
 
 # ---------------------------------------------------------------------------

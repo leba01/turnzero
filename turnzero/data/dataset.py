@@ -13,23 +13,14 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from itertools import combinations
 from pathlib import Path
 from typing import Any
 
 import torch
 from torch.utils.data import DataLoader, Dataset
 
+from turnzero.action_space import LEAD_PAIR_TO_IDX, LEAD_PAIRS
 from turnzero.data.io_utils import read_jsonl
-
-# ---------------------------------------------------------------------------
-# Lead-pair lookup: same ordering as action_space.py
-# ---------------------------------------------------------------------------
-LEAD_PAIRS: list[tuple[int, int]] = list(combinations(range(6), 2))
-LEAD_PAIR_TO_IDX: dict[tuple[int, int], int] = {
-    pair: idx for idx, pair in enumerate(LEAD_PAIRS)
-}
-assert len(LEAD_PAIRS) == 15
 
 # Field names for the 8-int per-mon encoding
 _FIELD_TYPES = ("species", "item", "ability", "tera_type", "move")
@@ -143,9 +134,18 @@ class VGCDataset(Dataset):
     All examples are loaded into memory on init (dataset fits in RAM).
     """
 
-    def __init__(self, jsonl_path: str | Path, vocab: Vocab, tier1_only: bool = False) -> None:
+    def __init__(
+        self,
+        jsonl_path: str | Path,
+        vocab: Vocab,
+        tier1_only: bool = False,
+        examples: list[dict[str, Any]] | None = None,
+    ) -> None:
         self.vocab = vocab
-        self.examples: list[dict[str, Any]] = list(read_jsonl(jsonl_path))
+        if examples is not None:
+            self.examples = examples
+        else:
+            self.examples = list(read_jsonl(jsonl_path))
         if tier1_only:
             self.examples = [
                 ex for ex in self.examples
@@ -231,18 +231,10 @@ def build_dataloaders(
         train_examples = None
 
     # Datasets (tier1_only applies to train only)
-    train_ds = VGCDataset(train_path, vocab, tier1_only=tier1_only)
+    # Pass pre-loaded examples to avoid redundant disk read
+    train_ds = VGCDataset(train_path, vocab, tier1_only=tier1_only, examples=train_examples)
     val_ds = VGCDataset(val_path, vocab)
     test_ds = VGCDataset(test_path, vocab)
-
-    # If we already loaded the train examples, inject them to avoid re-reading
-    if train_examples is not None:
-        if tier1_only:
-            train_examples = [
-                ex for ex in train_examples
-                if ex["label_quality"]["bring4_observed"]
-            ]
-        train_ds.examples = train_examples
 
     # Loaders
     train_loader = DataLoader(

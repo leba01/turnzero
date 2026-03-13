@@ -30,6 +30,7 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from turnzero.action_space import LEAD_PAIR_TO_IDX
 from turnzero.data.io_utils import read_jsonl
 from turnzero.eval.metrics import compute_metrics
 from turnzero.eval.plots import (
@@ -44,14 +45,10 @@ def _extract_arrays(
     examples: list[dict],
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[str], list[str]]:
     """Extract label arrays and cluster lists from raw example dicts."""
-    from itertools import combinations
-
-    lead_pairs = list(combinations(range(6), 2))
-    lead_pair_to_idx = {pair: idx for idx, pair in enumerate(lead_pairs)}
 
     action90 = np.array([ex["label"]["action90_id"] for ex in examples], dtype=np.int64)
     lead2 = np.array(
-        [lead_pair_to_idx[tuple(sorted(ex["label"]["lead2_idx"]))] for ex in examples],
+        [LEAD_PAIR_TO_IDX[tuple(sorted(ex["label"]["lead2_idx"]))] for ex in examples],
         dtype=np.int64,
     )
     bring4_obs = np.array(

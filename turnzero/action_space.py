@@ -16,6 +16,13 @@ from __future__ import annotations
 
 from itertools import combinations
 
+# Lead-pair lookup: all 15 lead pairs C(6,2)
+LEAD_PAIRS: list[tuple[int, int]] = list(combinations(range(6), 2))
+LEAD_PAIR_TO_IDX: dict[tuple[int, int], int] = {
+    pair: idx for idx, pair in enumerate(LEAD_PAIRS)
+}
+assert len(LEAD_PAIRS) == 15
+
 # Pre-compute the full table at import time.
 # Each entry: (lead2_idx, back2_idx) where both are sorted tuples.
 ACTION_TABLE: list[tuple[tuple[int, int], tuple[int, int]]] = []

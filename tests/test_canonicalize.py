@@ -12,12 +12,12 @@ from turnzero.data.canonicalize import (
     _canonical_key,
     _dedup_key,
     _team_id,
-    _species_key,
     camel_to_display,
     canonicalize_example,
     canonicalize_pokemon,
     run_canonicalize,
 )
+from turnzero.data.hashing import species_key as _species_key
 from turnzero.schemas import (
     Label,
     LabelQuality,

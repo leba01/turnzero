@@ -152,9 +152,8 @@ def evaluate_ensemble(
         a90 = action90_true[mask]
         l2 = lead2_true[mask]
         top1 = float((p.argmax(axis=1) == a90).mean())
-        top3 = float(np.array(
-            [a90[i] in np.argsort(p[i])[-3:] for i in range(len(a90))]
-        ).mean())
+        top3_indices = np.argsort(p, axis=1)[:, -3:]
+        top3 = float((top3_indices == a90[:, None]).any(axis=1).mean())
         nll = float(-np.log(np.clip(
             p[np.arange(len(a90)), a90], 1e-10, 1.0,
         )).mean())

@@ -212,7 +212,8 @@ def stage_evaluate(ckpt_paths: list[Path]) -> dict:
         mir = is_mirror[mask]
 
         top1 = (p.argmax(axis=1) == a90).mean()
-        top3 = np.array([a90[i] in np.argsort(p[i])[-3:] for i in range(len(a90))]).mean()
+        top3_indices = np.argsort(p, axis=1)[:, -3:]
+        top3 = (top3_indices == a90[:, None]).any(axis=1).mean()
         nll = -np.log(np.clip(p[np.arange(len(a90)), a90], 1e-10, 1.0)).mean()
 
         # Lead-2 metrics

@@ -15,8 +15,8 @@ from turnzero.data.parser import (
     _match_to_showteam,
     _build_label,
     _team_id,
-    _species_key,
 )
+from turnzero.data.hashing import species_key as _species_key
 from turnzero.schemas import Pokemon
 
 

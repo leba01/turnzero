@@ -31,8 +31,9 @@ class SequentialVGCDataset(VGCDataset):
         context_path: str | Path | None = None,
         tier1_only: bool = False,
         filter_prior_result: int | None = None,
+        examples: list[dict[str, Any]] | None = None,
     ) -> None:
-        super().__init__(jsonl_path, vocab, tier1_only=tier1_only)
+        super().__init__(jsonl_path, vocab, tier1_only=tier1_only, examples=examples)
         self._context: dict[str, dict[str, Any]] = {}
         if context_path is not None:
             self._context = load_context_lookup(context_path)
@@ -110,8 +111,9 @@ class OpponentContextVGCDataset(SequentialVGCDataset):
         context_path: str | Path | None = None,
         tier1_only: bool = False,
         n_opp_slots: int = 4,
+        examples: list[dict[str, Any]] | None = None,
     ) -> None:
-        super().__init__(jsonl_path, vocab, context_path=context_path, tier1_only=tier1_only)
+        super().__init__(jsonl_path, vocab, context_path=context_path, tier1_only=tier1_only, examples=examples)
         self._n_opp_slots = n_opp_slots
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
@@ -167,12 +169,13 @@ def build_sequential_dataloaders(
         vocab.save(split_dir / "vocab.json")
     else:
         vocab = Vocab.load(vocab_path)
+        train_examples = None
 
     fpr = filter_prior_result
-    # Datasets
+    # Datasets (pass pre-loaded examples to avoid redundant disk read)
     train_ds = SequentialVGCDataset(
         train_path, vocab, context_path=context_path, tier1_only=tier1_only,
-        filter_prior_result=fpr,
+        filter_prior_result=fpr, examples=train_examples,
     )
     val_ds = SequentialVGCDataset(
         val_path, vocab, context_path=context_path, filter_prior_result=fpr,
@@ -225,10 +228,11 @@ def build_opponent_context_dataloaders(
         vocab.save(split_dir / "vocab.json")
     else:
         vocab = Vocab.load(vocab_path)
+        train_examples = None
 
     kw = dict(context_path=context_path, n_opp_slots=n_opp_slots)
     train_ds = OpponentContextVGCDataset(
-        train_path, vocab, tier1_only=tier1_only, **kw,
+        train_path, vocab, tier1_only=tier1_only, examples=train_examples, **kw,
     )
     val_ds = OpponentContextVGCDataset(val_path, vocab, **kw)
     test_ds = OpponentContextVGCDataset(test_path, vocab, **kw)

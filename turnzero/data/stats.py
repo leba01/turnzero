@@ -1,4 +1,4 @@
-"""Stage 7: Comprehensive dataset stats + end-to-end integrity validation.
+"""Stage 7: Dataset stats + end-to-end integrity validation.
 
 Reads assembled per-split JSONL files and produces a dataset_report.json
 covering OTS completeness, label observability, split sizes, mirror rates,
@@ -220,7 +220,7 @@ def run_stats(
     data_dir: str,
     validate: bool = True,
 ) -> dict[str, Any]:
-    """Compute comprehensive stats and run integrity validation.
+    """Compute stats and run integrity validation.
 
     Args:
         data_dir: Path to assembled data directory (with regime_a/, regime_b/).
