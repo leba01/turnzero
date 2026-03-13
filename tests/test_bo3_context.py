@@ -37,25 +37,17 @@ class TestResolveLeadPairIdx:
         assert _resolve_lead_pair_idx(leads, team) == SENTINEL_LEAD
 
     def test_form_variant_fallback(self):
-        """Ursaluna vs Ursaluna-Bloodmoon should match via base form."""
+        """Form variants match via base form in both directions."""
         team = ["Ursaluna-Bloodmoon", "Incineroar", "Flutter Mane", "Urshifu", "Tornadus", "Farigiraf"]
-        leads = frozenset({"Ursaluna", "Incineroar"})
-        # Ursaluna matches Ursaluna-Bloodmoon at slot 0, Incineroar at slot 1
-        assert _resolve_lead_pair_idx(leads, team) == 0
-
-    def test_form_variant_reverse(self):
-        """Prior leads have form suffix, team doesn't."""
-        team = ["Ursaluna", "Incineroar", "Flutter Mane", "Urshifu", "Tornadus", "Farigiraf"]
-        leads = frozenset({"Ursaluna-Bloodmoon", "Incineroar"})
-        assert _resolve_lead_pair_idx(leads, team) == 0
-
-    def test_both_form_variants(self):
-        """Both leads need base-form fallback."""
-        team = ["Ogerpon-Hearthflame", "Urshifu-Rapid-Strike", "Flutter Mane", "Tornadus", "Farigiraf", "Incineroar"]
-        leads = frozenset({"Ogerpon", "Urshifu"})
+        # Lead has base form, team has variant
+        assert _resolve_lead_pair_idx(frozenset({"Ursaluna", "Incineroar"}), team) == 0
+        # Lead has variant, team has base form
+        team2 = ["Ursaluna", "Incineroar", "Flutter Mane", "Urshifu", "Tornadus", "Farigiraf"]
+        assert _resolve_lead_pair_idx(frozenset({"Ursaluna-Bloodmoon", "Incineroar"}), team2) == 0
+        # Both leads need fallback
+        team3 = ["Ogerpon-Hearthflame", "Urshifu-Rapid-Strike", "Flutter Mane", "Tornadus", "Farigiraf", "Incineroar"]
         from turnzero.data.bo3_context import LEAD_PAIR_TO_IDX
-        expected = LEAD_PAIR_TO_IDX[(0, 1)]
-        assert _resolve_lead_pair_idx(leads, team) == expected
+        assert _resolve_lead_pair_idx(frozenset({"Ogerpon", "Urshifu"}), team3) == LEAD_PAIR_TO_IDX[(0, 1)]
 
     def test_duplicate_base_form(self):
         """Two mons share the same base form — should match first available."""
@@ -66,12 +58,8 @@ class TestResolveLeadPairIdx:
         expected = LEAD_PAIR_TO_IDX[(0, 5)]
         assert _resolve_lead_pair_idx(leads, team) == expected
 
-    def test_empty_leads_returns_sentinel(self):
+    def test_insufficient_leads_returns_sentinel(self):
+        """Empty or single-element lead sets return sentinel."""
         team = ["Rillaboom", "Incineroar", "Flutter Mane", "Urshifu", "Tornadus", "Farigiraf"]
-        leads = frozenset()
-        assert _resolve_lead_pair_idx(leads, team) == SENTINEL_LEAD
-
-    def test_single_lead_returns_sentinel(self):
-        team = ["Rillaboom", "Incineroar", "Flutter Mane", "Urshifu", "Tornadus", "Farigiraf"]
-        leads = frozenset({"Rillaboom"})
-        assert _resolve_lead_pair_idx(leads, team) == SENTINEL_LEAD
+        assert _resolve_lead_pair_idx(frozenset(), team) == SENTINEL_LEAD
+        assert _resolve_lead_pair_idx(frozenset({"Rillaboom"}), team) == SENTINEL_LEAD

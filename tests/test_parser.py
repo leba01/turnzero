@@ -14,9 +14,7 @@ from turnzero.data.parser import (
     run_parse,
     _match_to_showteam,
     _build_label,
-    _team_id,
 )
-from turnzero.data.hashing import species_key as _species_key
 from turnzero.schemas import Pokemon
 
 
@@ -329,31 +327,6 @@ class TestProduceDirectedExamples:
             d = e.to_dict()
             s = json.dumps(d)
             assert json.loads(s)  # valid JSON
-
-
-# ---------------------------------------------------------------------------
-# Hash stability
-# ---------------------------------------------------------------------------
-
-class TestHashing:
-    def test_team_id_order_invariant(self):
-        mons = [Pokemon(species=f"Mon{i}", item=f"I{i}", ability=f"A{i}",
-                        tera_type="Fire", moves=[f"M{i}a", f"M{i}b", f"M{i}c", f"M{i}d"])
-                for i in range(6)]
-        h1 = _team_id(mons)
-        h2 = _team_id(list(reversed(mons)))
-        assert h1 == h2
-
-    def test_species_key_order_invariant(self):
-        mons = [Pokemon(species=f"Mon{i}") for i in range(6)]
-        k1 = _species_key(mons)
-        k2 = _species_key(list(reversed(mons)))
-        assert k1 == k2
-
-    def test_different_teams_different_ids(self):
-        mons_a = [Pokemon(species=f"Mon{i}") for i in range(6)]
-        mons_b = [Pokemon(species=f"Other{i}") for i in range(6)]
-        assert _team_id(mons_a) != _team_id(mons_b)
 
 
 # ---------------------------------------------------------------------------

@@ -225,11 +225,16 @@ turnzero/
 │   │   ├── cluster.py          #   Union-find core clustering (≥4/6 species)
 │   │   └── split.py            #   Regime A (within-core) + Regime B (OOD)
 │   │
+│   ├── analysis/               # Shared analysis utilities
+│   │   └── bo3.py              #   BO3 linkage extraction + adaptation stats
+│   │
 │   ├── models/                 # Model zoo
 │   │   ├── baselines.py        #   Popularity + multinomial logistic
 │   │   ├── transformer.py      #   Permutation-equivariant set transformer
 │   │   ├── hierarchical.py     #   Hierarchical dual encoder (ablation)
 │   │   ├── sequential_transformer.py # BO3-conditioned transformer
+│   │   ├── factory.py          #   Model construction from config/checkpoint
+│   │   ├── loss.py             #   Loss computation (action90, multitask, tier1)
 │   │   └── train.py            #   Training loop (AdamW, mixed precision, compile)
 │   │
 │   ├── uq/                     # Uncertainty quantification

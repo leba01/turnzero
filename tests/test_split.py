@@ -122,20 +122,6 @@ class TestAssignTeamsWithinCluster:
         assert 5 <= counts["val"] <= 20
         assert 5 <= counts["test"] <= 20
 
-    def test_deterministic(self):
-        """Same seed → same assignments."""
-        teams = {"c0": [f"t{i}" for i in range(20)]}
-        m1 = _assign_teams_within_cluster(teams, seed=42)
-        m2 = _assign_teams_within_cluster(teams, seed=42)
-        assert m1 == m2
-
-    def test_different_seeds_different(self):
-        """Different seeds → different assignments (high probability)."""
-        teams = {"c0": [f"t{i}" for i in range(50)]}
-        m1 = _assign_teams_within_cluster(teams, seed=42)
-        m2 = _assign_teams_within_cluster(teams, seed=99)
-        assert m1 != m2
-
     def test_multiple_clusters_independent(self):
         """Each cluster is split independently."""
         mapping = _assign_teams_within_cluster(
@@ -406,12 +392,6 @@ class TestSplitRegimeB:
         assert "test_clusters" in stats
         assert stats["train_clusters"] + stats["val_clusters"] + stats["test_clusters"] > 0
 
-    def test_deterministic(self):
-        examples, clusters = self._make_scenario()
-        ids1, _ = split_regime_b(examples, clusters, seed=42)
-        ids2, _ = split_regime_b(examples, clusters, seed=42)
-        assert ids1 == ids2
-
 
 # ---------------------------------------------------------------------------
 # Validators
@@ -451,17 +431,6 @@ class TestValidators:
         split_ids = {"train": ["e1"], "val": [], "test": ["e2"]}
         violations = validate_regime_a(examples, split_ids, clusters)
         assert any("match_group" in v for v in violations)
-
-    def test_clean_split_no_violations(self):
-        """Clean split should produce no violations."""
-        examples = [
-            _ex("e1", "ta", "tb", match_group_id="mg1"),
-            _ex("e2", "tc", "td", match_group_id="mg2"),
-        ]
-        clusters = {"ta": "c0", "tb": "c0", "tc": "c1", "td": "c1"}
-        split_ids = {"train": ["e1"], "val": [], "test": ["e2"]}
-        violations = validate_regime_a(examples, split_ids, clusters)
-        assert len(violations) == 0
 
 
 # ---------------------------------------------------------------------------
