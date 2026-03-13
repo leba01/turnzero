@@ -152,20 +152,24 @@ def compute_transition_matrices(
 
 def make_heatmaps(
     matrices: dict, top_pairs: list[str]
-) -> plt.Figure:
-    """Two-panel heatmap: after-win (diagonal) vs after-loss (dispersed)."""
-    # Shorten pair names for display
+) -> dict[str, plt.Figure]:
+    """Separate heatmap figures: after-win (diagonal) vs after-loss (dispersed)."""
     short = [p.replace("|", "\n") for p in top_pairs]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6.5))
+    # Shared vmax across both panels
+    vmax = max(
+        max(0.5, np.array(matrices["won"]["probs"]).max()),
+        max(0.5, np.array(matrices["lost"]["probs"]).max()),
+    )
 
-    for ax, outcome, title in [
-        (ax1, "won", "(a) After Win — repeat leads"),
-        (ax2, "lost", "(b) After Loss — explore leads"),
+    figs = {}
+    for outcome, title in [
+        ("won", "After Win — repeat leads"),
+        ("lost", "After Loss — explore leads"),
     ]:
+        fig, ax = plt.subplots(1, 1, figsize=(6.5, 6))
         probs = np.array(matrices[outcome]["probs"])
-        im = ax.imshow(probs, cmap="YlOrRd", aspect="auto", vmin=0,
-                       vmax=max(0.5, probs.max()))
+        im = ax.imshow(probs, cmap="YlOrRd", aspect="auto", vmin=0, vmax=vmax)
         ax.set_xticks(range(len(short)))
         ax.set_xticklabels(short, fontsize=5.5, rotation=90)
         ax.set_yticks(range(len(short)))
@@ -180,9 +184,11 @@ def make_heatmaps(
                 transform=ax.transAxes, fontsize=8, va="top",
                 bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
 
-    fig.colorbar(ax2.images[0], ax=[ax1, ax2], shrink=0.6, label="P(G2 pair | G1 pair)")
-    fig.tight_layout()
-    return fig
+        fig.colorbar(im, ax=ax, shrink=0.6, label="P(G2 pair | G1 pair)")
+        fig.tight_layout()
+        figs[outcome] = fig
+
+    return figs
 
 
 def main() -> None:
@@ -231,11 +237,12 @@ def main() -> None:
         json.dump(output, f, indent=2)
     print(f"\nSaved: {out_path}")
 
-    # Generate figure
+    # Generate figures
     print("\nGenerating heatmaps...")
-    fig = make_heatmaps(matrices, top_pairs)
+    figs = make_heatmaps(matrices, top_pairs)
     OUT_PLOTS.mkdir(parents=True, exist_ok=True)
-    _save_fig(fig, OUT_PLOTS / "transition_heatmaps")
+    _save_fig(figs["won"], OUT_PLOTS / "transition_heatmap_win")
+    _save_fig(figs["lost"], OUT_PLOTS / "transition_heatmap_loss")
 
     # Summary
     print(f"\n{'=' * 70}")

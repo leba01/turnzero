@@ -1,6 +1,6 @@
 # TurnZero
 
-**Uncertainty-Aware Team Preview Prediction for Competitive Pokémon VGC**
+**The Illusion of Adaptation When Experts Lose**
 
 Lucas Brennan-Almaraz · Stanford CS229 · Winter 2025--26
 
@@ -16,47 +16,47 @@ Lucas Brennan-Almaraz · Stanford CS229 · Winter 2025--26
 
 ---
 
-In competitive Pokémon VGC, both players reveal their full 6-mon team sheets before battle. Each player then privately selects which 4 to bring and which 2 to lead --- a 90-way decision made before any moves are played. Experts facing the same matchup routinely choose differently, and within best-of-three sets the same player changes leads **59% of the time**.
+In best-of-three Pokémon VGC tournament play, players who just lost change their lead pair far more often than winners (72% vs 46%). This looks like adaptation, but it isn't: the exploration is undirected and produces no learnable structure.
 
-This project characterizes *where* prediction is possible and *why* there's a ceiling, using a 5-member deep ensemble of permutation-invariant transformers trained on 382K expert replays. The model and UQ stack are standard techniques --- the contribution is problem characterization.
+We show this using permutation-invariant transformer ensembles as measurement instruments on 382K expert replays. A sequential model conditioned on prior-game outcome gains +6.6pp after wins (players repeat what worked) but less than 1pp after losses. A specialist trained only on post-loss data scores *below* the base ensemble on that same subset (4.0% vs 5.4%), meaning the post-loss signal actively misleads; and 87% of post-loss lead changes don't even interact with the opponent's prior leads.
 
-## Key Findings
+**See also:** [TurnOne](https://github.com/leba01/turnone) looks at turn-1 actions. SVD of the payoff matrices reveals effective rank 3 out of ~122 actions, meaning convention is free because most of the action space is payoff-irrelevant. Same dataset, same format, different question.
 
-**Predictability is mechanical, not strategic.** Commander teams (Dondozo + Tatsugiri) reach 50% top-1 because the game rules force a specific lead. Flexible "goodstuffs" teams hit 0%. Speed control mode (Trick Room vs Tailwind) explains nothing: ΔH = 0.016 nats, effectively zero.
+## What we found
 
-**The ceiling is player disagreement, not model capacity.** Players change leads 59% of the time between games of a BO3 set, rising to 72% after a loss (χ² = 10,126). A +34% parameter hierarchical architecture produces ±0.3pp difference. The training data contains genuine contradictions from within-set adaptation that no turn-zero model can resolve.
+Winners stay, losers explore. Across 136K game-to-game transitions, players who just won change leads 46% of the time; those who just lost change 72% (χ² = 10,126). After winning, 91% of transitions stay on the diagonal with conditional entropy H = 0.52 nats. After losing, diagonal concentration drops to 77% and entropy nearly doubles to H = 1.02 nats. Stronger players change less overall, but the ~27pp gap between post-loss and post-win change rates holds across all Elo tiers.
 
-**The model learns convention, not strategy.** Mirror matchups (common archetypes with established patterns): 6.8% top-1. Novel matchups: 3.8%. Per-team accuracy correlates with action-mode frequency (r = 0.55) --- the model tracks *what experts typically do*, not what they *should* do.
+The exploration is unstructured. Among post-loss changers, 87% of lead switches don't change the overlap with the opponent's prior leads at all. Of the 13% that do, switching toward and switching away from the opponent produce identical game-2 win rates (54.8% vs 54.9%). Losers are scrambling, not counter-adapting.
 
-**Uncertainty estimation works, with caveats.** The ensemble is well-calibrated (ECE = 0.012) and automatically doubles its abstention rate on unseen team families (AUROC = 0.80 for OOD detection via mutual information). But median confidence is 4.5% on a 90-class problem, and calibration degrades on OOD data (ECE: 0.012 → 0.076).
+The base model learns convention, not strategy. Removing the opponent's team at inference costs only -1.3pp (6.4% → 5.1%); removing the player's own team collapses accuracy to random. Per-archetype accuracy correlates with action entropy (r = -0.56, strengthening to r = -0.77 for well-sampled archetypes). Commander teams hit 50% top-1 because the rules force a specific lead; flexible "goodstuffs" teams hit 0%.
 
-**Point prediction loses to frequency lookup.** On average, per-team mode frequency beats the model by 6.8pp. The potential value is calibrated probabilities across all 90 actions, but this remains unvalidated in deployment.
+A sequential model conditioned on prior outcome confirms the asymmetry: +6.6pp after wins (6.4% → 13.0%) but only +0.8pp after losses (5.4% → 6.2%). A post-loss specialist trained exclusively on post-loss data does *worse* than the base model on its own target subset (4.0% vs 5.4%). Adding the opponent's revealed game-1 species as context adds nothing. There is no learnable structure in post-loss adaptation.
 
 ## Results
 
-Regime A test set, Tier 1 only (n = 32,328). 95% CIs are cluster-aware bootstrap (B = 1000).
+Top-1 accuracy (%) on the 90-way lead prediction task, stratified by prior-game outcome. Games 2-3 only (Tier 1, n = 32,328).
 
-| Model | Top-1 | Top-3 | NLL | ECE |
-|:---|:---:|:---:|:---:|:---:|
-| Random | 1.1% | 3.3% | 4.500 | --- |
-| Popularity | 1.3% | 3.9% | 4.497 | 0.001 |
-| Logistic (~4K params) | 4.0% | 10.1% | 4.580 | 0.059 |
-| Transformer (1.16M) | 5.5% | 14.0% | 4.105 | 0.016 |
-| **Ensemble (5 × 1.16M)** | **6.4%** [2.6, 6.6] | **15.5%** [6.8, 16.0] | **4.031** [4.01, 4.43] | **0.012** |
+| Model | Params | After win | After loss | G2-3 |
+|:---|---:|:---:|:---:|:---:|
+| Base ensemble | 5.8M | 6.4 | 5.4 | 5.9 |
+| Sequential | +2.8K | **13.0** | 6.2 | **9.4** |
+| + Opp. context | +4.1K | 12.6 | 6.0 | 9.2 |
+| Post-win specialist | +2.8K | 10.1 | 3.9 | -- |
+| Post-loss specialist | +2.8K | 7.0 | 4.0 | -- |
 
-The ensemble's top-17 predictions cover 50% of expert actions (random needs 45). When all 5 members agree (5.8% of examples), accuracy reaches 16.6%; when all disagree, 3.1%.
+Sequential gains come entirely from post-win repetition. The post-loss specialist performs *worse* than the base model on its own target data (4.0% vs 5.4%).
 
 ## Method
 
-A permutation-equivariant set transformer over 12 Pokémon tokens (8 learned embeddings per token: species, item, ability, tera type, 4 moves). No positional encoding --- this avoids by construction the [positional leakage](https://github.com/hspokemon/EliteFurretAI) that inflated prior work from 79% to 99.9%.
+Each of 12 Pokémon is tokenized as the sum of 8 learned embeddings (species, item, ability, tera type, 4 moves) and processed by a 4-layer transformer encoder (d=128, H=4). Tokens are canonically sorted and aggregated via mean pooling with no positional encoding, avoiding the [positional leakage](https://github.com/hspokemon/EliteFurretAI) that inflated prior work from 99.9% to 79%. A 5-member deep ensemble averages probabilities across independently trained members (5.8M total parameters).
 
-Five independent members with different seeds, averaged probabilities. Predictive entropy decomposes into aleatoric (data noise) and epistemic (member disagreement) components. Selective prediction abstains when confidence is below threshold.
+The sequential variant prepends a single context token encoding game number, prior result (win/loss/none), and the prior lead pair index. This adds only 2,816 parameters (<0.3% of the base model). Game-1 examples get sentinel values, so the context introduces no phantom signal.
 
-Split design: teams clustered by species overlap (≥4/6 → union-find connected components, 7,826 clusters). Regime A holds out team variants within clusters (in-distribution). Regime B holds out entire clusters (OOD). Both directed examples from each game stay in the same split.
+Split design: teams clustered by species overlap (≥4/6 → union-find connected components). Regime A holds out team variants within clusters (in-distribution). Both directed examples from each game stay in the same split. 212K BO3 tournament battles yield 382K directed examples; 53K linkable sets produce 136K game-to-game transitions for adaptation analysis.
 
 ## Demo
 
-A browser-based tool runs the full 5-member ensemble client-side via ONNX Runtime --- no backend, no data leaves your browser. Paste two team sheets, get calibrated predictions with uncertainty estimates, role annotations, feature sensitivity, and retrieval evidence from similar historical matchups.
+The web demo runs the full 5-member ensemble client-side via ONNX Runtime. No backend, no data leaves your browser. Paste two team sheets and get calibrated predictions with uncertainty estimates, role annotations, feature sensitivity, and retrieval evidence from similar historical matchups.
 
 <p align="center">
   <a href="https://turnzero.vercel.app">
@@ -68,34 +68,25 @@ A browser-based tool runs the full 5-member ensemble client-side via ONNX Runtim
   <a href="https://turnzero.vercel.app">turnzero.vercel.app</a>
 </p>
 
-## Paper Figures
-
-All figures generated by `scripts/run_final_figures.py`.
+## Paper figures
 
 | Figure | What it shows |
 |:---|:---|
-| `model_comparison` | Ensemble vs baselines across all metrics |
-| `reliability_diagram` | ECE = 0.012 --- well-calibrated |
-| `risk_coverage_top1/top3` | Selective prediction: abstain when uncertain |
-| `uncertainty_decomposition` | Entropy + MI: mirror vs non-mirror |
-| `stress_test` | Moves carry ~70% of signal; hiding items/tera costs ~3pp |
-| `ood_comparison` | Regime A vs B: entropy shift on unseen families |
-| `topk_accuracy_curve` | k=17 for 50% coverage vs k=45 random |
-| `cluster_entropy_vs_accuracy` | r = −0.56 (strengthens to ρ = −0.77 at n ≥ 50): mechanical teams are predictable |
-| `ensemble_agreement` | Top-1 accuracy by agreement level |
-| `bo3_adaptation_rates` | Lead/bring change rates after win/loss |
+| `transition_heatmaps` | Lead-pair transition matrices: post-win (91% diagonal, H=0.52) vs post-loss (77% diagonal, H=1.02) |
+| `cluster_entropy_vs_accuracy` | Per-archetype accuracy vs action entropy (r = -0.56, r = -0.77 at n ≥ 50) |
+| `subset_model_comparison` | Post-win specialist captures signal (10.1%); post-loss specialist falls below base (4.0% vs 5.4%) |
 
-## Future Work
+## Future work
 
-**BO1 ladder data.** The current dataset is exclusively BO3 tournament play, where within-set adaptation drives the multi-modality ceiling (59% lead changes). Ladder games are single-game, removing the adaptation signal entirely. Comparing BO3 vs BO1 lead distributions would reveal how much of the observed entropy is adaptation noise vs genuine strategic disagreement, and whether a model trained on one format transfers to the other.
+Other VGC regulations, with different restricted Pokémon pools, may shift the balance between convention and flexibility. Testing whether the adaptation asymmetry replicates there is the obvious next step.
 
-**Cross-regulation analysis.** This study covers Regulation G only. Different regulations legalize different Pokémon pools and restrict different mechanics (e.g., restricted legendaries, tera availability), which should shift both the metagame structure and the predictability landscape. Repeating the per-team entropy analysis across regulations would test whether the mechanical-constraints-drive-predictability finding is universal or regulation-specific.
+Beyond Pokémon, any competitive domain with combinatorial team selection and best-of-N structure (MOBA drafting, fighting game counterpicks, sports lineup decisions) could show analogous patterns. A lab or simulation setting where lead choice can be randomized would let us ask the causal question our observational data can't: does post-loss adaptation actually help?
 
 ## Citation
 
 ```bibtex
 @misc{brennan2026turnzero,
-  title={TurnZero: Uncertainty-Aware Team Preview Prediction for Competitive Pok{\'e}mon VGC},
+  title={TurnZero: The Illusion of Adaptation When Experts Lose},
   author={Brennan-Almaraz, Lucas},
   year={2026},
   note={Stanford CS229 Final Project, Winter 2025--26},
@@ -185,6 +176,13 @@ turnzero eval --model_ckpt outputs/runs/run_001/best.pt \
               --out_dir outputs/eval/run_001
 ```
 
+### Calibrate
+
+```bash
+turnzero calibrate --ensemble_dir outputs/runs \
+                   --val_split data/assembled/regime_a/val.jsonl
+```
+
 ### Coach demo
 
 ```bash
@@ -198,7 +196,7 @@ turnzero demo \
 ### Tests
 
 ```bash
-pytest  # 179 tests, ~2s
+pytest  # 200 tests, ~2s
 ```
 
 </details>
@@ -218,6 +216,8 @@ turnzero/
 │   │   ├── canonicalize.py     #   Name normalization, sort, dedup
 │   │   ├── assemble.py         #   Attach splits + clusters → per-split JSONL
 │   │   ├── dataset.py          #   PyTorch Dataset + Vocab
+│   │   ├── sequential_dataset.py #  Extends VGCDataset with BO3 context
+│   │   ├── bo3_context.py      #   BO3 sequential context builder
 │   │   ├── stats.py            #   Integrity validation + dataset report
 │   │   └── io_utils.py         #   JSONL streaming I/O
 │   │
@@ -228,6 +228,8 @@ turnzero/
 │   ├── models/                 # Model zoo
 │   │   ├── baselines.py        #   Popularity + multinomial logistic
 │   │   ├── transformer.py      #   Permutation-equivariant set transformer
+│   │   ├── hierarchical.py     #   Hierarchical dual encoder (ablation)
+│   │   ├── sequential_transformer.py # BO3-conditioned transformer
 │   │   └── train.py            #   Training loop (AdamW, mixed precision, compile)
 │   │
 │   ├── uq/                     # Uncertainty quantification
@@ -249,15 +251,16 @@ turnzero/
 │
 ├── configs/                    # Model configs (YAML)
 ├── scripts/                    # Analysis + export scripts
-├── tests/                      # 179 tests
-├── paper/                      # LaTeX source + compiled PDF + 11 figures
+├── tests/                      # 200 tests
+├── paper/                      # LaTeX source + compiled PDF + 15 figures
 ├── web/                        # Live demo (Next.js + ONNX, client-side inference)
 ├── data/                       # Data artifacts (not in git)
 ├── outputs/                    # Model outputs (not in git)
 └── docs/                       # Documentation
     ├── SACREDTEXTS.md          #   Original spec (v4)
     ├── TECHNICAL_COMPANION.md  #   Study guide: every decision explained
-    └── PAPER_ANALYSIS.md       #   Story arc + numbers reference for paper
+    ├── PAPER_ANALYSIS.md       #   Story arc + numbers reference for paper
+    └── demo.png                #   Web demo screenshot
 ```
 
 </details>

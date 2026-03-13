@@ -8,6 +8,7 @@ build/
 .venv/
 *.egg
 .pytest_cache/
+.DS_Store
 data/raw/
 data/parsed/
 data/canonical/
@@ -17,11 +18,22 @@ data/assembled/
 data/final/
 data/exploration/
 outputs/
+uv.lock
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
 
 # Compiled paper (keep figures/ and final PDF)
 paper/*.pdf
 !paper/figures/*.pdf
 !paper/turnzero.pdf
+
+# Alternate paper versions
+paper/turnzero_v2.*
 
 # Internal docs (stay on disk, not in public repo)
 CLAUDE.md
@@ -30,6 +42,7 @@ docs/HISTORY.md
 docs/DECISIONS.md
 docs/FINAL_PUSH.md
 docs/COMPASS.md
+rewrite_plan.md
 
 # Build caches
 web/tsconfig.tsbuildinfo
@@ -40,3 +53,4 @@ scripts/run_wave3a.py
 scripts/run_wave3b.py
 scripts/parse_sample_stats.py
 scripts/recompute_uq_metrics.py
+scripts/regen_heatmaps.py
