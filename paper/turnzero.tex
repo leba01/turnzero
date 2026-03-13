@@ -41,7 +41,7 @@ In best-of-three Pok\'emon VGC tournament play, players who just lost change the
 This looks like adaptation, but it is not: the exploration is undirected and produces no learnable structure.
 We show this using permutation-invariant transformer ensembles as measurement instruments on 382K expert replays.
 A sequential model conditioned on prior-game outcome gains +6.6 percentage points after wins---players repeat what worked---but less than 1pp after losses.
-A specialist trained only on post-loss data scores below the base ensemble on that same subset (4.0\% vs.\ 5.4\%), meaning the post-loss signal actively misleads; and 87\% of post-loss lead changes do not even interact with the opponent's prior leads.
+A specialist trained only on post-loss data scores below the base ensemble on that same subset (4.0\% vs.\ 5.4\%), meaning the post-loss signal actively misleads; and 87\% of post-loss lead changes do not change the overlap with the opponent's prior leads.
 Stronger players change less overall, but the ${\sim}$27pp gap between post-loss and post-win change rates holds across all skill tiers.
 \end{abstract}
 
@@ -142,7 +142,7 @@ Losers explore a $2{\times}$ wider effective action space.
 
 If post-loss adaptation were strategic counter-play, lead changes should respond to what the opponent did.
 In mirror matchups (teams sharing species), a player can promote a shared species into their lead slot, moving \emph{toward} the opponent's game-1 leads, or drop one, moving \emph{away}.
-Among post-loss changers, 87\% of lead switches do not change the overlap with the opponent's prior leads at all ($n{=}43{,}063$; 58.2\% win rate).
+Among post-loss changers, 87\% of lead switches do not change the overlap with the opponent's prior leads at all ($n{=}43{,}063$), yet they win game~2 at 58.2\%.
 Of the 13\% that do, switching toward and switching away produce identical game-2 win rates (54.8\% vs.\ 54.9\%, $n{\approx}3{,}100$ each).
 Losers are scrambling, not counter-adapting.
 
@@ -255,7 +255,7 @@ Post-loss spec.   & +2.8K & 7.0 & 4.0 & --- \\
 \end{table}
 
 The sequential model recovers +6.6pp after wins (6.4\% $\to$ 13.0\%) but only +0.8pp after losses (5.4\% $\to$ 6.2\%).
-Game-1 accuracy is unchanged (6.6\% base vs.\ 6.4\% sequential), so the context mechanism introduces no leakage.
+Game-1 accuracy is unchanged between models ($<$0.3pp difference), so the context mechanism introduces no leakage.
 Even with history, the model reaches only 9.4\% top-1 on games 2--3.
 The ceiling is lower after wins, but post-loss remains a wall.
 
