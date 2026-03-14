@@ -1,5 +1,4 @@
 .next/
-.claude/
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -30,20 +29,5 @@ paper/*.pdf
 !paper/figures/*.pdf
 !paper/turnzero.pdf
 
-# Alternate paper versions
-paper/turnzero_v2.*
-
-# Internal docs (stay on disk, not in public repo)
-CLAUDE.md
-LAPTOP_CLAUDE_MEMO.md
-docs/HISTORY.md
-docs/DECISIONS.md
-docs/FINAL_PUSH.md
-docs/COMPASS.md
-rewrite_plan.md
-
 # Build caches
 web/tsconfig.tsbuildinfo
-
-# Internal/one-off scripts (stay on disk)
-scripts/regen_heatmaps.py
