@@ -221,7 +221,7 @@ If the base signal is convention, the adaptation asymmetry should be convention-
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/cluster_entropy_vs_accuracy.pdf}
-    \caption{Per-archetype accuracy vs.\ mean action entropy for 153 team archetypes ($\geq$20 Tier~1 examples). Commander teams cluster in the low-entropy / high-accuracy corner; flexible "goodstuffs" teams spread across the high-entropy floor. Top-3 correlation: $r = {-}0.56$ (all), $r = {-}0.77$ ($n \geq 50$).}
+    \caption{Top-1 and top-3 accuracy by action-entropy tercile for 153 team archetypes ($\geq$20 Tier~1 examples). Low-entropy teams (e.g., Commander) are far more predictable; high-entropy ``goodstuffs'' teams hover near the random baseline. Individual points show each archetype.}
     \label{fig:entropy}
 \end{figure}
 
@@ -281,7 +281,7 @@ As shown in Section~\ref{sec:unstructured}, the direction of post-loss lead chan
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figures/subset_model_comparison.pdf}
-    \caption{Post-win specialist captures real signal (10.1\% vs.\ base 6.4\% after wins). Post-loss specialist falls \emph{below} base (4.0\% vs.\ 5.4\% after losses)---there is no learnable structure in post-loss adaptation.}
+    \caption{Visual summary of the specialist rows in Table~\ref{tab:models}. Post-win specialist captures real signal (10.1\% vs.\ base 6.4\% after wins). Post-loss specialist falls \emph{below} base (4.0\% vs.\ 5.4\% after losses)---there is no learnable structure in post-loss adaptation.}
     \label{fig:subset}
 \end{figure}
 
